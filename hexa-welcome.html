@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HEXA · Welcome</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@200;300;700&family=Share+Tech+Mono&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#000; overflow:hidden; width:100vw; height:100vh; }
+  canvas { display:block; position:fixed; top:0; left:0; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+let frame = 0;
+let phase = 'welcome'; // welcome → fadeout → loggedin
+
+// ── HELPERS ───────────────────────────────────────────────
+function easeOut(t){return 1-Math.pow(1-t,3);}
+function easeIn(t){return t*t*t;}
+function frac(f,s,e){return Math.max(0,Math.min(1,(f-s)/(e-s)));}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+// ── PARTICLES ────────────────────────────────────────────
+const particles = Array.from({length:100},()=>({
+  x:Math.random(), y:Math.random(),
+  r:0.5+Math.random()*1.8,
+  alpha:Math.random(),
+  tw:Math.random()*Math.PI*2,
+  twSpd:0.02+Math.random()*0.04,
+  col:Math.random()>0.5?'#00e6dc':'#aa66ff',
+}));
+function drawParticles(a){
+  particles.forEach(p=>{
+    p.tw+=p.twSpd;
+    const pa=a*p.alpha*(0.3+0.7*Math.abs(Math.sin(p.tw)));
+    ctx.beginPath();ctx.arc(p.x*W,p.y*H,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.col;ctx.globalAlpha=pa;ctx.fill();
+  });
+  ctx.globalAlpha=1;
+}
+
+// ── HEX TUNNEL (welcome screen) ──────────────────────────
+function drawHexTunnel(cx,cy,maxR,rot,alpha,rings){
+  for(let i=rings;i>=0;i--){
+    const t=i/rings;
+    const r=maxR*(0.08+t*0.92);
+    const gi=Math.round(t*40+(1-t)*200);
+    const bi=Math.round(t*80+(1-t)*255);
+    const strokeA=alpha*(1-t*0.5)*(0.5+0.5*Math.sin(frame*0.03+t*3));
+    if(i<rings&&i>0){
+      const prevR=maxR*(0.08+((i+1)/rings)*0.92);
+      for(let v=0;v<6;v++){
+        const a1=(Math.PI/3)*v+rot;
+        ctx.beginPath();ctx.moveTo(cx+r*Math.cos(a1),cy+r*Math.sin(a1));
+        ctx.lineTo(cx+prevR*Math.cos(a1),cy+prevR*Math.sin(a1));
+        ctx.strokeStyle=`rgba(0,${gi},${bi},${strokeA*0.3})`;
+        ctx.globalAlpha=alpha;ctx.lineWidth=0.5;ctx.stroke();
+      }
+    }
+    ctx.beginPath();
+    for(let v=0;v<6;v++){const a=(Math.PI/3)*v+rot;v===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}
+    ctx.closePath();
+    ctx.shadowColor=i<rings*0.3?'#00ffee':`rgb(0,${gi},${bi})`;
+    ctx.shadowBlur=(1-t)*25;
+    ctx.strokeStyle=i<rings*0.25?`rgba(0,255,230,${alpha*(1-t)*1.5})`:`rgba(0,${gi},${bi},${strokeA})`;
+    ctx.globalAlpha=alpha;ctx.lineWidth=i<rings*0.3?1.5:0.8;ctx.stroke();
+    if(i===0){
+      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r*1.2);
+      g.addColorStop(0,`rgba(0,255,220,${alpha*0.6})`);
+      g.addColorStop(0.4,`rgba(0,180,200,${alpha*0.2})`);
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g;ctx.globalAlpha=alpha;
+      ctx.beginPath();ctx.arc(cx,cy,r*1.5,0,Math.PI*2);ctx.fill();
+    }
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+}
+
+function drawOuterFrame(cx,cy,r,alpha){
+  [r*1.04,r*1.0,r*0.96].forEach((rr,i)=>{
+    ctx.beginPath();
+    for(let v=0;v<6;v++){const a=(Math.PI/3)*v+Math.PI/6;v===0?ctx.moveTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a)):ctx.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a));}
+    ctx.closePath();
+    ctx.shadowColor='#00e6dc';ctx.shadowBlur=30-i*8;
+    ctx.strokeStyle=['rgba(0,230,220,0.9)','rgba(140,80,255,0.7)','rgba(0,200,255,0.5)'][i];
+    ctx.globalAlpha=alpha;ctx.lineWidth=3-i;ctx.stroke();
+  });
+  for(let v=0;v<6;v++){
+    const a=(Math.PI/3)*v+Math.PI/6;
+    const gx=cx+r*Math.cos(a),gy=cy+r*Math.sin(a);
+    const gl=0.4+0.6*Math.abs(Math.sin(frame*0.05+v));
+    ctx.shadowColor='#fff';ctx.shadowBlur=15;
+    ctx.fillStyle='#fff';ctx.globalAlpha=alpha*gl*0.9;
+    ctx.beginPath();ctx.arc(gx,gy,2.5,0,Math.PI*2);ctx.fill();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+}
+
+function drawWelcome(alpha,cy){
+  if(alpha<=0)return;
+  const fs=Math.min(W*0.14,H*0.17,140);
+  ctx.font=`600 ${fs}px Bebas Neue, sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  const bloomGrad=ctx.createRadialGradient(W/2,cy+fs*0.5,0,W/2,cy+fs*0.5,fs*2.5);
+  bloomGrad.addColorStop(0,`rgba(0,200,255,${alpha*0.55})`);
+  bloomGrad.addColorStop(0.4,`rgba(0,80,180,${alpha*0.15})`);
+  bloomGrad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=bloomGrad;ctx.globalAlpha=alpha;
+  ctx.fillRect(W/2-fs*3,cy-fs*0.2,fs*6,fs*2);
+  ctx.shadowColor='rgba(140,0,255,1)';ctx.shadowBlur=60;
+  ctx.fillStyle=`rgba(200,120,255,${alpha*0.7})`;ctx.globalAlpha=alpha*0.8;
+  ctx.fillText('WELCOME',W/2,cy);
+  ctx.shadowColor='#00e6dc';ctx.shadowBlur=40;
+  ctx.fillStyle=`rgba(0,230,220,${alpha})`;ctx.globalAlpha=alpha*0.85;
+  ctx.fillText('WELCOME',W/2,cy);
+  ctx.shadowColor='#fff';ctx.shadowBlur=18;
+  ctx.fillStyle='#fff';ctx.globalAlpha=alpha;
+  ctx.fillText('WELCOME',W/2,cy);
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+}
+
+// ══════════════════════════════════════════════════════════
+// LOGGED IN PAGE
+// ══════════════════════════════════════════════════════════
+
+// ── Real hex grid background (image 2 style) ─────────────
+function drawHexGrid(alpha){
+  const sp=Math.max(50,Math.min(80,W/14));
+  const cols=Math.ceil(W/(sp*0.87))+3;
+  const rows=Math.ceil(H/(sp*0.75))+3;
+  for(let r=-1;r<rows;r++){
+    for(let c=-1;c<cols;c++){
+      const hx=c*sp*0.87+(r%2===0?0:sp*0.435);
+      const hy=r*sp*0.75;
+      const dist=Math.sqrt((hx-W/2)**2+(hy-H/2)**2);
+      const maxD=Math.sqrt(W*W+H*H)*0.5;
+      const proximity=1-clamp(dist/maxD,0,1);
+      const pulse=0.5+0.5*Math.sin(frame*0.018+r*0.4+c*0.3);
+      const nodeGlow=0.4+0.6*Math.abs(Math.sin(frame*0.025+r*1.1+c*0.8));
+      const lineA=alpha*(0.1+0.35*proximity*pulse);
+
+      // hex edge
+      ctx.beginPath();
+      for(let v=0;v<6;v++){
+        const a=(Math.PI/3)*v+Math.PI/6;
+        v===0?ctx.moveTo(hx+sp*0.47*Math.cos(a),hy+sp*0.47*Math.sin(a)):ctx.lineTo(hx+sp*0.47*Math.cos(a),hy+sp*0.47*Math.sin(a));
+      }
+      ctx.closePath();
+      ctx.shadowColor='#00ff88';ctx.shadowBlur=proximity>0.5?12:4;
+      ctx.strokeStyle=`rgba(0,${Math.round(180+75*proximity)},${Math.round(100+80*proximity)},${lineA})`;
+      ctx.globalAlpha=lineA;ctx.lineWidth=1.2;ctx.stroke();
+
+      // glowing node dots at vertices
+      for(let v=0;v<6;v++){
+        const a=(Math.PI/3)*v+Math.PI/6;
+        const nx=hx+sp*0.47*Math.cos(a), ny=hy+sp*0.47*Math.sin(a);
+        const dotA=alpha*proximity*nodeGlow * 0.6;
+        if(dotA>0.05){
+          ctx.shadowColor='#00ff88';ctx.shadowBlur=8;
+          ctx.fillStyle='#00ff99';ctx.globalAlpha=dotA;
+          ctx.beginPath();ctx.arc(nx,ny,1.5,0,Math.PI*2);ctx.fill();
+        }
+      }
+    }
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+}
+
+// ── 3D letter effect (image 1 style) ─────────────────────
+function draw3DText(text, x, y, fs, alpha){
+  ctx.font=`900 ${fs}px Bebas Neue, sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+
+  // 3D depth layers — offset going bottom-right, dark to create thickness
+  const depth=Math.round(fs*0.06);
+  for(let d=depth;d>=1;d--){
+    const t=d/depth;
+    // side face color: deep blue-purple gradient
+    const r=Math.round(30+40*t), g=Math.round(10+30*t), b=Math.round(120+80*t);
+    ctx.fillStyle=`rgba(${r},${g},${b},${alpha*0.9})`;
+    ctx.globalAlpha=alpha;
+    ctx.shadowBlur=0;
+    ctx.fillText(text, x+d*0.7, y+d*0.5);
+  }
+
+  // shadow under (drop shadow spine)
+  ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=20;
+  ctx.fillStyle=`rgba(0,0,0,${alpha*0.5})`;
+  ctx.globalAlpha=alpha*0.5;
+  ctx.fillText(text, x+depth*0.8+4, y+depth*0.6+6);
+
+  // main face — blue to purple gradient
+  const grad=ctx.createLinearGradient(x,y-fs*0.5,x,y+fs*0.5);
+  grad.addColorStop(0,'#44aaff');
+  grad.addColorStop(0.4,'#6688ff');
+  grad.addColorStop(1,'#aa44ff');
+  ctx.shadowColor='#4466ff';ctx.shadowBlur=25;
+  ctx.fillStyle=grad;ctx.globalAlpha=alpha;
+  ctx.fillText(text, x, y);
+
+  // bright top highlight
+  ctx.shadowColor='#aaddff';ctx.shadowBlur=8;
+  ctx.fillStyle='rgba(180,220,255,0.35)';ctx.globalAlpha=alpha*0.35;
+  ctx.fillText(text, x, y);
+
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+}
+
+// ── Digital numbers rain on the right ────────────────────
+const digitalChars='01001101010111000101110110101010001';
+let digitColumns=[];
+function initDigits(){
+  digitColumns=[];
+  const cols=Math.floor(W*0.9/11);
+  for(let c=0;c<cols;c++) digitColumns.push({
+    x:W*0.78+c*14, y:Math.random()*H,
+    speed:1.5+Math.random()*2.5,
+    chars:Array.from({length:20},()=>Math.random()>0.5?'1':'0'),
+    alpha:0.15+Math.random()*0.5,
+    changeTimer:0,
+  });
+}
+initDigits();
+
+function drawDigitalRain(alpha){
+  ctx.font=`11px Share Tech Mono, monospace`;
+  ctx.textAlign='left';ctx.textBaseline='top';
+  digitColumns.forEach(col=>{
+    col.y+=col.speed;
+    if(col.y>H+200) col.y=-100;
+    col.changeTimer++;
+    if(col.changeTimer>8){col.changeTimer=0;col.chars[Math.floor(Math.random()*col.chars.length)]=Math.random()>0.5?'1':'0';}
+    col.chars.forEach((ch,i)=>{
+      const cy2=col.y-i*14;
+      if(cy2<-14||cy2>H) return;
+      const fade=1-i/col.chars.length;
+      const isHead=i===0;
+      ctx.shadowColor=isHead?'#ffffff':'#aa44ff';
+      ctx.shadowBlur=isHead?12:4;
+      ctx.fillStyle=isHead?'#ffffff':`rgba(180,100,255,${fade*col.alpha})`;
+      ctx.globalAlpha=alpha*(isHead?1:fade*col.alpha);
+      ctx.fillText(ch,col.x,cy2);
+    });
+  });
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+}
+
+// ── Logged in page ────────────────────────────────────────
+function drawLoggedIn(alpha){
+  if(alpha<=0)return;
+  ctx.clearRect(0,0,W,H);
+
+  // deep dark bg
+  const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*0.8);
+  bg.addColorStop(0,'rgba(0,8,25,1)');
+  bg.addColorStop(0.6,'rgba(0,3,14,1)');
+  bg.addColorStop(1,'rgba(0,0,0,1)');
+  ctx.fillStyle=bg;ctx.globalAlpha=1;ctx.fillRect(0,0,W,H);
+
+  // hex grid background (image 2)
+  drawHexGrid(alpha*0.85);
+
+  // digital rain on right side
+  drawDigitalRain(alpha*0.7);
+
+  // left side — all text content
+  const cx=W*0.5, cy=H*0.32;
+  const fs=Math.min(W*0.058,H*0.08,58);
+
+  // YOU ARE — centered, big white
+  ctx.font=`600 ${fs*1.05}px Bebas Neue, sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='#ffffff';ctx.shadowBlur=30;
+  ctx.fillStyle='#ffffff';ctx.globalAlpha=alpha;
+  ctx.fillText('YOU ARE', cx, cy-fs*1.7);
+
+  // LOGGED IN — 3D flicker
+  const flicker=0.75+0.25*Math.abs(Math.sin(frame*0.18))*Math.abs(Math.sin(frame*0.07));
+  draw3DText('LOGGED IN', cx, cy, fs*1.95, alpha*flicker);
+
+  // HEXA — each letter spinning 3D with orbiting particles and color glow
+  const hexaLetters = ['H','E','X','A'];
+  const hexaFs = fs*1.55;
+  const letterW = hexaFs*0.78;
+  const totalHexaW = hexaLetters.length * letterW;
+  const hexaStartX = cx - totalHexaW*0.5 + letterW*0.5;
+  const hexaY = cy + fs*1.65;
+  const hexaColors = [
+    {top:'#00ffee', mid:'#0088ff', side:'#003388'},
+    {top:'#00ffee', mid:'#0088ff', side:'#003388'},
+    {top:'#cc44ff', mid:'#8800cc', side:'#440066'},
+    {top:'#00ffee', mid:'#0088ff', side:'#003388'},
+  ];
+
+  hexaLetters.forEach((letter, i) => {
+    const spinAngle = frame * 0.045 + i * (Math.PI * 0.6);
+    const scaleX = Math.cos(spinAngle);
+    const depth = Math.round(hexaFs * 0.09);
+    const lx = hexaStartX + i * letterW;
+    const col = hexaColors[i];
+    const pulse = 0.85 + 0.15*Math.sin(frame*0.08+i*1.2);
+    const [tr,tg,tb] = [parseInt(col.top.slice(1,3),16),parseInt(col.top.slice(3,5),16),parseInt(col.top.slice(5,7),16)];
+
+    // radial glow halo behind letter
+    ctx.save();
+    ctx.translate(lx, hexaY);
+    const rg = ctx.createRadialGradient(0,0,hexaFs*0.1,0,0,hexaFs* 0.62);
+    rg.addColorStop(0,`rgba(${tr},${tg},${tb},${alpha*0.4*pulse})`);
+    rg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=rg; ctx.globalAlpha=alpha;
+    ctx.beginPath(); ctx.arc(0,0,hexaFs*0.62,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // 5 orbiting dots per letter
+    for(let p=0;p<5;p++){
+      const pa = frame*0.07 + i*1.3 + p*(Math.PI*2/5);
+      const pr = hexaFs*(0.42+0.08*Math.sin(frame*0.04+p*1.1));
+      const px2 = lx + pr*Math.cos(pa);
+      const py2 = hexaY + pr*0.4*Math.sin(pa);
+      const dotA = alpha*(0.5+0.5*Math.sin(frame*0.1+p*1.4+i));
+      ctx.shadowColor=col.top; ctx.shadowBlur=12;
+      ctx.fillStyle=col.top; ctx.globalAlpha=dotA*0.9;
+      ctx.beginPath(); ctx.arc(px2,py2,2.8,0,Math.PI*2); ctx.fill();
+    }
+
+    // 3D letter
+    ctx.save();
+    ctx.translate(lx, hexaY);
+    ctx.scale(scaleX, 1);
+    ctx.font=`900 ${hexaFs}px Bebas Neue, sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+
+    // side depth
+    for(let d=depth;d>=1;d--){
+      const [sr,sg,sb]=[parseInt(col.side.slice(1,3),16),parseInt(col.side.slice(3,5),16),parseInt(col.side.slice(5,7),16)];
+      ctx.fillStyle=`rgba(${sr},${sg},${sb},0.95)`;
+      ctx.globalAlpha=alpha; ctx.shadowBlur=0;
+      ctx.fillText(letter, d*0.7, d*0.5);
+    }
+
+    // face gradient
+    const fg = ctx.createLinearGradient(0,-hexaFs*0.5,0,hexaFs*0.5);
+    fg.addColorStop(0, col.top);
+    fg.addColorStop(0.45, col.mid);
+    fg.addColorStop(1, col.side);
+    ctx.shadowColor=col.top; ctx.shadowBlur=28;
+    ctx.fillStyle=fg; ctx.globalAlpha=alpha*pulse;
+    ctx.fillText(letter, 0, 0);
+
+    // shine
+    ctx.shadowBlur=5;
+    ctx.fillStyle='rgba(255,255,255,0.38)'; ctx.globalAlpha=alpha*0.38*Math.max(0,scaleX);
+    ctx.fillText(letter, 0, -hexaFs* 0.06);
+    ctx.restore();
+  });
+  ctx.shadowBlur=0; ctx.globalAlpha=1;
+
+  // list items — smooth color cycling with double glow
+  const listItems=[
+    'Enjoy a new way of communication',
+    'With AI and humans',
+    'Welcome to the future'
+  ];
+  const listPalettes=[
+    ['#00ffee','#00aaff','#88ffff','#ffffff'],
+    ['#ff55ff','#cc44ff','#ffaaff','#ffffff'],
+    ['#00ff44','#00cc33','#88ffaa','#ffffff'],
+  ];
+  const lfs=Math.min(W*0.052,H*0.065,58);
+  listItems.forEach((item,i)=>{
+    const ly=cy+fs*3.0+i*lfs*1.85;
+    const pal=listPalettes[i];
+    const t=(frame*0.015+i*1.0)%(pal.length);
+    const cIdx=Math.floor(t)%pal.length;
+    const cNext=(cIdx+1)%pal.length;
+    const ct=t%1;
+    const parse=c=>[parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];
+    const [r1,g1,b1]=parse(pal[cIdx]),[r2,g2,b2]=parse(pal[cNext]);
+    const col=`rgb(${~~(r1+(r2-r1)*ct)},${~~(g1+(g2-g1)*ct)},${~~(b1+(b2-b1)*ct)})`;
+    ctx.font=`700 ${lfs*1.05}px Bebas Neue, sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    // outer soft bloom
+    ctx.shadowColor=col; ctx.shadowBlur=35;
+    ctx.fillStyle=col; ctx.globalAlpha=alpha*0.35;
+    ctx.fillText(item, cx, ly);
+    // main bright text
+    ctx.shadowBlur=14;
+    ctx.fillStyle=col; ctx.globalAlpha=alpha;
+    ctx.fillText(item, cx, ly);
+  });
+  ctx.shadowBlur=0; ctx.globalAlpha=1;  ctx.shadowBlur=0;ctx.globalAlpha=1;
+
+  // particles
+  drawParticles(alpha*0.4);
+}
+
+// ── MAIN LOOP ─────────────────────────────────────────────
+let loggedInAlpha=0;
+
+function loop(){
+  requestAnimationFrame(loop);
+  frame++;
+
+  if(phase==='loggedin'){
+    loggedInAlpha=Math.min(1,loggedInAlpha+0.012);
+    drawLoggedIn(loggedInAlpha);
+    return;
+  }
+
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2;
+
+  // bg
+  const bgGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*0.7);
+  bgGrad.addColorStop(0,'rgba(0,8,25,1)');
+  bgGrad.addColorStop(0.6,'rgba(0,3,12,1)');
+  bgGrad.addColorStop(1,'rgba(0,0,0,1)');
+  ctx.fillStyle=bgGrad;ctx.globalAlpha=1;ctx.fillRect(0,0,W,H);
+
+  drawParticles(Math.min(1,frame/120)*0.5);
+
+  const tunnelA=easeOut(frac(frame,20,100));
+  const tunnelRot=Math.PI/6+frame*0.004;
+  drawHexTunnel(cx,cy,Math.min(W,H)*0.42,tunnelRot,tunnelA,18);
+  drawOuterFrame(cx,cy,Math.min(W,H)*0.44,easeOut(frac(frame,30,110)));
+
+  const textA=easeOut(frac(frame,100,200));
+  drawWelcome(textA,cy-Math.min(W,H)*0.04);
+
+  // fade to black
+  const fadeStart=420;
+  const fadeA=frac(frame,fadeStart,fadeStart+80);
+  if(fadeA>0){
+    ctx.fillStyle='#000';ctx.globalAlpha=easeIn(fadeA);ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha=1;
+  }
+  if(frame>fadeStart+75&&phase==='welcome') phase='loggedin';
+  // Auto redirect to rules after logged in animation plays for 3 seconds
+  if(phase==='loggedin' && loggedInAlpha>=1 && frame > fadeStart+75+180){
+    window.location.href = 'hexa-rules-1.html';
+  }
+}
+
+loop();
+</script>
+
+<div style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:100;">
+  <a href="hexa-rules-1.html" style="font-family:'Bebas Neue',sans-serif;letter-spacing:.25em;font-size:13px;padding:12px 36px;background:linear-gradient(90deg,#00ffee,#cc44ff);color:#000;border-radius:3px;text-decoration:none;display:block;white-space:nowrap;">CONTINUE →</a>
+</div>
+</body>
+</html>
