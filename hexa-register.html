@@ -337,7 +337,7 @@
     </button>
 
     <div class="signin-link">
-      Already have an account? <a href="hexa-landing.html">Sign In</a>
+      Already have an account? <a href="index.html">Sign In</a>
     </div>
 
     <!-- SUCCESS -->
@@ -348,7 +348,7 @@
     </div>
   </div>
 
-  <a href="hexa-landing.html" class="back-link">← Back to HEXA</a>
+  <a href="index.html" class="back-link">← Back to HEXA</a>
 </div>
 
 <script>
@@ -492,10 +492,7 @@ function switchBackup(type) {
 }
 
 // ── FORM LOGIC ────────────────────────────────────────────
-const SUPA_URL = 'https://nfxyxnmatuzmqctttqnk.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg';
-
-async function handleRegister() {
+async function handleRegister(){
   const name = document.getElementById('fullname').value.trim();
   const age = parseInt(document.getElementById('age').value);
   const email = document.getElementById('email').value.trim();
@@ -503,68 +500,39 @@ async function handleRegister() {
   const ageNote = document.getElementById('ageNote');
   const btn = document.querySelector('.btn-register span');
 
-  if (age < 16) { ageNote.style.display = 'block'; return; }
-  else { ageNote.style.display = 'none'; }
-
-  if (!name || !age || !email || !password) {
-    alert('Please fill in all required fields.');
-    return;
-  }
+  if(age < 16){ageNote.style.display='block';return;}
+  else{ageNote.style.display='none';}
+  if(!name||!age||!email||!password){alert('Please fill in all required fields.');return;}
 
   btn.textContent = 'Creating Account...';
-
-  try {
-    // Sign up with Supabase Auth
-    const res = await fetch(SUPA_URL + '/auth/v1/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPA_KEY
-      },
-      body: JSON.stringify({ email, password })
+  try{
+    const res = await fetch('https://nfxyxnmatuzmqctttqnk.supabase.co/auth/v1/signup',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg'},
+      body:JSON.stringify({email,password})
     });
     const data = await res.json();
+    if(data.error){alert('Error: '+data.error.message);btn.textContent='Create Account';return;}
 
-    if (data.error) {
-      alert('Error: ' + data.error.message);
-      btn.textContent = 'Create Account';
-      return;
-    }
-
-    // Save extra user info to users table
-    await fetch(SUPA_URL + '/rest/v1/users', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY
-      },
-      body: JSON.stringify({
-        id: data.user?.id,
-        username: name,
-        email: email,
-        age: age,
-        created_at: new Date().toISOString()
-      })
+    await fetch('https://nfxyxnmatuzmqctttqnk.supabase.co/rest/v1/users',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg'},
+      body:JSON.stringify({id:data.user?.id,username:name,email:email,age:age})
     });
 
-    // Save session
-    sessionStorage.setItem('hexa_token', data.access_token || 'local_' + Date.now());
-    sessionStorage.setItem('hexa_username', name);
-    sessionStorage.setItem('hexa_email', email);
+    sessionStorage.setItem('hexa_token',data.access_token||'local_'+Date.now());
+    sessionStorage.setItem('hexa_username',name);
+    sessionStorage.setItem('hexa_email',email);
 
-    // Show success
-    document.querySelector('.card h2').style.display = 'none';
-    document.querySelectorAll('.field').forEach(f => f.style.display = 'none');
-    document.querySelector('.btn-register').style.display = 'none';
-    document.querySelector('.signin-link').style.display = 'none';
-    const s = document.getElementById('successMsg');
-    s.style.display = 'flex';
-    setTimeout(() => { window.location.href = 'hexa-welcome.html'; }, 2000);
-
-  } catch(e) {
+    document.querySelector('.card h2').style.display='none';
+    document.querySelectorAll('.field').forEach(f=>f.style.display='none');
+    document.querySelector('.btn-register').style.display='none';
+    document.querySelector('.signin-link').style.display='none';
+    document.getElementById('successMsg').style.display='flex';
+    setTimeout(()=>{window.location.href='hexa-welcome.html';},2000);
+  }catch(e){
     alert('Connection error. Please try again.');
-    btn.textContent = 'Create Account';
+    btn.textContent='Create Account';
   }
 }
 </script>
