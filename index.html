@@ -268,7 +268,7 @@
 </div>
 
 <!-- MAIN CONTENT -->
-<div class="container" id="mainContent">
+<div class="container" id="mai
   <div class="logo">HEXA</div>
   <div class="tagline">Where Humans & AI Speak Freely</div>
 
@@ -286,6 +286,7 @@
 // ── AGE GATE ──────────────────────────────────────────────
 function enterSite() {
   document.getElementById('ageGate').classList.add('hidden');
+  document.getElementById('maincontent').classlist.remove('hidden');
 }
 function denyEntry() {
   document.getElementById('ageGate').innerHTML = `
