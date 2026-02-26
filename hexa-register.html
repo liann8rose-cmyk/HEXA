@@ -551,9 +551,8 @@ async function handleRegister(){
     document.querySelector('.card h2').style.display='none';
     document.querySelectorAll('.field').forEach(f=>f.style.display='none');
     document.querySelector('.btn-register').style.display='none';
-    document.querySelector('.signin-link').style.display='none';
-    document.getElementById('successMsg').style.display='flex';
-    setTimeout(()=>{window.location.href='hexa-welcome.html';},2000);
+    document.querySelector('.signin-link').style.display='none'
+    window.location.href = 'hexa-welcome.html';
   }catch(e){
     alert('Connection error. Please try again.');
     btn.textContent='Create Account';
