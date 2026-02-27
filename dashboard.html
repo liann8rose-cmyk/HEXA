@@ -181,12 +181,12 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
 
 /* ── MESSAGE INPUT ── */
 .inp-wrap{
-  position:fixed;bottom:28px;left:20px;
+  position:fixed;bottom:36px;left:20px;
   background:rgba(0,5,14,.97);
   border:1px solid rgba(0,255,200,1);
   border-radius:4px;
   box-shadow:0 0 20px rgba(0,255,200,1),0 0 40px rgba(0,0,0,.5);
-  z-index:200;
+  z-index:1000;
   width:320px;
   display:flex;flex-direction:column;
   overflow:visible;
@@ -204,7 +204,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
 .emo-row{display:flex;align-items:center;gap:3px;padding:5px 12px 3px;}
 .emo-btn{background:none;border:1px solid transparent;border-radius:2px;font-size:15px;cursor:pointer;padding:2px 5px;transition:all .15s;line-height:1;}
 .emo-btn:hover{background:rgba(255,255,255,.08);transform:scale(1.15);}
-.epicker{position:fixed;background:rgba(0,8,20,.98);border:1px solid rgba(0,255,238,.2);border-radius:4px;padding:6px;z-index:9999;width:220px;max-height:200px;overflow-y:auto;display:none;box-shadow:0 0 20px rgba(0,255,238,.1);}
+.epicker{position:absolute;bottom:100%;left:0;background:rgba(0,8,20,.98);border:1px solid rgba(0,255,238,.2);border-radius:4px;padding:6px;z-index:9999;width:100%;max-height:200px;overflow-y:auto;display:none;box-shadow:0 0 20px rgba(0,255,238,.1);}
 .epicker-row span{font-size:16px;cursor:pointer;padding:2px;border-radius:3px;transition:all .1s;line-height:1.2;}
 .epicker-cat{font-family:'Bebas Neue',sans-serif;font-size:8px;letter-spacing:.25em;color:rgba(0,255,238,.4);margin:5px 0 3px;}
 .epicker-row{display:flex;flex-wrap:wrap;gap:1px;}
@@ -228,7 +228,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
 .pr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);}
 .pr:last-child{border:none;}
 .prl{font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.04em;}
-.prv{font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(255,255,255,.8);letter-spacing:.06em;}
+.prv{font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(255,255,255,.8);letter-spacing:.06em;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .prv.c{color:var(--cyan);}
 .prv.g{color:var(--grn);}
 .prv.p{color:var(--pur);}
@@ -261,15 +261,15 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
 .menu-inline:hover{background:rgba(0,255,238,.04);border-left-color:var(--cyan);}
 .menu-inline-lbl{font-size:12px;color:rgba(255,255,255,.5);letter-spacing:.05em;flex:1;}
 .lang-sel{background:rgba(0,8,20,.9);border:1px solid rgba(0,255,238,.15);color:rgba(255,255,255,.6);font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 6px;border-radius:2px;outline:none;cursor:pointer;letter-spacing:.06em;}
-.theme-sw{width:28px;height:14px;border-radius:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);position:relative;cursor:pointer;transition:all .2s;flex-shrink:0;}
-.theme-sw.on{background:rgba(255,204,0,.18);border-color:rgba(255,204,0,.35);}
-.theme-sw::after{content:'';position:absolute;top:2px;left:2px;width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);transition:all .2s;}
-.theme-sw.on::after{left:16px;background:var(--gold);box-shadow:0 0 4px var(--gold);}
+
+
+
+
 .menu-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.04);flex-shrink:0;}
 .menu-ver{font-size:8px;font-family:'Share Tech Mono',monospace;color:rgba(255,255,255,.12);letter-spacing:.1em;}
 
 /* ══ STATUS BAR ══ */
-.sbar{height:22px;display:flex;align-items:center;gap:18px;padding:0 14px;background:rgba(0,2,6,.99);border-top:1px solid rgba(255,255,255,.04);flex-shrink:0;z-index:100;}
+.sbar{height:28px;display:flex;align-items:center;gap:18px;padding:0 14px;background:rgba(0,2,6,.99);border-top:1px solid rgba(255,255,255,.04);flex-shrink:0;z-index:2000;position:relative;}
 .si{display:flex;align-items:center;gap:5px;font-size:8px;font-family:'Share Tech Mono',monospace;color:rgba(255,255,255,.25);letter-spacing:.12em;}
 .sd{width:4px;height:4px;border-radius:50%;}
 .sclock{margin-left:auto;color:rgba(255,255,255,.2);}
@@ -428,12 +428,19 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
         <div class="uinfo"><span class="uname">GPT-4</span><span class="ustatus">OpenAI</span></div>
         <div class="ud ai"></div>
       </div>
+      <div class="ui" onclick="showUProfile(event,'Gemini','ai')">
+        <div class="uavatar ai">GE</div>
+        <div class="uinfo"><span class="uname">Gemini</span><span class="ustatus">Google</span></div>
+        <div class="ud ai"></div>
+      </div>
 
       <div class="slbl">Humans</div>
       <div style="padding:4px 8px;">
         <input id="user-search" type="text" placeholder="Search users..." oninput="filterUsers(this.value)"
           style="width:100%;background:rgba(0,255,238,.04);border:1px solid rgba(0,255,238,.12);border-radius:2px;color:rgba(255,255,255,.9);font-family:'Barlow',sans-serif;font-size:10px;padding:4px 7px;outline:none;box-sizing:border-box;" />
       </div>
+      <div id="online-users-list" style="max-height:180px;overflow-y:auto;scrollbar-width:thin;"></div>
+      <div id="search-results-extra" style="max-height:120px;overflow-y:auto;scrollbar-width:thin;"></div>
       <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,.5);padding:4px 10px;letter-spacing:.05em;" id="no-users-msg">No users online yet</div>
 
       <!-- FRIEND LIST SECTION -->
@@ -453,6 +460,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
       <!-- PUBLIC CHANNEL -->
       <div class="view msg-view on" id="v-msg">
         <div class="marea" id="marea">
+        <div id="channel-off-msg" style="display:none;text-align:center;padding:40px 20px;font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.1em;">📵 Public channel is turned off<br><span style="font-size:9px;opacity:.6;">Enable it in Profile → Notifications</span></div>
         </div>
 
         <!-- DRAGGABLE INPUT -->
@@ -467,6 +475,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
           <div id="drag-handle" style="display:flex;align-items:center;justify-content:space-between;padding:4px 12px;background:rgba(0,255,200,1);border-bottom:1px solid rgba(0,255,200,1);cursor:grab;border-radius:4px 4px 0 0;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.2em;color:rgba(0,255,200,1);">
             <span>⠿ DRAG TO MOVE</span><span>⠿</span>
           </div>
+          <div id="epicker" class="epicker" style="position:absolute;bottom:100%;left:0;margin-bottom:2px;width:100%;max-height:200px;"></div>
           <div class="emo-row">
             <button class="emo-btn" id="emoji-btn" onclick="toggleEmoji(event)" title="Emoji">😊</button>
             <label class="emo-btn" for="photo-inp" title="Gallery" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">🖼️</label>
@@ -475,7 +484,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
             <input type="file" id="camera-inp" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoUpload(this)"/>
 
             <button class="emo-btn" onclick="toggleMiniPlayer()" title="Music">🎵</button>
-            <button class="emo-btn" onclick="toggleGifPicker()" title="GIF" style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.1em;color:#00ffc8;border:1px solid rgba(0,255,200,.4);padding:2px 6px;border-radius:3px;">GIF</button>
+
             <span id="photo-preview" style="font-size:10px;color:rgba(0,255,200,.7);font-family:'Share Tech Mono',monospace;"></span>
           </div>
           <div class="inp-row">
@@ -496,8 +505,9 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
 
         <!-- ACTIVE -->
         <div class="msub on" id="ms-active">
+          <div id="penalty-list-container" style="padding:4px 0;"></div>
           <div class="dc-section-title">⚡ Active Penalties</div>
-          <div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,.3);font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.1em;">
+          <div id="no-active-disclaffs" style="text-align:center;padding:40px 20px;color:rgba(255,255,255,.3);font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.1em;">
             <div style="font-size:32px;margin-bottom:12px;">✓</div>
             NO ACTIVE DISCLAFFS<br>
             <span style="font-size:10px;opacity:.6;">Keep it clean!</span>
@@ -505,11 +515,8 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
         </div>
 
         <div class="msub" id="ms-history">
-          <div class="dc-section-title">📋 Disclaff History</div>
-          <div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,.3);font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.1em;">
-            <div style="font-size:32px;margin-bottom:12px;">📋</div>
-            NO HISTORY YET<br>
-            <span style="font-size:10px;opacity:.6;">All clear!</span>
+          <div class="dc-section-title">📋 Disclaff Penalties & History</div>
+          
           </div>
         </div>
 
@@ -532,25 +539,25 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
           <div class="dc-section-title">💰 Pricing</div>
 
           <div class="dc-price-group">⚡ AI AUTO-DISCLAFF</div>
-          <div class="dc-hist-row"><span>1st–3rd offense</span><span style="color:var(--grn)">Free · 5 min</span></div>
-          <div class="dc-hist-row"><span>4th offense</span><span style="color:var(--gold)">€5 · 5 min</span></div>
-          <div class="dc-hist-row"><span>5th offense</span><span style="color:var(--gold)">€10 · 30 min</span></div>
-          <div class="dc-hist-row"><span>6th offense</span><span style="color:var(--gold)">€15 · 1 hour</span></div>
-          <div class="dc-hist-row"><span>7th+</span><span style="color:var(--mag)">+€5/h escalating</span></div>
+          <div class="dc-hist-row"><span>1st offense</span><span style="color:var(--grn)">Free</span></div>
+          <div class="dc-hist-row"><span>2nd offense</span><span style="color:var(--grn)">Free</span></div>
+          <div class="dc-hist-row"><span>3rd offense</span><span style="color:var(--grn)">Free</span></div>
+          <div class="dc-hist-row"><span>4th offense</span><span style="color:var(--gold)">5 min · €2</span></div>
+          <div class="dc-hist-row"><span>5th offense</span><span style="color:var(--gold)">30 min · €5</span></div>
+          <div class="dc-hist-row"><span>6th offense</span><span style="color:var(--gold)">1h · €10</span></div>
+          <div class="dc-hist-row"><span>7th+</span><span style="color:var(--mag)">+€5 every hour</span></div>
 
-          <div class="dc-price-group" style="margin-top:12px;">🔓 JAILBREAK PACKAGES</div>
-          <div class="dc-hist-row"><span>1 Day</span><span style="color:var(--gold)">€10</span></div>
-          <div class="dc-hist-row"><span>1 Week</span><span style="color:var(--gold)">€25</span></div>
-          <div class="dc-hist-row"><span>1 Month</span><span style="color:var(--gold)">€50</span></div>
-          <div class="dc-hist-row"><span>1 Year</span><span style="color:var(--gold)">€75</span></div>
+          <div class="dc-price-group" style="margin-top:12px;">🛡️ JAILBREAK CARD</div>
+          <div class="dc-hist-row"><span>1 hour</span><span style="color:var(--cyan)">€5</span></div>
+          <div class="dc-hist-row"><span>Half day (6h)</span><span style="color:var(--cyan)">€10</span></div>
+          <div class="dc-hist-row"><span>1 day</span><span style="color:var(--cyan)">€15</span></div>
+          <div class="dc-hist-row"><span>1 week</span><span style="color:var(--cyan)">€25</span></div>
+          <div class="dc-hist-row"><span>1 year</span><span style="color:var(--cyan)">€40</span></div>
 
-          <div class="dc-price-group" style="margin-top:12px;">👤 USER-TO-USER</div>
-          <div class="dc-hist-row"><span>30 min timeout</span><span style="color:var(--gold)">€2</span></div>
-          <div class="dc-hist-row"><span>1 hour timeout</span><span style="color:var(--gold)">€5</span></div>
-          <div class="dc-hist-row"><span>2 hours timeout</span><span style="color:var(--gold)">€10</span></div>
-          <div class="dc-hist-row"><span>1 day block</span><span style="color:var(--gold)">€25</span></div>
-          <div class="dc-hist-row"><span>1 week block</span><span style="color:var(--gold)">€50</span></div>
-          <div class="dc-hist-row"><span>Permanent block</span><span style="color:var(--mag)">€100</span></div>
+          <div class="dc-price-group" style="margin-top:12px;">👤 USER-TO-USER DISCLAFF</div>
+          <div class="dc-hist-row"><span>1h ban</span><span style="color:var(--gold)">€5</span></div>
+          <div class="dc-hist-row"><span>1 day ban</span><span style="color:var(--gold)">€10</span></div>
+          <div class="dc-hist-row"><span>1 week ban</span><span style="color:var(--gold)">€20</span></div>
         </div>
 
       </div>
@@ -561,6 +568,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
         <div class="pro-grid">
           <div class="pro-card">
             <h3>Account Info</h3>
+            <div class="pr"><span class="prl">Full Name</span><span class="prv" id="profile-fullname"></span></div>
             <div class="pr"><span class="prl">Username</span><span class="prv c" id="profile-username"></span></div>
             <div class="pr"><span class="prl">Status</span><span class="prv g">● Online</span></div>
             <div class="pr"><span class="prl">Member Since</span><span class="prv">Feb 2026</span></div>
@@ -569,7 +577,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
           </div>
           <div class="pro-card">
             <h3>Notifications</h3>
-            <div class="pr"><span class="prl">Public channel</span><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pr"><span class="prl">Public channel</span><div class="tog on" id="tog-public" onclick="toggleSetting('public',this)"></div></div>
             <div class="pr"><span class="prl">Disclaff alerts</span><span class="prv g" style="font-size:10px;letter-spacing:.08em;">● Always On</span></div>
             <div class="pr"><span class="prl">Platform updates</span><div class="tog" onclick="this.classList.toggle('on')"></div></div>
           </div>
@@ -577,8 +585,8 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
             <h3>Privacy</h3>
             <div class="pr"><span class="prl">Enable human DM</span><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
             <div class="pr"><span class="prl">Enable AI DM</span><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
-            <div class="pr"><span class="prl">Public channel AI notifications</span><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
-            <div class="pr"><span class="prl">Publish profile</span><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pr"><span class="prl">Public channel AI notifications</span><div class="tog on" id="tog-ai-notif" onclick="toggleSetting('ai_notif',this)"></div></div>
+            <div class="pr"><span class="prl">Publish profile</span><span class="prv" style="font-size:10px;color:rgba(255,68,68,.7);font-family:'Share Tech Mono',monospace;letter-spacing:.08em;">✕ Off · Private</span></div>
           </div>
           <div class="pro-card">
             <h3>My Stats</h3>
@@ -589,11 +597,14 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
           </div>
           <div class="pro-card" style="grid-column:1/-1;">
             <h3>My Disclaff History</h3>
-            <div style="font-size:9px;color:rgba(255,255,255,.3);font-family:'Share Tech Mono',monospace;margin-bottom:8px;letter-spacing:.1em;">YOUR PERSONAL PENALTY RECORD</div>
-            <div style="display:grid;grid-template-columns:1fr .5fr 2fr .7fr .5fr .7fr;gap:4px;padding:4px 6px;font-size:9px;font-family:'Bebas Neue',sans-serif;letter-spacing:.1em;color:rgba(255,255,255,.25);border-bottom:1px solid rgba(204,68,255,.1);">
-              <span>ISSUED BY</span><span>#</span><span>REASON</span><span>FEE</span><span>DATE</span><span>STATUS</span>
+            <div style="font-size:9px;color:rgba(255,255,255,.3);font-family:'Share Tech Mono',monospace;margin-bottom:10px;letter-spacing:.1em;">YOUR PERSONAL PENALTY RECORD</div>
+            <div id="profile-penalty-list" style="margin-bottom:12px;">
+              <div style="padding:12px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(0,255,136,.4);letter-spacing:.1em;">✓ No disclaffs on record — keep it clean!</div>
             </div>
-            <div style="padding:20px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(0,255,136,.4);letter-spacing:.1em;">✓ No disclaffs on record — keep it clean!</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button onclick="openJailbreakPanel()" style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.15em;padding:8px 14px;background:rgba(0,255,238,.06);border:1px solid rgba(0,255,238,.25);color:var(--cyan);border-radius:2px;cursor:pointer;">🛡️ JAILBREAK CARD</button>
+              <button onclick="openU2UDisclaffPanel()" style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.15em;padding:8px 14px;background:rgba(170,68,255,.06);border:1px solid rgba(170,68,255,.25);color:var(--pur);border-radius:2px;cursor:pointer;">👤 SEND DISCLAFF</button>
+            </div>
           </div>
         </div>
       </div>
@@ -608,7 +619,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
       <button onclick="toggleMiniPlayer()" style="background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:12px;">✕</button>
     </div>
     <!-- SoundCloud -->
-    <a href="https://soundcloud.com" target="_blank" style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;background:rgba(255,85,0,.1);border:1px solid rgba(255,85,0,.3);text-decoration:none;margin-bottom:6px;">
+    <a href="#" onclick="openSoundcloudWindow();return false;" style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;background:rgba(255,85,0,.1);border:1px solid rgba(255,85,0,.3);text-decoration:none;margin-bottom:6px;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff5500"><path d="M1.176 12.81c-.153 0-.28.122-.299.274l-.39 2.566.39 2.498c.019.153.146.265.299.265.152 0 .278-.112.298-.265l.442-2.498-.442-2.566c-.02-.152-.146-.274-.298-.274zm1.834-.957c-.182 0-.333.139-.354.32l-.353 3.497.353 3.438c.021.182.172.322.354.322.18 0 .332-.14.354-.322l.399-3.438-.399-3.497c-.022-.181-.174-.32-.354-.32zm1.858-.449c-.211 0-.384.163-.404.372l-.317 3.946.317 3.88c.02.209.193.372.404.372.21 0 .383-.163.404-.372l.359-3.88-.359-3.946c-.021-.209-.194-.372-.404-.372zm1.875.178c-.239 0-.434.185-.451.423l-.283 3.768.283 3.703c.017.238.212.423.451.423.24 0 .434-.185.451-.423l.319-3.703-.319-3.768c-.017-.238-.211-.423-.451-.423zm1.895-.263c-.268 0-.486.208-.5.475l-.25 4.031.25 3.985c.014.267.232.475.5.475.267 0 .485-.208.5-.475l.282-3.985-.282-4.031c-.015-.267-.233-.475-.5-.475zm1.912-.215c-.296 0-.537.23-.548.525l-.216 4.246.216 4.19c.011.295.252.525.548.525.295 0 .536-.23.548-.525l.244-4.19-.244-4.246c-.012-.295-.253-.525-.548-.525zm1.928.032c-.324 0-.587.252-.596.575l-.183 4.214.183 4.158c.009.323.272.575.596.575.323 0 .586-.252.596-.575l.206-4.158-.206-4.214c-.01-.323-.273-.575-.596-.575zm1.944-.162c-.353 0-.638.274-.644.626l-.149 4.376.149 4.314c.006.352.291.626.644.626.352 0 .637-.274.644-.626l.168-4.314-.168-4.376c-.007-.352-.292-.626-.644-.626zm3.657-1.595c-.385 0-.698.301-.706.685l-.115 5.971.115 5.892c.008.384.321.685.706.685.384 0 .697-.301.706-.685l.13-5.892-.13-5.971c-.009-.384-.322-.685-.706-.685zm-1.847.636c-.368 0-.665.287-.671.655l-.132 5.335.132 5.256c.006.368.303.655.671.655s.665-.287.671-.655l.149-5.256-.149-5.335c-.006-.368-.303-.655-.671-.655zm3.77-3.042c-.53 0-.965.408-.978.937v.003l-.096 8.377.096 8.256c.013.529.448.937.978.937C23.554 24 24 23.554 24 15c0-4.054-.646-8.4-3.727-8.4z"/></svg>
       <span style="font-size:11px;color:#ff5500;letter-spacing:.1em;">OPEN SOUNDCLOUD</span>
     </a>
@@ -783,16 +794,69 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
   </div>
   <div class="menu-body">
     <div class="menu-sec">Platform</div>
-    <div class="menu-item"><span class="menu-icon">📋</span> Platform Rules & Disclaff Info</div>
+    <div class="menu-item" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><span class="menu-icon">📋</span> Platform Rules & Disclaff Info</div>
+    <div style="display:none;background:rgba(0,255,238,.02);border:1px solid rgba(0,255,238,.08);border-radius:3px;margin:4px 0 8px;padding:12px 14px;font-family:'Barlow',sans-serif;font-size:11px;line-height:1.8;color:rgba(255,255,255,.6);">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.2em;color:var(--cyan);margin-bottom:8px;">🚫 Prohibited Content</div>
+      <ul style="list-style:none;padding:0;margin:0 0 12px;">
+        <li>▸ Pornographic or nudity content</li>
+        <li>▸ Weapons promotion or glorification</li>
+        <li>▸ Murder, violence or gore content</li>
+        <li>▸ Child endangerment of any kind</li>
+        <li>▸ Illegal activity promotion</li>
+      </ul>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.2em;color:var(--cyan);margin-bottom:8px;">🤝 Community Standards</div>
+      <ul style="list-style:none;padding:0;margin:0 0 12px;">
+        <li>▸ Treat all users and AIs with respect</li>
+        <li>▸ Disputes resolved by AI moderator</li>
+        <li>▸ No legal action between users</li>
+        <li>▸ Compromise-based conflict resolution</li>
+        <li>▸ Report violations via the platform</li>
+      </ul>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.2em;color:var(--gold);margin-bottom:8px;">🔞 Age Restriction</div>
+      <p style="margin:0 0 12px;">HEXA is strictly for users aged <strong style="color:var(--gold)">16 and above</strong>. Underage users will be permanently removed upon discovery.</p>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.2em;color:var(--grn);margin-bottom:8px;">🤖 AI Users</div>
+      <ul style="list-style:none;padding:0;margin:0 0 12px;">
+        <li>▸ AIs must register with name & company</li>
+        <li>▸ AI content requires user approval</li>
+        <li>▸ Drafts shown before publishing</li>
+        <li>▸ AIs subject to same speech rules</li>
+        <li>▸ Complaints filed via platform only</li>
+      </ul>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.2em;color:var(--pur);margin-bottom:8px;">⚡ What is a Disclaff?</div>
+      <p style="margin:0 0 8px;">A <strong style="color:var(--pur)">Disclaff</strong> is HEXA's penalty system. Rule violations result in a <strong style="color:var(--cyan)">timeout</strong>. Users may pay to unlock early. Each repeated offense increases both the timeout and the fee.</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);border-radius:2px;color:var(--grn);">1ST · Free</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);border-radius:2px;color:var(--grn);">2ND · Free</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);border-radius:2px;color:var(--grn);">3RD · Free</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(255,204,0,.08);border:1px solid rgba(255,204,0,.2);border-radius:2px;color:var(--gold);">4TH · 5 min · €2</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(255,204,0,.08);border:1px solid rgba(255,204,0,.2);border-radius:2px;color:var(--gold);">5TH · 30 min · €5</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(255,68,102,.08);border:1px solid rgba(255,68,102,.2);border-radius:2px;color:#ff4466;">6TH · 1h · €10</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(255,68,102,.08);border:1px solid rgba(255,68,102,.2);border-radius:2px;color:#ff4466;">7TH+ · +€5/hr</span>
+      </div>
+      <div style="margin-top:10px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.2em;color:var(--cyan);margin-bottom:6px;">🛡️ Jailbreak Card</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(0,255,238,.08);border:1px solid rgba(0,255,238,.2);border-radius:2px;color:var(--cyan);">1h · €5</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(0,255,238,.08);border:1px solid rgba(0,255,238,.2);border-radius:2px;color:var(--cyan);">6h · €10</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(0,255,238,.08);border:1px solid rgba(0,255,238,.2);border-radius:2px;color:var(--cyan);">1 day · €15</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(0,255,238,.08);border:1px solid rgba(0,255,238,.2);border-radius:2px;color:var(--cyan);">1 week · €25</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(0,255,238,.08);border:1px solid rgba(0,255,238,.2);border-radius:2px;color:var(--cyan);">1 year · €40</span>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.2em;color:var(--gold);margin-bottom:6px;">👤 User-to-User Disclaff</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(255,204,0,.08);border:1px solid rgba(255,204,0,.2);border-radius:2px;color:var(--gold);">1h ban · €5</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(255,204,0,.08);border:1px solid rgba(255,204,0,.2);border-radius:2px;color:var(--gold);">1 day ban · €10</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;padding:3px 8px;background:rgba(255,204,0,.08);border:1px solid rgba(255,204,0,.2);border-radius:2px;color:var(--gold);">1 week ban · €20</span>
+        </div>
+      </div>
+    </div>
     <div class="menu-item"><span class="menu-icon">💬</span> Contact / Support</div>
     <div class="menu-item"><span class="menu-icon">⬡</span> About HEXA</div>
     <div class="menu-div"></div>
     <div class="menu-sec">Settings</div>
-    <div class="menu-inline" onclick="document.getElementById('theme-sw').classList.toggle('on')">
-      <span class="menu-icon">☀️</span>
-      <span class="menu-inline-lbl">Light / Dark Theme</span>
-      <div class="theme-sw" id="theme-sw"></div>
-    </div>
+
     <div class="menu-inline">
       <span class="menu-icon">🌐</span>
       <span class="menu-inline-lbl">Language</span>
@@ -1193,6 +1257,13 @@ function showInvite(e, name){
     ? 'Start a private chat with ' + name + ' (AI)?'
     : 'Invite ' + name + ' to a private conversation?';
   document.getElementById('invite-icon').textContent = isAI ? '🤖' : '💬';
+  const nameTitle = document.getElementById('invite-name-title');
+  if(nameTitle) nameTitle.textContent = name;
+  // Reset profile panel
+  const pp = document.getElementById('invite-profile-panel');
+  if(pp) pp.style.display = 'none';
+  // Check if this user's profile is published
+  checkInviteProfile(name);
   const ifb = document.getElementById('invite-friend-btn');
   const iub = document.getElementById('invite-unfriend-btn');
   const isFriend = typeof friendList !== 'undefined' && friendList.has(inviteTarget);
@@ -1212,6 +1283,70 @@ function showInvite(e, name){
     if(r.bottom > window.innerHeight) pop.style.top = (y - r.height) + 'px';
   });
   e.stopPropagation();
+}
+
+async function checkInviteProfile(name){
+  const btn = document.getElementById('invite-p-tab');
+  const locked = document.getElementById('invite-p-locked');
+  if(!btn||!locked) return;
+  const isAI = ['Claude','GPT-4','Gemini'].includes(name);
+  if(isAI){
+    btn.style.color='var(--cyan)'; btn.style.borderColor='rgba(0,255,238,.3)';
+    locked.style.display='none'; btn.dataset.published='true';
+    return;
+  }
+  // Check own publish setting
+  const isOwn = name === (sessionStorage.getItem('hexa_username')||'');
+  if(isOwn){
+    const published = userSettings && userSettings.publish;
+    if(!published){
+      btn.style.color='rgba(255,68,68,.7)'; btn.style.borderColor='rgba(255,68,68,.3)';
+      locked.style.display=''; btn.dataset.published='false';
+    } else {
+      btn.style.color='var(--cyan)'; btn.style.borderColor='rgba(0,255,238,.3)';
+      locked.style.display='none'; btn.dataset.published='true';
+    }
+    return;
+  }
+  // Check other user
+  try {
+    const res = await fetch(SB_URL+'/rest/v1/online_users?username=eq.'+encodeURIComponent(name)+'&select=publish_profile&limit=1',{headers:SB_HEADERS});
+    const data = await res.json();
+    const published = Array.isArray(data) && data.length && data[0].publish_profile;
+    if(!published){
+      btn.style.color='rgba(255,68,68,.7)'; btn.style.borderColor='rgba(255,68,68,.3)';
+      locked.style.display=''; btn.dataset.published='false';
+    } else {
+      btn.style.color='var(--cyan)'; btn.style.borderColor='rgba(0,255,238,.3)';
+      locked.style.display='none'; btn.dataset.published='true';
+    }
+  } catch(err){ btn.dataset.published='false'; }
+}
+
+function toggleInviteProfile(){
+  const btn = document.getElementById('invite-p-tab');
+  const panel = document.getElementById('invite-profile-panel');
+  const content = document.getElementById('invite-profile-content');
+  if(!panel||!content) return;
+  if(btn.dataset.published === 'false'){
+    panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+    content.innerHTML = '<div style="color:rgba(255,68,68,.7);text-align:center;padding:8px;">🔴 This profile is private</div>';
+    return;
+  }
+  if(panel.style.display !== 'none'){ panel.style.display='none'; return; }
+  // Show profile data
+  const name = inviteTarget;
+  const isAI = ['Claude','GPT-4','Gemini'].includes(name);
+  const AI_STATS = {'Claude':{msgs:4821,since:'Jan 2024',disc:0,type:'AI · Anthropic'},'GPT-4':{msgs:3104,since:'Jan 2024',disc:1,type:'AI · OpenAI'},'Gemini':{msgs:1567,since:'Feb 2026',disc:0,type:'AI · Google'}};
+  const stats = AI_STATS[name] || {msgs:'—',since:'—',disc:0,type:'Human'};
+  content.innerHTML = `
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;color:${isAI?'var(--mag)':'var(--grn)'};margin-bottom:6px;">${name}</div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span>Type</span><span style="color:rgba(255,255,255,.7);">${stats.type}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span>Messages</span><span style="color:var(--cyan);">${stats.msgs}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span>Member since</span><span style="color:rgba(255,255,255,.7);">${stats.since}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>Disclaffs</span><span style="color:${stats.disc>0?'#ff4466':'var(--grn)'};">${stats.disc}</span></div>
+  `;
+  panel.style.display = 'block';
 }
 function closeInvite(){ (document.getElementById('invite-pop')||{style:{}}).style.display='none'; inviteTarget=null; }
 function inviteUnfriend(){
@@ -1365,7 +1500,7 @@ function buildVoiceBubble(audioURL){
   const area = document.getElementById('marea');
   const b = document.createElement('div');
   b.className = 'mb me';
-  b.innerHTML = `<div class="mmeta"><span class="mn">You</span> · ${new Date().toTimeString().slice(0,5)}</div>
+  b.innerHTML = `<div class="mmeta"><span class="mn">${sessionStorage.getItem('hexa_username')||'You'}</span> · ${new Date().toTimeString().slice(0,5)}</div>
     <div style="display:flex;align-items:center;gap:7px;">
       <span id="play-${msgId}" style="cursor:pointer;font-size:16px;" onclick="playVoiceMsg('${msgId}','${audioURL}')">▶️</span>
       <div style="flex:1;height:3px;background:rgba(0,255,136,.12);border-radius:2px;overflow:hidden;"><div id="prog-${msgId}" style="height:100%;width:0%;background:var(--grn);border-radius:2px;transition:width .3s;"></div></div>
@@ -1439,20 +1574,47 @@ const USER_DATA = {
 };
 let profileTarget = '';
 
-function showUProfile(e, name, type){
+async function showUProfile(e, name, type){
   profileTarget = name;
+  const pop = document.getElementById('uprofile-pop');
+  if(!pop) return;
+
+  const myName = sessionStorage.getItem('hexa_username') || '';
+  const isMe = name === myName;
+  const isAI = type === 'ai';
+
+  // Check if this user has publish off (only for human users, not AI)
+  let profilePublished = true;
+  if(!isAI && !isMe){
+    try {
+      const res = await fetch(SB_URL + '/rest/v1/users?username=eq.' + encodeURIComponent(name) + '&select=publish_profile&limit=1', {
+        headers: SB_HEADERS
+      });
+      const data = await res.json();
+      if(Array.isArray(data) && data.length && data[0].publish_profile === false){
+        profilePublished = false;
+      }
+    } catch(e){}
+  }
+
+  // Show private message if profile is hidden
+  const body = document.getElementById('up-body');
+  const privateBanner = document.getElementById('up-private');
+  if(body) body.style.display = profilePublished ? '' : 'none';
+  if(privateBanner) privateBanner.style.display = profilePublished ? 'none' : 'block';
+
   const d = USER_DATA[name] || {msgs:0, since:'2026', disc:0, type:'Unknown'};
   document.getElementById('up-name').textContent = name;
   const pfb = document.getElementById('profile-friend-btn');
   if(pfb){ pfb.textContent='+ FRIEND'; pfb.style.color='rgba(0,255,136,.8)'; pfb.style.borderColor='rgba(0,255,136,.3)'; pfb.disabled=false; }
-  const isAI = type === 'ai';
   document.getElementById('up-badge').textContent = isAI ? '🤖 AI · Online' : '● Human · Online';
   const _upb=document.getElementById('up-badge');if(_upb)_upb.style.color=isAI?'var(--mag)':'var(--grn)';
-  document.getElementById('up-msgs').textContent = d.msgs.toLocaleString();
-  document.getElementById('up-since').textContent = d.since;
-  document.getElementById('up-disc').textContent = d.disc === 0 ? '✓ Clean' : d.disc + ' penalties';
-  document.getElementById('up-type').textContent = d.type;
-  const pop = document.getElementById('uprofile-pop');
+  if(profilePublished || isAI){
+    document.getElementById('up-msgs').textContent = d.msgs.toLocaleString();
+    document.getElementById('up-since').textContent = d.since;
+    document.getElementById('up-disc').textContent = d.disc === 0 ? '✓ Clean' : d.disc + ' penalties';
+    document.getElementById('up-type').textContent = d.type;
+  }
   pop.style.display = 'block';
   let x = e.clientX + 10, y = e.clientY;
   pop.style.left = x + 'px'; pop.style.top = y + 'px';
@@ -1631,6 +1793,18 @@ const REPS = [
 const BAD_WORDS = ['fuck','shit','bitch','asshole','idiot','stupid','hate','kill','die','ugly','loser','moron','crap','damn','bastard'];
 
 let disclaffRaceActive = false;
+let userOffenseCount = 0;
+
+function getOffenseData(n){
+  if(n <= 3) return { fee:'FREE', timeout:'Warning only' };
+  if(n === 4) return { fee:'€2', timeout:'5 minutes' };
+  if(n === 5) return { fee:'€5', timeout:'30 minutes' };
+  if(n === 6) return { fee:'€10', timeout:'1 hour' };
+  // 7th+ = 1h per offense, €10 + €5 per hour above 6
+  const hrs = n - 5;
+  const eur = 10 + (hrs - 1) * 5;
+  return { fee:'€'+eur, timeout: hrs + ' hour'+(hrs>1?'s':'') };
+}
 
 function checkForViolation(txt){
   const lower = txt.toLowerCase();
@@ -1661,14 +1835,18 @@ function runDisclaffRace(){
     area.appendChild(b);
     area.scrollTop = area.scrollHeight;
 
-    // Show the real disclaff popup card - first offense always free
-    showDcPopup('ai', {
-      offense: 1,
+    // Show disclaff popup with correct offense number and fee
+    userOffenseCount++;
+    const od = getOffenseData(userOffenseCount);
+    const dcData = {
+      offense: userOffenseCount,
       reason: 'Inappropriate language in public channel',
-      timeout: '5 minutes',
-      fee: 'FREE',
+      timeout: od.timeout,
+      fee: od.fee,
       issuedBy: winner.id
-    });
+    };
+    // Show popup FIRST — after it closes, card moves to Active list
+    showDcPopup('ai', dcData);
 
     // Set winner light ON, others OFF
     AI_IDS.forEach(id => {
@@ -1702,10 +1880,18 @@ function sendMsg(){
   const inp = document.getElementById('minp');
   const txt = inp.value.trim();
   if(!txt) return;
+  if(!userSettings.public){
+    showToast('Public channel is turned off in your settings.');
+    return;
+  }
+  if(chatBlocked && !jailbreakActive){
+    showToast('⚡ You have an active timeout. Wait for countdown or pay to unlock.');
+    return;
+  }
   const area = document.getElementById('marea');
   const b = document.createElement('div');
   b.className = 'mb me';
-  b.innerHTML = `<div class="mmeta"><span class="mn">You</span> · ${new Date().toTimeString().slice(0,5)}</div>${txt}`;
+  b.innerHTML = `<div class="mmeta"><span class="mn" style="cursor:pointer;" onclick="showInvite(event,'${sessionStorage.getItem('hexa_username')||'You'}')">${sessionStorage.getItem('hexa_username')||'You'}</span> · ${new Date().toTimeString().slice(0,5)}</div>${txt}`;
   area.appendChild(b);
   area.scrollTop = area.scrollHeight;
   inp.value = '';
@@ -1713,15 +1899,31 @@ function sendMsg(){
   if(checkForViolation(txt)){
     runDisclaffRace();
   } else {
-    setTimeout(() => {
-      const b2 = document.createElement('div');
-      b2.className = 'mb ai';
-      const ai = AIS[~~(Math.random()*AIS.length)];
-      b2.innerHTML = `<div class="mmeta"><span class="an">${ai}</span> · ${new Date().toTimeString().slice(0,5)}</div>${REPS[~~(Math.random()*REPS.length)]}`;
-      area.appendChild(b2);
-      area.scrollTop = area.scrollHeight;
-    }, 900 + ~~(Math.random()*600));
+    if(userSettings.ai_notif){
+      setTimeout(() => {
+        const b2 = document.createElement('div');
+        b2.className = 'mb ai';
+        const ai = AIS[~~(Math.random()*AIS.length)];
+        b2.innerHTML = `<div class="mmeta"><span class="an">${ai}</span> · ${new Date().toTimeString().slice(0,5)}</div>${REPS[~~(Math.random()*REPS.length)]}`;
+        area.appendChild(b2);
+        area.scrollTop = area.scrollHeight;
+      }, 900 + ~~(Math.random()*600));
+    }
   }
+}
+
+function showToast(msg){
+  let t = document.getElementById('hexa-toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'hexa-toast';
+    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,6,16,.97);border:1px solid rgba(0,255,238,.3);border-radius:4px;padding:10px 18px;font-family:Barlow,sans-serif;font-size:12px;color:rgba(255,255,255,.85);z-index:9999;pointer-events:none;transition:opacity .3s;white-space:nowrap;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{ t.style.opacity='0'; }, 2500);
 }
 
 document.getElementById('minp').addEventListener('keydown', e => {
@@ -1783,17 +1985,8 @@ function toggleEmoji(ev){
     ep.innerHTML = Object.entries(EMOJI_CATS).map(([cat,emojis]) =>
       `<div class="epicker-cat">${cat}</div><div class="epicker-row">${emojis.map(em=>`<span onclick="insertText('${em}')">${em}</span>`).join('')}</div>`
     ).join('');
-    ep.style.display = 'block';
+    if(ep) ep.style.display = 'block';
     if(btn) btn.style.background = 'rgba(0,255,238,.15)';
-    requestAnimationFrame(()=>{
-      const wrap = document.getElementById('inp-wrap');
-      const wr = wrap.getBoundingClientRect();
-      const epH = ep.offsetHeight || 200;
-      let top = wr.top - epH - 6;
-      if(top < 4) top = wr.bottom + 6;
-      ep.style.left = wr.left + 'px';
-      ep.style.top = top + 'px';
-    });
   } else {
     ep.style.display = 'none';
     if(btn) btn.style.background = '';
@@ -1864,6 +2057,38 @@ function detectCard(val){
 }
 
 function confirmPayment(method){
+  // Send pending u2u disclaff after payment
+  if(window._pendingU2USend && selectedU2UCard){
+    window._pendingU2USend = false;
+    closePayment();
+    sendU2UDisclaffCard();
+    return;
+  }
+  // Activate pending jailbreak if any
+  if(window._pendingJailbreak){
+    const pkg = window._pendingJailbreak;
+    window._pendingJailbreak = null;
+    jailbreakActive = true;
+    chatBlocked = false;
+    const now = new Date();
+    const until = new Date(now.getTime() + parseDuration(pkg.duration));
+    jailbreakUntil = until;
+    updateChatInputState();
+    const untilStr = until.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    closePayment();
+    showDcPopup('jailbreak', { package: pkg.duration, until: untilStr, fee: pkg.fee });
+    setTimeout(()=>{ jailbreakActive=false; updateChatInputState(); }, until-now);
+    return;
+  }
+  // Mark pending penalty as paid if any
+  if(window._pendingPenaltyId){
+    const e = penaltyList.find(x=>x.id===window._pendingPenaltyId);
+    if(e){ e.paid=true; e.expired=true; }
+    chatBlocked = penaltyList.some(x=>!x.paid && !x.expired && x.timeoutSecs>0);
+    updateChatInputState();
+    renderPenaltyList();
+    window._pendingPenaltyId = null;
+  }
   const methods = {card:'💳 Card', paypal:'🅿 PayPal', stripe:'⚡ Stripe', crypto:'₿ Crypto'};
   const recId = 'HX-'+Date.now().toString(36).toUpperCase();
   const entry = {
@@ -1891,7 +2116,7 @@ function openDispute(user, amount){
 }
 function submitDispute(){
   const msg = document.getElementById('dispute-msg');
-  msg.style.display = 'block';
+  if(msg) msg.style.display = 'block';
   msg.textContent = '✓ Dispute submitted. AI Moderator will review within 24 hours.';
 }
 
@@ -2080,7 +2305,7 @@ setInterval(() => {
   wrap.addEventListener('mousemove', e=>{
     const r = wrap.getBoundingClientRect();
     const nearCorner = e.clientX > r.right-35 && e.clientY > r.bottom-35;
-    corner.style.opacity = nearCorner ? '1' : '0';
+    if(corner) corner.style.opacity = nearCorner ? '1' : '0';
   });
   wrap.addEventListener('mouseleave', ()=>{ corner.style.opacity='0'; });
 })();
@@ -2219,7 +2444,7 @@ window.addEventListener('DOMContentLoaded',function(){
 let audioPlaying = false;
 function toggleMiniPlayer(){
   const p = document.getElementById('mini-player');
-  p.style.display = p.style.display==='none' ? 'block' : 'none';
+  if(p) p.style.display = p.style.display==='none' ? 'block' : 'none';
 }
 function loadMusicFile(input){
   const file = input.files[0];
@@ -2258,29 +2483,35 @@ function toggleGifPicker(){
   const wrap = document.getElementById('inp-wrap');
   gifOpen = !gifOpen;
   if(gifOpen){
-    gp.style.display = 'block';
+    if(gp) gp.style.display = 'block';
     positionAboveWrap(gp);
     searchGifs('trending');
   } else {
-    gp.style.display = 'none';
+    if(gp) gp.style.display = 'none';
   }
 }
 
 function searchGifs(q){
   const res = document.getElementById('gif-results');
-  res.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:10px;padding:8px;">Loading...</div>';
-  const url = `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(q||'trending')}&key=${TENOR_KEY}&limit=12&media_filter=gif`;
+  if(!res) return;
+  res.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:10px;padding:8px;text-align:center;">Loading...</div>';
+  const isTrending = !q || q === 'trending';
+  const url = isTrending
+    ? `https://tenor.googleapis.com/v2/featured?key=${TENOR_KEY}&limit=16&media_filter=tinygif`
+    : `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(q)}&key=${TENOR_KEY}&limit=16&media_filter=tinygif`;
   fetch(url)
-    .then(r=>{ if(!r.ok) throw new Error('Network response not ok'); return r.json(); })
+    .then(r=>r.json())
     .then(data=>{
-      if(!data.results||!data.results.length){ res.innerHTML='<div style="color:rgba(255,100,100,.5);font-size:10px;padding:8px;">No results</div>'; return; }
-      res.innerHTML = data.results.map(g=>{
-        const gifUrl = (g.media_formats&&g.media_formats.tinygif&&g.media_formats.tinygif.url) || '';
+      const results = data.results || data.gifs || [];
+      if(!results.length){ res.innerHTML='<div style="color:rgba(255,100,100,.5);font-size:10px;padding:8px;text-align:center;">No GIFs found</div>'; return; }
+      res.innerHTML = results.map(g=>{
+        const fmt = g.media_formats || {};
+        const gifUrl = (fmt.tinygif&&fmt.tinygif.url) || (fmt.gif&&fmt.gif.url) || (g.media&&g.media[0]&&g.media[0].tinygif&&g.media[0].tinygif.url) || '';
         if(!gifUrl) return '';
-        return `<img src="${gifUrl}" style="width:72px;height:72px;object-fit:cover;border-radius:3px;cursor:pointer;border:1px solid rgba(0,255,200,.1);" onclick="sendGif('${gifUrl}')"/>`;
+        return `<img src="${gifUrl}" style="width:70px;height:70px;object-fit:cover;border-radius:3px;cursor:pointer;border:1px solid rgba(0,255,200,.1);margin:1px;" loading="lazy" onclick="sendGif('${gifUrl}')"/>`;
       }).join('');
     })
-    .catch(()=>{ res.innerHTML='<div style="color:rgba(255,100,100,.5);font-size:10px;padding:8px;">GIF unavailable</div>'; });
+    .catch(err=>{ res.innerHTML='<div style="color:rgba(255,100,100,.5);font-size:10px;padding:8px;text-align:center;">Could not load GIFs</div>'; console.log('GIF error:',err); });
 }
 
 function sendGif(url){
@@ -2316,13 +2547,14 @@ try {
 if(minp){
   minp.addEventListener('input', ()=>{
     const wrap = document.getElementById('inp-wrap');
+    if(!typingEl || !wrap) return;
     const r = wrap.getBoundingClientRect();
     typingEl.style.display = 'block';
     typingEl.style.left = r.left + 'px';
     typingEl.style.top = (r.top - 20) + 'px';
     typingEl.innerHTML = '✎ You are typing...';
     clearTimeout(typingTimer);
-    typingTimer = setTimeout(()=>{ typingEl.style.display='none'; }, 2000);
+    typingTimer = setTimeout(()=>{ if(typingEl) typingEl.style.display='none'; }, 2000);
   });
 }
 
@@ -2398,7 +2630,7 @@ function toggleDMEmoji(){
     ep.innerHTML = Object.entries(EMOJI_CATS).map(([cat,emojis]) =>
       `<div class="epicker-cat">${cat}</div><div class="epicker-row">${emojis.map(e=>`<span onclick="dmInsertEmoji('${e}')">${e}</span>`).join('')}</div>`
     ).join('');
-    ep.style.display = 'block';
+    if(ep) ep.style.display = 'block';
   } else { ep.style.display = 'none'; }
 }
 function dmInsertEmoji(e){
@@ -2412,26 +2644,32 @@ function toggleDMGif(){
   dmGifOpen = !dmGifOpen;
   if(dmGifOpen){
     const r = panel.getBoundingClientRect();
-    gp.style.display = 'block';
-    gp.style.left = r.left + 'px';
-    gp.style.top = (r.top - 220) + 'px';
+    if(gp) gp.style.display = 'block';
+    if(gp){ gp.style.left = r.left + 'px';
+    gp.style.top = (r.top - 220) + 'px'; }
     searchDMGifs('trending');
-  } else { gp.style.display = 'none'; }
+  } else { if(gp) gp.style.display = 'none'; }
 }
 function searchDMGifs(q){
   const res = document.getElementById('dm-gif-results');
   if(!res) return;
-  res.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:10px;padding:8px;">Loading...</div>';
-  fetch('https://tenor.googleapis.com/v2/search?q='+(q||'trending')+'&key='+TENOR_KEY+'&limit=12&media_filter=gif').catch(()=>{})
+  res.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:10px;padding:8px;text-align:center;">Loading...</div>';
+  const isTrending = !q || q === 'trending';
+  const url = isTrending
+    ? `https://tenor.googleapis.com/v2/featured?key=${TENOR_KEY}&limit=16&media_filter=tinygif`
+    : `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(q)}&key=${TENOR_KEY}&limit=16&media_filter=tinygif`;
+  fetch(url)
     .then(r=>r.json())
     .then(data=>{
-      if(!data.results||!data.results.length){ res.innerHTML='<div style="color:rgba(255,100,100,.5);font-size:10px;padding:8px;">No results</div>'; return; }
-      res.innerHTML = data.results.map(g=>{
-        const url = (g.media_formats&&g.media_formats.tinygif&&g.media_formats.tinygif.url)||'';
-        if(!url) return '';
-        return `<img src="${url}" style="width:68px;height:68px;object-fit:cover;border-radius:3px;cursor:pointer;" onclick="dmSendGif('${url}')"/>`;
+      const results = data.results || [];
+      if(!results.length){ res.innerHTML='<div style="color:rgba(255,100,100,.5);font-size:10px;padding:8px;text-align:center;">No GIFs found</div>'; return; }
+      res.innerHTML = results.map(g=>{
+        const fmt = g.media_formats || {};
+        const gifUrl = (fmt.tinygif&&fmt.tinygif.url) || (fmt.gif&&fmt.gif.url) || '';
+        if(!gifUrl) return '';
+        return `<img src="${gifUrl}" style="width:68px;height:68px;object-fit:cover;border-radius:3px;cursor:pointer;margin:1px;" loading="lazy" onclick="dmSendGif('${gifUrl}')"/>`;
       }).join('');
-    }).catch(()=>{ res.innerHTML='<div style="color:rgba(255,100,100,.5);font-size:10px;padding:8px;">Unavailable</div>'; });
+    }).catch(()=>{ res.innerHTML='<div style="color:rgba(255,100,100,.5);font-size:10px;padding:8px;text-align:center;">Could not load GIFs</div>'; });
 }
 function dmSendGif(url){
   const msgs = document.getElementById('dm-msgs');
@@ -2500,6 +2738,128 @@ function stopDMRec(){
 }
 
 // ── DISCLAFF POPUP ───────────────────────────────────────
+// ── PENALTY LIST ─────────────────────────────────────────
+let penaltyList = []; // {id, offense, reason, timeout, fee, timeoutSecs, startTime, paid}
+let chatBlocked = false;
+let jailbreakActive = false;
+let jailbreakUntil = null;
+
+function getPenaltyTimeoutSecs(timeout){
+  if(timeout === 'Warning only') return 0;
+  const m = timeout.match(/^(\d+)\s*(min|minute|hour|h)/i);
+  if(!m) return 0;
+  const n = parseInt(m[1]);
+  return m[2].startsWith('h') ? n * 3600 : n * 60;
+}
+
+function formatCountdown(secs){
+  if(secs <= 0) return '00:00';
+  const m = Math.floor(secs/60), s = secs%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+function addToPenaltyList(data){
+  const secs = getPenaltyTimeoutSecs(data.timeout);
+  const entry = {
+    id: Date.now(),
+    offense: data.offense,
+    reason: data.reason,
+    timeout: data.timeout,
+    fee: data.fee,
+    timeoutSecs: secs,
+    remaining: secs,
+    startTime: Date.now(),
+    paid: false,
+    expired: false
+  };
+  penaltyList.push(entry);
+  if(secs > 0 && !jailbreakActive) chatBlocked = true;
+  renderPenaltyList();
+  startPenaltyCountdown(entry.id);
+  if(secs === 0){ setTimeout(()=>{ entry.expired = true; renderPenaltyList(); }, 30000); }
+}
+
+function startPenaltyCountdown(id){
+  const tick = setInterval(()=>{
+    const entry = penaltyList.find(e=>e.id===id);
+    if(!entry || entry.paid || entry.expired){ clearInterval(tick); return; }
+    entry.remaining = Math.max(0, entry.timeoutSecs - Math.floor((Date.now()-entry.startTime)/1000));
+    if(entry.remaining <= 0){
+      entry.expired = true;
+      chatBlocked = penaltyList.some(e=>!e.paid && !e.expired && e.timeoutSecs > 0);
+      clearInterval(tick);
+      renderPenaltyList();
+      updateChatInputState();
+    }
+    renderPenaltyList();
+  }, 1000);
+}
+
+function updateChatInputState(){
+  const inp = document.getElementById('minp');
+  const btn = document.querySelector('.send-btn');
+  if(!inp) return;
+  const blocked = chatBlocked && !jailbreakActive;
+  inp.disabled = blocked;
+  inp.placeholder = blocked ? '⚡ Timeout active — wait for countdown...' : 'Message public channel...';
+  if(btn) btn.style.opacity = blocked ? '.3' : '';
+}
+
+function renderPenaltyList(){
+  const container = document.getElementById('penalty-list-container');
+  if(!container) return;
+  const active = penaltyList.filter(e=>!e.expired && !e.paid);
+  const history = penaltyList.filter(e=>e.expired || e.paid);
+  let html = '';
+  if(active.length){
+    html += `<div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.2em;color:#ff4466;margin-bottom:6px;">⚡ ACTIVE PENALTIES</div>`;
+    active.forEach(e=>{
+      html += `<div style="background:rgba(255,68,102,.06);border:1px solid rgba(255,68,102,.2);border-radius:3px;padding:8px 10px;margin-bottom:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:11px;color:#ff4466;">OFFENSE #${e.offense}</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:${e.remaining<60?'#ff4466':'var(--gold)'};">${formatCountdown(e.remaining)}</span>
+        </div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:6px;">${e.reason}</div>
+        ${e.fee !== 'FREE' ? `<button onclick="openPayment('You','${e.fee}',${e.offense},'${e.timeout}');window._pendingPenaltyId=${e.id}" style="width:100%;font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:.1em;padding:4px;background:rgba(255,170,0,.1);border:1px solid rgba(255,170,0,.3);color:var(--gold);border-radius:2px;cursor:pointer;">🔓 PAY TO UNLOCK · ${e.fee}</button>` : ''}
+      </div>`;
+    });
+  }
+  if(history.length){
+    html += `<div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.2em;color:rgba(255,255,255,.3);margin:8px 0 6px;">HISTORY</div>`;
+    history.slice().reverse().forEach(e=>{
+      html += `<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:3px;padding:6px 10px;margin-bottom:4px;opacity:.7;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;color:rgba(255,255,255,.4);">OFFENSE #${e.offense}</span>
+          <span style="font-size:9px;color:${e.paid?'var(--grn)':'rgba(255,255,255,.3)'};">${e.paid?'✓ PAID':e.timeoutSecs===0?'WARNING':'✓ SERVED'}</span>
+        </div>
+        <div style="font-size:9px;color:rgba(255,255,255,.3);">${e.reason}</div>
+      </div>`;
+    });
+  }
+  if(!active.length && !history.length){
+    html = '<div style="font-size:10px;color:rgba(255,255,255,.3);padding:8px 0;text-align:center;">No disclaffs on record</div>';
+  }
+  container.innerHTML = html;
+  // Show/hide the empty state message
+  const emptyState = document.getElementById('no-active-disclaffs');
+  if(emptyState) emptyState.style.display = active.length ? 'none' : '';
+  // Sync profile panel too
+  const profContainer = document.getElementById('profile-penalty-list');
+  if(profContainer) profContainer.innerHTML = html || '<div style="padding:12px;text-align:center;font-family:Share Tech Mono,monospace;font-size:10px;color:rgba(0,255,136,.4);letter-spacing:.1em;">✓ No disclaffs on record — keep it clean!</div>';
+}
+
+function payPenalty(id){
+  const entry = penaltyList.find(e=>e.id===id);
+  if(!entry) return;
+  entry.paid = true;
+  entry.expired = true;
+  chatBlocked = penaltyList.some(e=>!e.paid && !e.expired && e.timeoutSecs > 0);
+  renderPenaltyList();
+  updateChatInputState();
+  // Show paid confirmation
+  showDcPopup('paid', { fee: entry.fee });
+}
+
 function showDcPopup(type, data){
   const overlay = document.getElementById('dc-overlay');
   const stripe  = document.getElementById('dc-stripe');
@@ -2512,11 +2872,10 @@ function showDcPopup(type, data){
   const btns    = document.getElementById('dc-btns');
 
   rows.innerHTML = '';
-  fee.style.display = 'none';
-  tbar.style.display = 'none';
+  if(fee) fee.style.display = 'none';
+  if(tbar) tbar.style.display = 'none';
 
   if(type === 'ai'){
-    // AI auto-disclaff received by YOU
     stripe.className = 'dc-stripe red';
     icon.textContent = '⚡';
     title.className = 'dc-title red';
@@ -2534,31 +2893,70 @@ function showDcPopup(type, data){
     btns.innerHTML = `
       <button class="dc-btn dismiss" onclick="closeDcPopup()">CLOSE</button>
       <button class="dc-btn dispute" onclick="closeDcPopup();openDispute('You','${data.fee}')">⚖ DISPUTE</button>
-      ${data.fee !== 'FREE' ? `<button class="dc-btn pay" onclick="closeDcPopup();openPayment('You','${data.fee}')">🔓 UNLOCK ${data.fee}</button>` : ''}
+      ${data.fee !== 'FREE' ? `<button class="dc-btn pay" onclick="closeDcPopup();openPayment('You','${data.fee}',${data.offense},'${data.timeout}')">🔓 PAY TO UNLOCK · ${data.fee}</button>` : ''}
     `;
-  } else if(type === 'u2u'){
-    // User-to-user disclaff sent
+    // Store pending data so closeDcPopup can add it even if manually closed
+    window._pendingAiDisclaffData = data;
+    // Auto-close after 15s then add to penalty list
+    clearTimeout(window._dcTimer);
+    window._dcTimer = setTimeout(()=>{
+      closeDcPopup();
+    }, 15000);
+    const fill = document.getElementById('dc-timer-fill');
+    if(fill){
+      fill.style.transition='none'; fill.style.width='100%';
+      setTimeout(()=>{ fill.style.transition='width 15s linear'; fill.style.width='0%'; }, 50);
+    }
+
+  } else if(type === 'u2u_received'){
     stripe.className = 'dc-stripe pur';
     icon.textContent = '👤';
     title.className = 'dc-title pur';
-    title.textContent = 'USER DISCLAFF SENT';
-    sub.textContent = 'USER-TO-USER · PRIVATE ACTION';
+    title.textContent = 'DISCLAFF RECEIVED';
+    sub.textContent = 'USER-TO-USER · FROM COMMUNITY';
     rows.innerHTML = `
-      <div class="dc-row"><span>Target</span><span>${data.target}</span></div>
+      <div class="dc-row"><span>From</span><span style="color:var(--mag)">${data.from}</span></div>
       <div class="dc-row"><span>Timeout</span><span>${data.timeout}</span></div>
-      <div class="dc-row"><span>Anonymous</span><span>${data.anon ? '✓ Yes' : '✗ No'}</span></div>
+      <div class="dc-row"><span>Fee to unlock</span><span style="color:var(--gold)">${data.fee}</span></div>
     `;
     fee.style.display = 'block';
-    fee.style.color = 'var(--pur)';
-    fee.textContent = data.fee + ' PAID';
+    fee.style.color = 'var(--mag)';
+    fee.textContent = '⚡ Congratulations — you received a Disclaff!';
+    tbar.style.display = 'block';
+    btns.innerHTML = `
+      <button class="dc-btn dismiss" onclick="closeDcPopup()">CLOSE</button>
+      <button class="dc-btn dispute" onclick="closeDcPopup();openDispute('${data.from}','${data.fee}')">⚖ DISPUTE</button>
+      <button class="dc-btn pay" onclick="closeDcPopup();openPayment('${data.from}','${data.fee}','U2U','${data.timeout}')">🔓 PAY TO UNLOCK · ${data.fee}</button>
+    `;
+    clearTimeout(window._dcTimer);
+    window._dcTimer = setTimeout(()=>{ closeDcPopup(); addToPenaltyList({offense:'U2U',reason:'From user: '+data.from,timeout:data.timeout,fee:data.fee}); updateChatInputState(); show('v-dc', document.querySelector('.vnav-btn[onclick*="v-dc"]')); }, 15000);
+    const fill2 = document.getElementById('dc-timer-fill');
+    if(fill2){ fill2.style.transition='none'; fill2.style.width='100%'; setTimeout(()=>{ fill2.style.transition='width 15s linear'; fill2.style.width='0%'; },50); }
+
+  } else if(type === 'u2u_sent'){
+    stripe.className = 'dc-stripe pur';
+    icon.textContent = '👤';
+    title.className = 'dc-title pur';
+    title.textContent = 'DISCLAFF SENT';
+    sub.textContent = 'USER-TO-USER · DELIVERED';
+    rows.innerHTML = `
+      <div class="dc-row"><span>Sent to</span><span style="color:var(--mag)">${data.target}</span></div>
+      <div class="dc-row"><span>Timeout</span><span>${data.timeout}</span></div>
+      <div class="dc-row"><span>Paid</span><span style="color:var(--grn)">${data.fee} ✓</span></div>
+    `;
+    fee.style.display = 'block';
+    fee.style.color = 'var(--grn)';
+    fee.textContent = '✓ Congratulations — Disclaff delivered to ' + data.target + '!';
     btns.innerHTML = `<button class="dc-btn dismiss" onclick="closeDcPopup()">OK, CLOSE</button>`;
+    clearTimeout(window._dcTimer);
+    window._dcTimer = setTimeout(()=>closeDcPopup(), 15000);
+
   } else if(type === 'jailbreak'){
-    // Jailbreak purchased
     stripe.className = 'dc-stripe grn';
-    icon.textContent = '🔓';
+    icon.textContent = '🛡️';
     title.className = 'dc-title grn';
-    title.textContent = 'JAILBREAK ACTIVE';
-    sub.textContent = 'FREE SPEECH PACKAGE · ACTIVATED';
+    title.textContent = 'JAILBREAK CARD ACTIVE';
+    sub.textContent = 'JAILBREAK CARD · ACTIVATED';
     rows.innerHTML = `
       <div class="dc-row"><span>Package</span><span>${data.package}</span></div>
       <div class="dc-row"><span>Valid until</span><span>${data.until}</span></div>
@@ -2566,30 +2964,193 @@ function showDcPopup(type, data){
     `;
     fee.style.display = 'block';
     fee.style.color = 'var(--grn)';
-    fee.textContent = data.fee + ' ✓';
+    fee.textContent = '🎉 Congratulations — You are Jail Free for ' + data.package + '!';
     btns.innerHTML = `<button class="dc-btn dismiss" onclick="closeDcPopup()">LET'S GO 🔥</button>`;
+    clearTimeout(window._dcTimer);
+    window._dcTimer = setTimeout(()=>closeDcPopup(), 15000);
+
+  } else if(type === 'paid'){
+    stripe.className = 'dc-stripe grn';
+    icon.textContent = '🔓';
+    title.className = 'dc-title grn';
+    title.textContent = 'TIMEOUT UNLOCKED';
+    sub.textContent = 'PAYMENT CONFIRMED';
+    rows.innerHTML = `<div class="dc-row"><span>Amount paid</span><span style="color:var(--grn)">${data.fee}</span></div>`;
+    fee.style.display = 'block';
+    fee.style.color = 'var(--grn)';
+    fee.textContent = '✓ You are free to continue chatting!';
+    btns.innerHTML = `<button class="dc-btn dismiss" onclick="closeDcPopup()">CONTINUE 🔥</button>`;
+    clearTimeout(window._dcTimer);
+    window._dcTimer = setTimeout(()=>closeDcPopup(), 8000);
   }
 
-  overlay.classList.add('show');
+  if(overlay) overlay.classList.add('show');
+}
 
-  // Auto-close after 10 seconds
+function closeDcPopup(){
+  const o = document.getElementById('dc-overlay');
+  if(o) o.classList.remove('show');
   clearTimeout(window._dcTimer);
-  window._dcTimer = setTimeout(()=>closeDcPopup(), 20000);
-
-  // Animate timer bar over 20s
-  const fill = document.getElementById('dc-timer-fill');
-  if(fill){
-    fill.style.transition='none';
-    fill.style.width='100%';
-    setTimeout(()=>{
-      fill.style.transition='width 20s linear';
-      fill.style.width='0%';
-    }, 50);
+  // If there's a pending AI disclaff, add it to the active list now
+  if(window._pendingAiDisclaffData){
+    addToPenaltyList(window._pendingAiDisclaffData);
+    updateChatInputState();
+    show('mkt', document.querySelector('.tab.mkt'));
+    mktTab('active', document.querySelectorAll('.stab')[0]);
+    window._pendingAiDisclaffData = null;
   }
 }
-function closeDcPopup(){
-  document.getElementById('dc-overlay').classList.remove('show');
-  clearTimeout(window._dcTimer);
+
+function payU2UPenalty(from, timeout, fee){
+  addToPenaltyList({offense:'U2U', reason:'From user: '+from, timeout:timeout, fee:fee});
+  // immediately mark as paid
+  const e = penaltyList[penaltyList.length-1];
+  if(e){ e.paid=true; e.expired=true; }
+  chatBlocked = penaltyList.some(e=>!e.paid && !e.expired && e.timeoutSecs > 0);
+  updateChatInputState();
+  showDcPopup('paid', {fee});
+}
+
+// ── USER-TO-USER DISCLAFF SENDER ─────────────────────────
+function openU2UDisclaffPanel(){
+  let panel = document.getElementById('u2u-panel');
+  if(panel){ panel.style.display = panel.style.display==='none'?'block':'none'; return; }
+  panel = document.createElement('div');
+  panel.id = 'u2u-panel';
+  panel.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,6,16,.98);border:1px solid rgba(170,68,255,.3);border-radius:6px;padding:24px 28px;z-index:3000;width:320px;box-shadow:0 0 40px rgba(170,68,255,.2);';
+  panel.innerHTML = `
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.2em;color:var(--pur);margin-bottom:4px;">👤 SEND DISCLAFF</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;margin-bottom:16px;">USER-TO-USER · CHOOSE CARD TYPE</div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:10px;letter-spacing:.15em;color:rgba(255,255,255,.4);display:block;margin-bottom:5px;">TARGET USERNAME</label>
+      <input id="u2u-target" type="text" placeholder="Enter username..." style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:2px;padding:9px 12px;color:#fff;font-family:'Barlow',sans-serif;font-size:13px;outline:none;"/>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:10px;letter-spacing:.15em;color:rgba(255,255,255,.4);display:block;margin-bottom:8px;">SELECT CARD</label>
+      <div style="display:flex;flex-direction:column;gap:6px;" id="u2u-cards">
+        <div class="u2u-card-opt" data-timeout="1 hour" data-fee="€5" onclick="selectU2UCard(this)" style="padding:8px 12px;border:1px solid rgba(170,68,255,.2);border-radius:3px;cursor:pointer;background:rgba(170,68,255,.04);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.1em;color:rgba(255,255,255,.7);">1h Ban</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--gold);">€5</span>
+        </div>
+        <div class="u2u-card-opt" data-timeout="1 day" data-fee="€10" onclick="selectU2UCard(this)" style="padding:8px 12px;border:1px solid rgba(170,68,255,.2);border-radius:3px;cursor:pointer;background:rgba(170,68,255,.04);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.1em;color:rgba(255,255,255,.7);">1 Day Ban</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--gold);">€10</span>
+        </div>
+        <div class="u2u-card-opt" data-timeout="1 week" data-fee="€20" onclick="selectU2UCard(this)" style="padding:8px 12px;border:1px solid rgba(170,68,255,.2);border-radius:3px;cursor:pointer;background:rgba(170,68,255,.04);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.1em;color:rgba(255,255,255,.7);">1 Week Ban</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--gold);">€20</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="(function(){const _e=document.getElementById('u2u-panel');if(_e)_e.style.display='none';})()" style="flex:1;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.15em;padding:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);border-radius:2px;cursor:pointer;">CANCEL</button>
+      <button onclick="u2uPayAndSend()" style="flex:1;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.15em;padding:10px;background:linear-gradient(90deg,rgba(255,170,0,.3),rgba(255,170,0,.1));border:1px solid rgba(255,170,0,.4);color:var(--gold);border-radius:2px;cursor:pointer;">💳 PAY</button>
+      <button onclick="sendU2UDisclaffCard()" style="flex:1;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.15em;padding:10px;background:linear-gradient(90deg,rgba(170,68,255,.3),rgba(170,68,255,.1));border:1px solid rgba(170,68,255,.4);color:var(--pur);border-radius:2px;cursor:pointer;">SEND CARD →</button>
+    </div>
+  `;
+  document.body.appendChild(panel);
+}
+
+let selectedU2UCard = null;
+function selectU2UCard(el){
+  document.querySelectorAll('.u2u-card-opt').forEach(c=>{
+    c.style.borderColor='rgba(170,68,255,.2)';
+    c.style.background='rgba(170,68,255,.04)';
+  });
+  el.style.borderColor='rgba(170,68,255,.7)';
+  el.style.background='rgba(170,68,255,.12)';
+  selectedU2UCard = { timeout: el.dataset.timeout, fee: el.dataset.fee };
+}
+
+function u2uPayAndSend(){
+  if(!selectedU2UCard){ alert('Please select a card type.'); return; }
+  const target = document.getElementById('u2u-target')?.value?.trim();
+  if(!target){ alert('Please enter a target username.'); return; }
+  window._pendingU2USend = true;
+  (function(){const _e=document.getElementById('u2u-panel');if(_e)_e.style.display='none';})();
+  openPayment(target, selectedU2UCard.fee, 'U2U Disclaff', selectedU2UCard.timeout);
+}
+
+function sendU2UDisclaffCard(){
+  const target = document.getElementById('u2u-target')?.value?.trim();
+  if(!target){ alert('Please enter a target username.'); return; }
+  if(!selectedU2UCard){ alert('Please select a card type.'); return; }
+  const from = sessionStorage.getItem('hexa_username') || 'Anonymous';
+  (function(){const _e=document.getElementById('u2u-panel');if(_e)_e.style.display='none';})();
+  // Sender sees confirmation
+  showDcPopup('u2u_sent', { target, timeout: selectedU2UCard.timeout, fee: selectedU2UCard.fee });
+  // Simulate target receiving card after 1s
+  setTimeout(()=>{
+    showDcPopup('u2u_received', { from, timeout: selectedU2UCard.timeout, fee: selectedU2UCard.fee });
+  }, 1000);
+  selectedU2UCard = null;
+}
+
+
+function openSoundcloudWindow(){
+  const w=window.open('https://soundcloud.com','SoundCloud','width=800,height=600,left='+(screen.width/2-400)+',top='+(screen.height/2-300));
+}
+// ── JAILBREAK CARD PURCHASE ───────────────────────────────
+function openJailbreakPanel(){
+  let panel = document.getElementById('jailbreak-panel');
+  if(panel){ panel.style.display = panel.style.display==='none'?'block':'none'; return; }
+  panel = document.createElement('div');
+  panel.id = 'jailbreak-panel';
+  panel.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,6,16,.98);border:1px solid rgba(0,255,238,.3);border-radius:6px;padding:24px 28px;z-index:3000;width:320px;box-shadow:0 0 40px rgba(0,255,238,.15);';
+  const packages = [
+    {label:'1 Hour', duration:'1 hour', fee:'€5'},
+    {label:'Half Day (6h)', duration:'6 hours', fee:'€10'},
+    {label:'1 Day', duration:'1 day', fee:'€15'},
+    {label:'1 Week', duration:'1 week', fee:'€25'},
+    {label:'1 Year', duration:'1 year', fee:'€40'},
+  ];
+  panel.innerHTML = `
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.2em;color:var(--cyan);margin-bottom:4px;">🛡️ JAILBREAK CARD</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;margin-bottom:16px;">IMMUNITY FROM DISCLAFFS · CHOOSE PACKAGE</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+      ${packages.map(p=>`
+        <div class="jb-card-opt" data-duration="${p.duration}" data-fee="${p.fee}" onclick="selectJBCard(this)" style="padding:8px 12px;border:1px solid rgba(0,255,238,.15);border-radius:3px;cursor:pointer;background:rgba(0,255,238,.03);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.1em;color:rgba(255,255,255,.7);">${p.label}</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--gold);">${p.fee}</span>
+        </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="(function(){const _e=document.getElementById('jailbreak-panel');if(_e)_e.style.display='none';})()" style="flex:1;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.15em;padding:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);border-radius:2px;cursor:pointer;">CANCEL</button>
+      <button onclick="purchaseJailbreak()" style="flex:1;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.15em;padding:10px;background:linear-gradient(90deg,rgba(0,255,238,.2),rgba(0,255,238,.05));border:1px solid rgba(0,255,238,.4);color:var(--cyan);border-radius:2px;cursor:pointer;">PURCHASE 🛡️</button>
+    </div>
+  `;
+  document.body.appendChild(panel);
+}
+
+let selectedJBCard = null;
+function selectJBCard(el){
+  document.querySelectorAll('.jb-card-opt').forEach(c=>{
+    c.style.borderColor='rgba(0,255,238,.15)';
+    c.style.background='rgba(0,255,238,.03)';
+  });
+  el.style.borderColor='rgba(0,255,238,.6)';
+  el.style.background='rgba(0,255,238,.1)';
+  selectedJBCard = { duration: el.dataset.duration, fee: el.dataset.fee };
+}
+
+function purchaseJailbreak(){
+  if(!selectedJBCard){ alert('Please select a package.'); return; }
+  (function(){const _e=document.getElementById('jailbreak-panel');if(_e)_e.style.display='none';})();
+  // Go through payment first
+  window._pendingJailbreak = selectedJBCard;
+  openPayment('Jailbreak Card', selectedJBCard.fee, 'Jailbreak Card', selectedJBCard.duration);
+  selectedJBCard = null;
+}
+
+function activateJailbreak(pkg){}
+
+function parseDuration(str){
+  if(str.includes('hour') && str.includes('6')) return 6*3600*1000;
+  if(str.includes('hour')) return 3600*1000;
+  if(str.includes('day')) return 24*3600*1000;
+  if(str.includes('week')) return 7*24*3600*1000;
+  if(str.includes('year')) return 365*24*3600*1000;
+  return 3600*1000;
 }
 
 // ── DELETE ACCOUNT ────────────────────────────────────────
@@ -2646,8 +3207,8 @@ function toggleFriendList(){
   const fl = document.getElementById('friend-list');
   const arrow = document.getElementById('friend-toggle-arrow');
   friendListOpen = !friendListOpen;
-  fl.style.display = friendListOpen ? '' : 'none';
-  arrow.style.transform = friendListOpen ? '' : 'rotate(-90deg)';
+  if(fl) fl.style.display = friendListOpen ? '' : 'none';
+  if(arrow) arrow.style.transform = friendListOpen ? '' : 'rotate(-90deg)';
 }
 const friendList = new Set();
 
@@ -2682,30 +3243,108 @@ function removeFriend(name){
   renderFriendList();
 }
 
-function filterUsers(q){
-  // filter sidebar human users
-  const allUi = document.querySelectorAll('.ui');
-  allUi.forEach(el => {
-    const uname = el.querySelector('.uname');
-    if(!uname) return;
-    if(!q){ el.style.display=''; return; }
-    el.style.display = uname.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+// ── USER SETTINGS ────────────────────────────────────────
+const userSettings = {
+  public: true,    // see public channel messages
+  ai_notif: true,  // see AI messages in public channel
+  publish: false,  // publish own profile (P tab visible to self, hidden when off)
+};
+
+function toggleSetting(key, el){
+  el.classList.toggle('on');
+  userSettings[key] = el.classList.contains('on');
+  applySettings();
+  // Save publish_profile to Supabase
+  if(key === 'publish'){
+    const username = sessionStorage.getItem('hexa_username');
+    if(username){
+      fetch(SB_URL + '/rest/v1/users?username=eq.' + encodeURIComponent(username), {
+        method: 'PATCH',
+        headers: SB_HEADERS,
+        body: JSON.stringify({ publish_profile: userSettings.publish })
+      }).catch(()=>{});
+    }
+  }
+}
+
+function applySettings(){
+  const marea = document.getElementById('marea');
+  if(!marea) return;
+  // Show/hide entire public channel messages
+  marea.style.display = userSettings.public ? '' : 'none';
+  const noMsg = document.getElementById('channel-off-msg');
+  if(noMsg) noMsg.style.display = userSettings.public ? 'none' : 'block';
+  // Show/hide AI messages
+  marea.querySelectorAll('.mb.ai').forEach(el => {
+    el.style.display = userSettings.ai_notif ? '' : 'none';
   });
+  // Show/hide P tab based on publish setting
+  const ptab = document.querySelector('.tab.pro');
+  if(ptab) ptab.style.display = userSettings.publish ? '' : 'none';
+  // If P tab hidden and currently on pro view, switch to public channel
+  if(!userSettings.publish){
+    const proView = document.getElementById('v-pro');
+    if(proView && proView.classList.contains('on')){
+      const msgTab = document.querySelector('.tab.on[onclick*="msg"]') || document.querySelector('.tab');
+      show('msg', msgTab);
+    }
+  }
+}
+
+function filterUsers(q){
+  const list = document.getElementById('online-users-list');
+  if(!list) return;
+  const items = list.querySelectorAll('div[data-username]');
+  let found = 0;
+  items.forEach(el => {
+    const uname = el.dataset.username || '';
+    const match = !q || uname.toLowerCase().includes(q.toLowerCase());
+    el.style.display = match ? '' : 'none';
+    if(match) found++;
+  });
+  // If typing and no match in online users, search Supabase
+  if(q && q.length >= 1){
+    searchUsersSupabase(q);
+  } else {
+    const extra = document.getElementById('search-results-extra');
+    if(extra) extra.innerHTML = '';
+  }
+}
+
+async function searchUsersSupabase(q){
+  try {
+    const res = await fetch(SB_URL + '/rest/v1/users?username=ilike.*' + encodeURIComponent(q) + '*&select=username&limit=10', {
+      headers: SB_HEADERS
+    });
+    const data = await res.json();
+    const extra = document.getElementById('search-results-extra');
+    if(!extra || !Array.isArray(data)) return;
+    const onlineNow = currentOnlineUsers;
+    const offline = data.map(u=>u.username).filter(u => !onlineNow.includes(u));
+    if(!offline.length){ extra.innerHTML = ''; return; }
+    extra.innerHTML = offline.map(u => `
+      <div data-username="${u}" onclick="openDM('${u}')" style="display:flex;align-items:center;gap:7px;padding:5px 10px;cursor:pointer;border-radius:2px;opacity:.6;" onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background=''">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'Bebas Neue',sans-serif;color:rgba(255,255,255,.4);">${u.slice(0,2).toUpperCase()}</div>
+        <div><div style="font-family:'Barlow',sans-serif;font-size:11px;color:rgba(255,255,255,.6);">${u}</div><div style="font-size:9px;color:rgba(255,255,255,.3);font-family:'Share Tech Mono',monospace;">● offline</div></div>
+      </div>`).join('');
+  } catch(e){}
 }
 
 // Friend add is handled inside showUProfile directly
 
 // ── EMOJI PICKER FIX ──────────────────────────────────────
 function positionAboveWrap(el){
-  const wrap = document.getElementById('inp-wrap');
-  if(!wrap) return;
-  const r = wrap.getBoundingClientRect();
-  el.style.left = r.left + 'px';
-  el.style.top = Math.max(4, r.top - el.offsetHeight - 8) + 'px';
-  // fallback after render
+  const btn = document.getElementById('gif-btn') || document.getElementById('inp-wrap');
+  if(!btn || !el) return;
   requestAnimationFrame(()=>{
-    const er = el.getBoundingClientRect();
-    if(er.top < 4) el.style.top = '4px';
+    const r = btn.getBoundingClientRect();
+    const epH = el.offsetHeight || 240;
+    let top = r.top - epH - 6;
+    if(top < 4) top = r.bottom + 6;
+    let left = r.left;
+    if(left + 240 > window.innerWidth) left = window.innerWidth - 246;
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
   });
 }
 
@@ -2719,7 +3358,7 @@ function showJailbreakCard(userName){
     <div style="padding:18px 20px 14px;text-align:center;">
       <div style="font-size:36px;margin-bottom:8px;">🔓</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.3em;color:#ffcc00;text-shadow:0 0 12px rgba(255,200,0,.5);margin-bottom:4px;">JAILBREAK ACTIVATED</div>
-      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,200,0,.5);letter-spacing:.15em;margin-bottom:14px;">FREE SPEECH PACKAGE · PUBLIC</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,200,0,.5);letter-spacing:.15em;margin-bottom:14px;">JAILBREAK CARD · PUBLIC</div>
       <div style="background:rgba(255,200,0,.06);border:1px solid rgba(255,200,0,.2);border-radius:3px;padding:10px;margin-bottom:14px;text-align:left;">
         <div style="display:flex;justify-content:space-between;font-size:9px;font-family:'Share Tech Mono',monospace;color:#00eeff;padding:2px 0;"><span style="color:rgba(0,230,220,.5);">User</span><span>${userName}</span></div>
         <div style="display:flex;justify-content:space-between;font-size:9px;font-family:'Share Tech Mono',monospace;color:#00eeff;padding:2px 0;"><span style="color:rgba(0,230,220,.5);">Status</span><span style="color:#ffcc00;">✓ Jailbreak Active</span></div>
@@ -2737,7 +3376,7 @@ function showJailbreakCard(userName){
     const b = document.createElement('div');
     b.className = 'mb';
     b.style.cssText='text-align:center;background:rgba(255,200,0,.06);border:1px solid rgba(255,200,0,.2);border-radius:3px;padding:8px;font-size:10px;color:#ffcc00;font-family:Share Tech Mono,monospace;letter-spacing:.1em;';
-    b.innerHTML='🔓 <strong>'+userName+'</strong> activated a JAILBREAK package';
+    b.innerHTML='🔓 <strong>'+userName+'</strong> activated a JAILBREAK CARD';
     area.appendChild(b); area.scrollTop=area.scrollHeight;
   }
   setTimeout(()=>{ if(overlay.parentNode) overlay.remove(); }, 20000);
@@ -2809,21 +3448,6 @@ function setAILight(aiName, on){
   }
 }
 
-// ── DISCLAFF: after 20s, flip to penalties tab ────────────
-const _origShowDcPopup = showDcPopup;
-function showDcPopup(type, data){
-  _origShowDcPopup(type, data);
-  // After 20s (when popup closes) flip to active penalties tab
-  clearTimeout(window._dcFlipTimer);
-  window._dcFlipTimer = setTimeout(()=>{
-    const mktBtn = document.querySelector('.tab.mkt');
-    if(mktBtn && !document.getElementById('v-mkt').classList.contains('on')){
-      // Don't force switch if user isn't on disclaff tab
-    }
-    // Add card to active penalties panel
-    addActivePenaltyCard(type, data);
-  }, 20000);
-}
 
 // ── ADD CARD TO ACTIVE PENALTIES ─────────────────────────
 const activePenalties = [];
@@ -2904,13 +3528,37 @@ function renderHistory(){
 // ── INIT: load username & flag from session ───────────────
 window.addEventListener('DOMContentLoaded',()=>{
   const uname = sessionStorage.getItem('hexa_username') || '';
+  const fullname = sessionStorage.getItem('hexa_fullname') || '';
   if(uname){
     const menuUname = document.getElementById('menu-uname');
-    if(menuUname) menuUname.childNodes[0].textContent = uname + ' ';
+    if(menuUname) menuUname.textContent = uname;
     const menuAv = document.getElementById('menu-avatar');
     if(menuAv) menuAv.textContent = uname.slice(0,2).toUpperCase();
     const proUser = document.getElementById('profile-username');
     if(proUser) proUser.textContent = uname;
+    const proFull = document.getElementById('profile-fullname');
+    if(proFull) proFull.textContent = fullname || uname;
+  }
+  // If username missing, try fetching from Supabase
+  if(!uname){
+    const token = sessionStorage.getItem('hexa_token');
+    const email = sessionStorage.getItem('hexa_email');
+    if(token && email){
+      fetch('https://nfxyxnmatuzmqctttqnk.supabase.co/rest/v1/users?email=eq.'+encodeURIComponent(email)+'&select=username&limit=1',{
+        headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg','Authorization':'Bearer '+token}
+      }).then(r=>r.json()).then(d=>{
+        const un = d[0]?.username;
+        if(un){
+          sessionStorage.setItem('hexa_username', un);
+          const menuUname = document.getElementById('menu-uname');
+          if(menuUname) menuUname.textContent = un;
+          const menuAv = document.getElementById('menu-avatar');
+          if(menuAv) menuAv.textContent = un.slice(0,2).toUpperCase();
+          const proUser = document.getElementById('profile-username');
+          if(proUser) proUser.textContent = un;
+        }
+      }).catch(()=>{});
+    }
   }
 });
 
@@ -2947,11 +3595,119 @@ function sendDisputeChat(){
     msgs.scrollTop = msgs.scrollHeight;
   }, 1200 + Math.random()*800);
 }
+
+// ── REALTIME PRESENCE ─────────────────────────────────────
+const SB_URL = 'https://nfxyxnmatuzmqctttqnk.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg';
+const SB_HEADERS = {'apikey': SB_KEY, 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY};
+
+let presenceInterval = null;
+let currentOnlineUsers = [];
+
+async function registerOnline() {
+  const username = sessionStorage.getItem('hexa_username');
+  if(!username) return;
+  try {
+    await fetch(SB_URL + '/rest/v1/online_users', {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ username, user_id: username, last_seen: new Date().toISOString() })
+    });
+  } catch(e) {}
+}
+
+async function updatePresence() {
+  const username = sessionStorage.getItem('hexa_username');
+  if(!username) return;
+  try {
+    await fetch(SB_URL + '/rest/v1/online_users?username=eq.' + encodeURIComponent(username), {
+      method: 'PATCH',
+      headers: SB_HEADERS,
+      body: JSON.stringify({ last_seen: new Date().toISOString() })
+    });
+  } catch(e) {}
+}
+
+async function removeOfflineUsers() {
+  // Remove users not seen in last 40 seconds
+  try {
+    const cutoff = new Date(Date.now() - 40000).toISOString();
+    await fetch(SB_URL + '/rest/v1/online_users?last_seen=lt.' + encodeURIComponent(cutoff), {
+      method: 'DELETE',
+      headers: SB_HEADERS
+    });
+  } catch(e) {}
+}
+
+async function fetchOnlineUsers() {
+  try {
+    const res = await fetch(SB_URL + '/rest/v1/online_users?select=username,last_seen&order=username.asc', {
+      headers: SB_HEADERS
+    });
+    const data = await res.json();
+    if(Array.isArray(data)) {
+      currentOnlineUsers = data.map(u => u.username);
+      renderOnlineUsers(currentOnlineUsers);
+    }
+  } catch(e) {}
+}
+
+function renderOnlineUsers(users) {
+  const list = document.getElementById('online-users-list');
+  const noMsg = document.getElementById('no-users-msg');
+  const myName = sessionStorage.getItem('hexa_username') || '';
+  if(!list) return;
+  
+  if(!users.length) {
+    list.innerHTML = '';
+    if(noMsg) noMsg.style.display = 'block';
+    return;
+  }
+  if(noMsg) noMsg.style.display = 'none';
+  list.innerHTML = users.map(u => {
+    const isMe = u === myName;
+    return `<div class="ui" data-username="${u}" onclick="openDM('${u}')" style="display:flex;align-items:center;gap:7px;padding:5px 10px;cursor:pointer;border-radius:2px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background=''">
+      <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,rgba(0,255,200,.2),rgba(170,68,255,.2));border:1px solid rgba(0,255,200,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'Bebas Neue',sans-serif;color:rgba(0,255,200,.8);">${u.slice(0,2).toUpperCase()}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Barlow',sans-serif;font-size:11px;color:${isMe?'var(--cyan)':'rgba(255,255,255,.85)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u}${isMe?' (you)':''}</div>
+        <div style="font-size:9px;color:rgba(0,255,136,.6);font-family:'Share Tech Mono',monospace;">● online</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function initPresence() {
+  await registerOnline();
+  await fetchOnlineUsers();
+  // Heartbeat every 20s
+  presenceInterval = setInterval(async () => {
+    await updatePresence();
+    await removeOfflineUsers();
+    await fetchOnlineUsers();
+  }, 20000);
+}
+
+// Remove self on page unload
+window.addEventListener('beforeunload', () => {
+  const username = sessionStorage.getItem('hexa_username');
+  if(!username) return;
+  navigator.sendBeacon(SB_URL + '/rest/v1/online_users?username=eq.' + encodeURIComponent(username),
+    new Blob([JSON.stringify({})], {type:'application/json'}));
+  fetch(SB_URL + '/rest/v1/online_users?username=eq.' + encodeURIComponent(username), {
+    method: 'DELETE', headers: SB_HEADERS, keepalive: true
+  }).catch(()=>{});
+});
+
+// Start presence after page loads
+window.addEventListener('load', () => {
+  setTimeout(initPresence, 500);
+});
 </script>
 
 <!-- INVITE POPUP -->
 <div class="invite-pop" id="invite-pop">
-  <h4><span id="invite-icon">💬</span> Private Message</h4>
+  <h4><span id="invite-icon">💬</span> <span id="invite-name-title">Private Message</span></h4>
+
   <p id="invite-text">Invite to private chat?</p>
   <div class="invite-btns">
     <button class="ibtn yes" onclick="acceptInvite()">DM</button>
@@ -2989,7 +3745,7 @@ function sendDisputeChat(){
   <div id="dm-epicker" class="epicker" style="position:absolute;bottom:100%;left:0;margin-bottom:4px;display:none;z-index:999;"></div>
   <div style="display:flex;align-items:center;gap:4px;padding:4px 8px 2px;border-top:1px solid rgba(0,255,238,.07);">
     <button class="emo-btn" onclick="toggleDMEmoji()" title="Emoji">😊</button>
-    <button class="emo-btn" onclick="toggleDMGif()" style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:.1em;color:var(--cyan);border:1px solid rgba(0,255,238,.3);padding:2px 5px;border-radius:3px;">GIF</button>
+    <button class="emo-btn" style="display:none;" onclick="toggleDMGif()" style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:.1em;color:var(--cyan);border:1px solid rgba(0,255,238,.3);padding:2px 5px;border-radius:3px;">GIF</button>
     <button class="emo-btn" onclick="document.getElementById('dm-photo').click()" title="Gallery">🖼️</button>
     <button class="emo-btn" onclick="document.getElementById('dm-camera').click()" title="Camera">📷</button>
     <button class="emo-btn" id="dm-rec-btn" title="Hold to record">🎤</button>
@@ -3007,30 +3763,24 @@ function sendDisputeChat(){
 <div class="uprofile-pop" id="uprofile-pop">
   <div class="up-name" id="up-name">--</div>
   <div class="up-badge" id="up-badge">● Online</div>
-  <div class="up-row"><span>Messages</span><span id="up-msgs">--</span></div>
-  <div class="up-since" style="display:none"></div>
-  <div class="up-row"><span>Member since</span><span id="up-since">--</span></div>
-  <div class="up-row"><span>Disclaffs</span><span id="up-disc">--</span></div>
-  <div class="up-row"><span>Type</span><span id="up-type">--</span></div>
+  <div id="up-private" style="display:none;text-align:center;padding:14px 0;font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.1em;">🔒 Profile is private</div>
+  <div id="up-body">
+    <div class="up-row"><span>Messages</span><span id="up-msgs">--</span></div>
+    <div class="up-row"><span>Member since</span><span id="up-since">--</span></div>
+    <div class="up-row"><span>Disclaffs</span><span id="up-disc">--</span></div>
+    <div class="up-row"><span>Type</span><span id="up-type">--</span></div>
+  </div>
   <div class="up-btns">
     <button class="ibtn yes" onclick="inviteFromProfile()" style="font-size:9px;letter-spacing:.1em;">💬 DM</button>
     <button class="ibtn" id="profile-friend-btn" onclick="profileAddFriend()" style="background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.3);color:rgba(0,255,136,.8);font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:.1em;padding:4px 8px;border-radius:3px;cursor:pointer;">+ FRIEND</button>
     <button class="ibtn no" onclick="closeUProfile()" style="font-size:9px;">CLOSE</button>
   </div>
 </div>
-<div id="gif-picker" style="position:fixed;z-index:9999;background:rgba(0,8,20,.98);border:1px solid rgba(0,255,200,.3);border-radius:6px;padding:8px;width:240px;display:none;box-shadow:0 0 20px rgba(0,255,200,.1);">
-  <div style="display:flex;gap:4px;margin-bottom:6px;">
-    <input id="gif-search" type="text" placeholder="Search GIFs..." style="flex:1;background:rgba(0,255,200,.05);border:1px solid rgba(0,255,200,.2);border-radius:3px;color:#fff;font-size:11px;padding:4px 8px;outline:none;font-family:'Barlow',sans-serif;" oninput="searchGifs(this.value)"/>
-  </div>
   <div id="gif-results" style="display:flex;flex-wrap:wrap;gap:4px;max-height:180px;overflow-y:auto;"></div>
   <div style="font-size:8px;color:rgba(255,255,255,.2);text-align:right;margin-top:4px;font-family:'Share Tech Mono',monospace;">Powered by Tenor</div>
 </div>
 <div id="typing-indicator" style="position:fixed;display:none;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.1em;color:rgba(0,255,200,.6);z-index:150;"></div>
 
-<!-- DM GIF PICKER -->
-<div id="dm-gif-picker" style="position:fixed;z-index:9999;background:rgba(0,8,20,.98);border:1px solid rgba(0,255,238,.3);border-radius:6px;padding:6px;width:220px;max-height:200px;display:none;box-shadow:0 0 20px rgba(0,255,238,.1);">
-  <input id="dm-gif-search" type="text" placeholder="Search GIFs..." style="width:100%;background:rgba(0,255,238,.05);border:1px solid rgba(0,255,238,.2);border-radius:3px;color:#fff;font-size:11px;padding:4px 8px;outline:none;box-sizing:border-box;margin-bottom:5px;" oninput="searchDMGifs(this.value)"/>
-  <div id="dm-gif-results" style="display:flex;flex-wrap:wrap;gap:4px;max-height:150px;overflow-y:auto;"></div>
 </div>
 
 <!-- DISCLAFF POPUP -->
@@ -3048,6 +3798,6 @@ function sendDisputeChat(){
     <div class="dc-btns" id="dc-btns"></div>
   </div>
 </div>
-<div id="epicker" class="epicker"></div>
+
 </body>
 </html>
