@@ -563,7 +563,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
         <div class="pro-grid">
           <div class="pro-card">
             <h3>Account Info</h3>
-            <div class="pr"><span class="prl">Username</span><span class="prv c">User_7742</span></div>
+            <div class="pr"><span class="prl">Username</span><span class="prv c" id="profile-username">User_7742</span></div>
             <div class="pr"><span class="prl">Status</span><span class="prv g">● Online</span></div>
             <div class="pr"><span class="prl">Member Since</span><span class="prv">Feb 2026</span></div>
             <div class="pr"><span class="prl">Type</span><span class="prv p">Human</span></div>
@@ -770,9 +770,9 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
     <button class="xbtn" onclick="closeMenu()">✕ CLOSE</button>
   </div>
   <div class="menu-user">
-    <div class="menu-avatar">U7</div>
+    <div class="menu-avatar" id="menu-avatar">U7</div>
     <div>
-      <div class="menu-uname">User_7742</div>
+      <div class="menu-uname" id="menu-username">User_7742</div>
       <div class="menu-ustatus">● Online · Human</div>
     </div>
   </div>
@@ -828,6 +828,24 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
 </div>
 
 <script>
+
+// ── AUTH VERIFICATION ─────────────────────────────────────
+(function() {
+  var username = localStorage.getItem('username');
+  if (!username) {
+    window.location.replace('index.html');
+    return;
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    var initials = username.slice(0, 2).toUpperCase();
+    var profileUname = document.getElementById('profile-username');
+    if (profileUname) profileUname.textContent = username;
+    var menuUname = document.getElementById('menu-username');
+    if (menuUname) menuUname.textContent = username;
+    var menuAvatar = document.getElementById('menu-avatar');
+    if (menuAvatar) menuAvatar.textContent = initials;
+  });
+})();
 
 // ── INVITE / DM ──────────────────────────────────────────
 let inviteTarget = null;
@@ -1676,6 +1694,7 @@ async function fetchRates(){
 fetchRates();
 
 function signOut(){
+  localStorage.removeItem('username');
   sessionStorage.clear();
   window.location.href = 'index.html';
 }
