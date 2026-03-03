@@ -181,8 +181,10 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:#fff;font-family:
 .dc-chat-send{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:.1em;background:linear-gradient(90deg,var(--grn),#009966);color:#000;border:none;padding:7px 12px;border-radius:2px;cursor:pointer;flex-shrink:0;}
 
 /* ══ PUBLIC CHANNEL ══ */
-.msg-view{background:var(--panel);width:100%;height:100%;position:relative;display:flex;flex-direction:column;}
-.marea{position:absolute;top:0;left:0;right:0;bottom:160px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.msg-view {background: var(--panel);width: 100%;display: flex;flex-direction: column;position: relative;}
+.marea {flex: 1;overflow-y: auto;padding: 10px 20px;display: flex;flex-direction: column-reverse;  /* Changed: New messages at bottom (normal chat flow) */gap: 4px;max-width: 720px;width: 100%;box-sizing: border-box;margin: 0 auto;scrollbar-width: thin;  /* Firefox */}
+.marea::-webkit-scrollbar {width: 2px;}
+.marea::-webkit-scrollbar-thumb {background: var(--mag);} 
 
 .mb{max-width:85%;padding:5px 10px;border-radius:2px;font-size:11px!important;font-weight:300;line-height:1.5;letter-spacing:.03em;animation:mIn .2s ease both;border-left:2px solid rgba(0,255,238,.04);position:relative;overflow:visible;-webkit-text-size-adjust:none;text-size-adjust:none;}
 @keyframes mIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
