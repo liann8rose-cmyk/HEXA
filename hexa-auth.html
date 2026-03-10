@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEXA Platform - Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cyan: #00ff88;
+            --cyan-dim: #cc88ff;
+            --purple-dark: #aa55ee;
+            --bg-dark: #00030a;
+            --surface: #0a1428;
+            --text-primary: #ffffff;
+            --text-secondary: #8899aa;
+            --error: #ff4466;
+            --success: #00ff88;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .hex-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.05;
+            pointer-events: none;
+            background-image: 
+                repeating-linear-gradient(
+                    90deg,
+                    var(--cyan) 0px,
+                    var(--cyan) 1px,
+                    transparent 1px,
+                    transparent 40px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    var(--cyan) 0px,
+                    var(--cyan) 1px,
+                    transparent 1px,
+                    transparent 40px
+                );
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            animation: fadeInScale 0.6s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .card {
+            background: var(--surface);
+            border: 2px solid var(--cyan);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo {
+            font-size: 3rem;
+            letter-spacing: 0.3em;
+            color: var(--cyan);
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .platform {
+            font-size: 0.9rem;
+            letter-spacing: 0.15em;
+            color: var(--cyan-dim);
+            margin-bottom: 1.5rem;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(0, 255, 136, 0.05);
+            padding: 0.3rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+        }
+
+        .toggle-btn.active {
+            background: var(--cyan);
+            color: var(--bg-dark);
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            color: var(--cyan-dim);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.9rem;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid var(--cyan);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            background: rgba(0, 255, 136, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2), inset 0 0 10px rgba(0, 255, 136, 0.05);
+            border-color: var(--cyan);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--cyan-dim);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.5rem;
+        }
+
+        .toggle-password:hover {
+            color: var(--cyan);
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 1.5rem;
+        }
+
+        .forgot-password a {
+            color: var(--cyan-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .forgot-password a:hover {
+            color: var(--cyan);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--cyan);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .signup-link a {
+            color: var(--cyan);
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .signup-link a:hover {
+            color: var(--purple-dark);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .form-section {
+            animation: fadeInScale 0.4s ease-out;
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+            letter-spacing: 0.05em;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 2rem 0;
+            gap: 1rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .divider-text {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        .social-login {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-btn {
+            padding: 0.8rem;
+            background: rgba(0, 255, 136, 0.08);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+
+        .social-btn:hover {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--cyan);
+            border-color: var(--cyan);
+        }
+
+        .reset-info {
+            background: rgba(170, 85, 238, 0.05);
+            border: 1px solid var(--cyan-dim);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 2rem 1.5rem;
+            }
+
+            .logo {
+                font-size: 2.2rem;
+            }
+
+            input {
+                padding: 0.8rem;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hex-grid"></div>
+
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <div class="logo">HEXA</div>
+                <div class="platform">PLATFORM</div>
+            </div>
+
+            <!-- Mode Toggle (only for login/signup) -->
+            <div id="mode-selector" class="mode-toggle">
+                <button class="toggle-btn active" data-mode="login">Login</button>
+                <button class="toggle-btn" data-mode="signup">Sign Up</button>
+            </div>
+
+            <!-- Login Section -->
+            <div id="login-section" class="form-section">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email Address</label>
+                        <input type="email" id="login-email" placeholder="you@example.com" required>
+                        <div class="error-message" id="login-email-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <div class="password-group">
+                            <input type="password" id="login-password" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('login-password')">👁️</button>
+                        </div>
+                        <div class="error-message" id="login-password-error"></div>
+                    </div>
+
+                    <div class="forgot-password">
+                        <a onclick="showPasswordReset(event)">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="submit-btn">LOGIN</button>
+
+                    <div class="divider">
+                        <span class="divider-text">or continue with</span>
+                    </div>
+
+                    <div class="social-login">
+                        <button type="button" class="social-btn" onclick="loginWithGoogle(event)">Google</button>
+                    </div>
+
+                    <div class="signup-link">
+                        Don't have an account? <a onclick="switchMode('signup')">Sign Up</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Signup Section -->
+            <div id="signup-section" class="form-section hidden">
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-username">Username</label>
+                        <input type="text" id="signup-username" placeholder="yourname" required>
+                        <div class="error-message" id="signup-username-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signup-fullname">Full Name</label>
+                        <input type="text" id="signup-fullname" placeholder="John Doe" required>
+                        <div class="error-message" id="signup-fullname-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" placeholder="you@example.com" required>
+                        <div class="error-message" id="signup-email-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <div class="password-group">
+                            <input type="password" id="signup-password" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('signup-password')">👁️</button>
+                        </div>
+                        <div class="error-message" id="signup-password-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signup-confirm">Confirm Password</label>
+                        <div class="password-group">
+                            <input type="password" id="signup-confirm" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('signup-confirm')">👁️</button>
+                        </div>
+                        <div class="error-message" id="signup-confirm-error"></div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">CREATE ACCOUNT</button>
+
+                    <div class="divider">
+                        <span class="divider-text">or continue with</span>
+                    </div>
+
+                    <div class="social-login">
+                        <button type="button" class="social-btn" onclick="loginWithGoogle(event)">Google</button>
+                    </div>
+
+                    <div class="signup-link">
+                        Already have an account? <a onclick="switchMode('login')">Login</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Password Reset Section -->
+            <div id="reset-section" class="form-section hidden">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔑</div>
+                    <div style="color: var(--cyan-dim); font-weight: bold; letter-spacing: 0.1em;">PASSWORD RESET</div>
+                </div>
+
+                <div class="reset-info">
+                    Verify your account to reset your password.
+                </div>
+
+                <!-- Verify Stage -->
+                <form id="reset-verify-form">
+                    <div class="form-group">
+                        <label for="reset-verify-email">Email Address</label>
+                        <input type="email" id="reset-verify-email" placeholder="you@example.com" required>
+                        <div class="error-message" id="reset-verify-email-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reset-verify-password">Current Password</label>
+                        <div class="password-group">
+                            <input type="password" id="reset-verify-password" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('reset-verify-password')">👁️</button>
+                        </div>
+                        <div class="error-message" id="reset-verify-password-error"></div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="reset-verify-btn">VERIFY & CONTINUE</button>
+
+                    <div class="signup-link">
+                        <a onclick="backToLogin()">← Back to Login</a>
+                    </div>
+                </form>
+
+                <!-- Set New Password -->
+                <div id="set-password-section" class="hidden">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <div style="color: var(--cyan-dim); font-weight: bold; letter-spacing: 0.1em; margin-bottom: 0.5rem;">SET NEW PASSWORD</div>
+                    </div>
+
+                    <form id="set-password-form">
+                        <div class="form-group">
+                            <label for="new-password">New Password</label>
+                            <div class="password-group">
+                                <input type="password" id="new-password" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password" onclick="togglePassword('new-password')">👁️</button>
+                            </div>
+                            <div class="error-message" id="new-password-error"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm-new-password">Confirm Password</label>
+                            <div class="password-group">
+                                <input type="password" id="confirm-new-password" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password" onclick="togglePassword('confirm-new-password')">👁️</button>
+                            </div>
+                            <div class="error-message" id="confirm-new-password-error"></div>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="set-password-btn">UPDATE PASSWORD</button>
+                        <div class="signup-link">
+                            <a onclick="backToVerify()">← Back to Verify</a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Password Update Success -->
+                <div id="password-reset-success" class="hidden">
+                    <div style="text-align: center; padding: 2rem 0;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem; color: var(--cyan);">✓</div>
+                        <div style="color: var(--cyan); font-weight: bold; margin-bottom: 1rem; font-size: 1.1rem; letter-spacing: 0.1em;">PASSWORD UPDATED</div>
+                        <div style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                            Your password has been successfully changed.
+                        </div>
+                        <button type="button" class="submit-btn" onclick="backToLogin()">BACK TO LOGIN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ INITIALIZATION ============
+        const SUPABASE_URL = 'https://nfxyxnmatuzmqctttqnk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg';
+        
+        let supabase = null;
+
+        window.addEventListener('load', async () => {
+            // Initialize Supabase
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
+            // Check for OAuth callback
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const type = hashParams.get('type');
+
+            if (type === 'recovery' && accessToken) {
+                handlePasswordResetToken(accessToken);
+            } else if (accessToken && type !== 'recovery') {
+                handleOAuthCallback(accessToken);
+            }
+        });
+
+        // ============ HELPER FUNCTIONS ============
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            field.type = field.type === 'password' ? 'text' : 'password';
+        }
+
+        function switchMode(mode) {
+            const toggleBtns = document.querySelectorAll('.toggle-btn');
+            const sections = document.querySelectorAll('.form-section');
+
+            toggleBtns.forEach(btn => btn.classList.remove('active'));
+            sections.forEach(section => section.classList.add('hidden'));
+            document.getElementById('mode-selector').classList.remove('hidden');
+
+            if (mode === 'login') {
+                document.querySelector('[data-mode="login"]').classList.add('active');
+                document.getElementById('login-section').classList.remove('hidden');
+            } else if (mode === 'signup') {
+                document.querySelector('[data-mode="signup"]').classList.add('active');
+                document.getElementById('signup-section').classList.remove('hidden');
+            }
+        }
+
+        function showPasswordReset(e) {
+            e.preventDefault();
+            document.getElementById('mode-selector').classList.add('hidden');
+            document.querySelectorAll('.form-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('reset-section').classList.remove('hidden');
+            document.getElementById('reset-email-form').classList.remove('hidden');
+            document.getElementById('reset-email-success').classList.add('hidden');
+            document.getElementById('set-password-section').classList.add('hidden');
+            document.getElementById('password-reset-success').classList.add('hidden');
+        }
+
+        function backToLogin() {
+            switchMode('login');
+        }
+
+        function backToVerify() {
+            document.getElementById('set-password-section').classList.add('hidden');
+            document.getElementById('reset-verify-form').classList.remove('hidden');
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-new-password').value = '';
+            document.getElementById('new-password-error').textContent = '';
+            document.getElementById('confirm-new-password-error').textContent = '';
+            setTimeout(() => document.getElementById('reset-verify-email').focus(), 100);
+        }
+
+        // ============ OAUTH FUNCTIONS ============
+        async function loginWithGoogle(e) {
+            e.preventDefault();
+            if (!supabase) {
+                alert('Auth system loading. Please try again.');
+                return;
+            }
+            try {
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + window.location.pathname
+                    }
+                });
+                if (error) throw error;
+            } catch (error) {
+                alert('Google login failed: ' + error.message);
+            }
+        }
+
+        async function handleOAuthCallback(accessToken) {
+            try {
+                sessionStorage.setItem('hexa_token', accessToken);
+                localStorage.setItem('hexa_token', accessToken);
+                
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const email = user.email;
+                    const username = user.user_metadata?.username || user.email.split('@')[0];
+                    const fullname = user.user_metadata?.full_name || '';
+                    
+                    sessionStorage.setItem('hexa_email', email);
+                    sessionStorage.setItem('hexa_username', username);
+                    sessionStorage.setItem('hexa_fullname', fullname);
+                    localStorage.setItem('hexa_email', email);
+                    localStorage.setItem('hexa_username', username);
+                    localStorage.setItem('hexa_fullname', fullname);
+                    
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                console.error('OAuth callback error:', error);
+            }
+        }
+
+        // ============ PASSWORD RESET FUNCTIONS ============
+        async function handlePasswordResetToken(accessToken) {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    sessionStorage.setItem('reset_token', accessToken);
+                    showPasswordResetForm();
+                }
+            } catch (error) {
+                console.error('Token verification error:', error);
+                alert('Invalid or expired reset link. Please request a new one.');
+                backToLogin();
+            }
+        }
+
+        function showPasswordResetForm() {
+            document.getElementById('mode-selector').classList.add('hidden');
+            document.querySelectorAll('.form-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('reset-section').classList.remove('hidden');
+            document.getElementById('reset-email-form').classList.add('hidden');
+            document.getElementById('reset-email-success').classList.add('hidden');
+            document.getElementById('set-password-section').classList.remove('hidden');
+        }
+
+        // ============ FORM HANDLERS ============
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!supabase) {
+                alert('Auth system loading. Please refresh.');
+                return;
+            }
+
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            document.getElementById('login-email-error').textContent = '';
+            document.getElementById('login-password-error').textContent = '';
+
+            if (!validateEmail(email)) {
+                document.getElementById('login-email-error').textContent = 'Please enter a valid email';
+                return;
+            }
+
+            if (password.length < 6) {
+                document.getElementById('login-password-error').textContent = 'Password must be at least 6 characters';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    document.getElementById('login-email-error').textContent = error.message;
+                    return;
+                }
+
+                const { data: userData } = await supabase
+                    .from('registered_users')
+                    .select('username, full_name')
+                    .eq('email', email)
+                    .single();
+
+                sessionStorage.setItem('hexa_token', data.session.access_token);
+                sessionStorage.setItem('hexa_email', email);
+                sessionStorage.setItem('hexa_username', userData.username);
+                sessionStorage.setItem('hexa_fullname', userData.full_name);
+                localStorage.setItem('hexa_token', data.session.access_token);
+                localStorage.setItem('hexa_email', email);
+                localStorage.setItem('hexa_username', userData.username);
+                localStorage.setItem('hexa_fullname', userData.full_name);
+
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                document.getElementById('login-email-error').textContent = 'Connection error. Try again.';
+            }
+        });
+
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!supabase) {
+                alert('Auth system loading. Please refresh.');
+                return;
+            }
+
+            const username = document.getElementById('signup-username').value;
+            const fullname = document.getElementById('signup-fullname').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+
+            document.getElementById('signup-username-error').textContent = '';
+            document.getElementById('signup-fullname-error').textContent = '';
+            document.getElementById('signup-email-error').textContent = '';
+            document.getElementById('signup-password-error').textContent = '';
+            document.getElementById('signup-confirm-error').textContent = '';
+
+            let isValid = true;
+
+            if (username.length < 3) {
+                document.getElementById('signup-username-error').textContent = 'Username must be at least 3 characters';
+                isValid = false;
+            }
+            if (fullname.length < 2) {
+                document.getElementById('signup-fullname-error').textContent = 'Full name must be at least 2 characters';
+                isValid = false;
+            }
+            if (!validateEmail(email)) {
+                document.getElementById('signup-email-error').textContent = 'Please enter a valid email';
+                isValid = false;
+            }
+            if (password.length < 6) {
+                document.getElementById('signup-password-error').textContent = 'Password must be at least 6 characters';
+                isValid = false;
+            }
+            if (password !== confirm) {
+                document.getElementById('signup-confirm-error').textContent = 'Passwords do not match';
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            try {
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: { username: username, full_name: fullname }
+                    }
+                });
+
+                if (authError) {
+                    document.getElementById('signup-email-error').textContent = authError.message;
+                    return;
+                }
+
+                await supabase.from('registered_users').insert([{
+                    username: username,
+                    email: email,
+                    full_name: fullname
+                }]);
+
+                sessionStorage.setItem('hexa_email', email);
+                sessionStorage.setItem('hexa_username', username);
+                sessionStorage.setItem('hexa_fullname', fullname);
+                localStorage.setItem('hexa_email', email);
+                localStorage.setItem('hexa_username', username);
+                localStorage.setItem('hexa_fullname', fullname);
+
+                document.getElementById('signup-section').innerHTML = '<div style="text-align: center; padding: 2rem 0;"><div style="font-size: 3rem; margin-bottom: 1rem; color: var(--cyan);">✓</div><div style="color: var(--cyan); font-weight: bold; margin-bottom: 1rem; font-size: 1.2rem;">ACCOUNT CREATED</div><div style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">Welcome, ' + username + '! Check your email to verify.</div><button class="submit-btn" onclick="window.location.href=\'hexa-welcome.html\'">GO TO DASHBOARD</button></div>';
+            } catch (error) {
+                document.getElementById('signup-email-error').textContent = 'Connection error. Try again.';
+            }
+        });
+
+        document.getElementById('reset-verify-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!supabase) return;
+
+            const email = document.getElementById('reset-verify-email').value;
+            const password = document.getElementById('reset-verify-password').value;
+            const emailErr = document.getElementById('reset-verify-email-error');
+            const pwErr = document.getElementById('reset-verify-password-error');
+            const btn = document.getElementById('reset-verify-btn');
+
+            emailErr.textContent = '';
+            pwErr.textContent = '';
+
+            if (!validateEmail(email)) {
+                emailErr.textContent = 'Please enter a valid email';
+                return;
+            }
+
+            if (password.length < 6) {
+                pwErr.textContent = 'Password must be at least 6 characters';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'VERIFYING...';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    emailErr.textContent = 'Invalid email or password';
+                    btn.disabled = false;
+                    btn.textContent = 'VERIFY & CONTINUE';
+                    return;
+                }
+
+                // Store token for password update
+                sessionStorage.setItem('hexa_reset_token', data.session.access_token);
+                sessionStorage.setItem('hexa_reset_email', email);
+
+                // Sign out and show password form
+                await supabase.auth.signOut();
+                document.getElementById('reset-verify-form').classList.add('hidden');
+                document.getElementById('set-password-section').classList.remove('hidden');
+                btn.disabled = false;
+                btn.textContent = 'VERIFY & CONTINUE';
+                setTimeout(() => document.getElementById('new-password').focus(), 100);
+            } catch (error) {
+                emailErr.textContent = 'Connection error. Try again.';
+                btn.disabled = false;
+                btn.textContent = 'VERIFY & CONTINUE';
+            }
+        });
+
+        document.getElementById('set-password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!supabase) return;
+
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-new-password').value;
+            const newPwErr = document.getElementById('new-password-error');
+            const confirmErr = document.getElementById('confirm-new-password-error');
+            const btn = document.getElementById('set-password-btn');
+
+            newPwErr.textContent = '';
+            confirmErr.textContent = '';
+
+            if (newPassword.length < 6) {
+                newPwErr.textContent = 'Password must be at least 6 characters';
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                confirmErr.textContent = 'Passwords do not match';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'UPDATING...';
+
+            try {
+                const token = sessionStorage.getItem('hexa_reset_token');
+                
+                // Use the token to set session and update password
+                const { error: sessionError } = await supabase.auth.setSession({
+                    access_token: token,
+                    refresh_token: token
+                });
+
+                if (sessionError) {
+                    newPwErr.textContent = 'Session expired. Please verify again.';
+                    btn.disabled = false;
+                    btn.textContent = 'UPDATE PASSWORD';
+                    backToVerify();
+                    return;
+                }
+
+                const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+                if (error) {
+                    newPwErr.textContent = error.message || 'Failed to update password';
+                    btn.disabled = false;
+                    btn.textContent = 'UPDATE PASSWORD';
+                    return;
+                }
+
+                await supabase.auth.signOut();
+                sessionStorage.removeItem('hexa_reset_token');
+                sessionStorage.removeItem('hexa_reset_email');
+                
+                document.getElementById('set-password-section').classList.add('hidden');
+                document.getElementById('password-reset-success').classList.remove('hidden');
+            } catch (error) {
+                newPwErr.textContent = 'Connection error. Try again.';
+                btn.disabled = false;
+                btn.textContent = 'UPDATE PASSWORD';
+            }
+        });
+
+        // Mode toggle buttons
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                switchMode(btn.dataset.mode);
+            });
+        });
+    </script>
+</body>
+</html>
