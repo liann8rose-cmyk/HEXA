@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Flagged Content Review</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Barlow:wght@300;400&display=swap');
+
+  :root {
+    --bg: #00030a;
+    --panel: #040d1a;
+    --border: #0a2040;
+    --green: #00ff88;
+    --purple: #aa55ee;
+    --purple-light: #cc88ff;
+    --red: #ff2255;
+    --red-dim: #3a0010;
+    --white: #ffffff;
+    --grey: #4a6080;
+    --yellow: #ffcc00;
+    --cyan: #00ffee;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Barlow', sans-serif;
+    color: var(--white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(60deg, transparent, transparent 28px, rgba(0,255,136,0.03) 28px, rgba(0,255,136,0.03) 29px),
+      repeating-linear-gradient(-60deg, transparent, transparent 28px, rgba(0,255,136,0.03) 28px, rgba(0,255,136,0.03) 29px),
+      repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,255,136,0.02) 28px, rgba(0,255,136,0.02) 29px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; width: 100%; max-width: 540px; }
+
+  /* ── HEADER ── */
+  .admin-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .hexa-logo { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
+  .hexa-logo svg { width: 100%; height: 100%; }
+  .admin-title { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--green); letter-spacing: 3px; text-transform: uppercase; }
+  .admin-subtitle { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: .2em; color: var(--white); }
+  .badge-count {
+    margin-left: auto;
+    background: var(--red);
+    color: #fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    animation: pulse-badge 2s infinite;
+    white-space: nowrap;
+  }
+  @keyframes pulse-badge { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+  /* ── LOADING / EMPTY ── */
+  .state-msg {
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .1em;
+    color: var(--grey);
+    padding: 40px 0;
+  }
+  .state-msg .icon { font-size: 32px; margin-bottom: 12px; }
+
+  /* ── NAVIGATION ── */
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 8px;
+  }
+  .nav-btn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 12px;
+    letter-spacing: .15em;
+    padding: 6px 14px;
+    background: rgba(0,255,238,.06);
+    border: 1px solid rgba(0,255,238,.2);
+    color: var(--cyan);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .nav-btn:hover { background: rgba(0,255,238,.14); }
+  .nav-btn:disabled { opacity: .25; cursor: default; pointer-events: none; }
+  .nav-counter { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--grey); letter-spacing: .1em; }
+
+  /* ── CARD ── */
+  .flag-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--red);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(255,34,85,.08), 0 0 80px rgba(0,0,0,.6);
+    animation: card-in .35s ease;
+  }
+  @keyframes card-in { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+  .card-topbar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 18px;
+    background: rgba(255,34,85,.06);
+    border-bottom: 1px solid var(--border);
+  }
+  .warn-icon { font-size: 15px; animation: pulse-badge 1.5s infinite; }
+  .card-topbar-label { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--red); letter-spacing: 2px; text-transform: uppercase; }
+  .card-topbar-time { margin-left: auto; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--grey); }
+
+  /* user row */
+  .user-row { display:flex; align-items:center; gap:14px; padding:16px 18px; border-bottom:1px solid var(--border); }
+  .avatar {
+    width:42px; height:42px; border-radius:50%;
+    background: linear-gradient(135deg,#1a0a30,#0a1a30);
+    border:1px solid var(--purple);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--purple-light); flex-shrink:0;
+  }
+  .user-info { flex:1; }
+  .username { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:.1em; color:var(--white); }
+  .user-email { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--grey); margin-top:2px; }
+  .user-id    { font-family:'Share Tech Mono',monospace; font-size:9px; color:rgba(255,255,255,.2); margin-top:2px; }
+  .blocked-tag {
+    background:rgba(255,34,85,.12); border:1px solid rgba(255,34,85,.35);
+    color:var(--red); font-family:'Share Tech Mono',monospace;
+    font-size:10px; padding:3px 9px; border-radius:2px; letter-spacing:1px;
+  }
+
+  /* image */
+  .image-section { padding:16px 18px; border-bottom:1px solid var(--border); }
+  .section-label { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--grey); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+  .image-preview {
+    width:100%; height:200px;
+    background:#060f1e;
+    border:1px solid var(--border); border-radius:4px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+    cursor:pointer; position:relative; overflow:hidden; transition:border-color .2s;
+  }
+  .image-preview:hover { border-color:var(--purple); }
+  .image-preview-blur {
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(45deg,rgba(10,20,40,.92) 0,rgba(10,20,40,.92) 6px,rgba(15,30,55,.92) 6px,rgba(15,30,55,.92) 12px);
+    backdrop-filter:blur(4px);
+  }
+  .image-preview-content { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .eye-icon { font-size:28px; opacity:.45; }
+  .preview-text { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--grey); letter-spacing:1px; }
+  .preview-reveal-btn {
+    background:rgba(170,85,238,.15); border:1px solid rgba(170,85,238,.4);
+    color:var(--purple-light); font-family:'Share Tech Mono',monospace;
+    font-size:11px; padding:6px 14px; border-radius:3px; cursor:pointer; letter-spacing:1px; transition:all .2s;
+  }
+  .preview-reveal-btn:hover { background:rgba(170,85,238,.3); border-color:var(--purple-light); }
+  .revealed-img { width:100%; height:100%; object-fit:contain; display:block; }
+
+  /* detections */
+  .detection-row { padding:12px 18px; display:flex; flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--border); }
+  .det-tag { font-family:'Share Tech Mono',monospace; font-size:10px; padding:4px 10px; border-radius:2px; letter-spacing:1px; }
+  .det-tag.hit { background:rgba(255,34,85,.12); border:1px solid rgba(255,34,85,.35); color:var(--red); }
+  .det-tag.miss { background:rgba(10,32,64,.6); border:1px solid var(--border); color:var(--grey); }
+  .conf-row { display:flex; align-items:center; gap:8px; padding:0 18px 14px; }
+  .conf-label { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--grey); letter-spacing:2px; }
+  .conf-value { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--yellow); }
+
+  /* scan detail */
+  .scan-detail { padding:10px 18px; border-bottom:1px solid var(--border); font-family:'Share Tech Mono',monospace; font-size:10px; color:rgba(255,255,255,.3); letter-spacing:.06em; line-height:1.7; }
+  .scan-detail span { color:rgba(255,255,255,.55); }
+
+  /* actions */
+  .actions { display:grid; grid-template-columns:1fr 1fr; border-top:1px solid var(--border); }
+  .btn {
+    padding:18px; font-family:'Bebas Neue',sans-serif; font-size:13px;
+    font-weight:700; letter-spacing:2px; text-transform:uppercase;
+    cursor:pointer; border:none;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:all .2s; position:relative; overflow:hidden;
+  }
+  .btn::after { content:''; position:absolute; inset:0; opacity:0; transition:opacity .2s; }
+  .btn:hover::after { opacity:1; }
+  .btn-release { background:rgba(0,255,136,.05); color:var(--green); border-right:1px solid var(--border); }
+  .btn-release::after { background:rgba(0,255,136,.08); }
+  .btn-release:hover { color:#fff; }
+  .btn-delete { background:rgba(255,34,85,.05); color:var(--red); }
+  .btn-delete::after { background:rgba(255,34,85,.1); }
+  .btn-delete:hover { color:#fff; }
+  .btn:disabled { opacity:.3; cursor:default; pointer-events:none; }
+
+  /* divider */
+  .divider-label { text-align:center; font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--grey); letter-spacing:3px; margin:28px 0 16px; text-transform:uppercase; }
+
+  /* blocked screen preview */
+  .blocked-screen {
+    background:var(--panel); border:1px solid var(--border);
+    border-top:2px solid var(--yellow); border-radius:6px; padding:28px 24px; text-align:center;
+  }
+  .blocked-screen-label { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--grey); letter-spacing:3px; margin-bottom:12px; }
+  .blocked-screen-title { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:.15em; color:var(--yellow); margin-bottom:8px; }
+  .blocked-screen-sub { font-size:13px; color:var(--grey); line-height:1.7; }
+  .blocked-email { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--purple-light); margin-top:12px; padding:8px 14px; background:rgba(170,85,238,.07); border:1px solid rgba(170,85,238,.2); border-radius:3px; display:inline-block; }
+
+  /* toast */
+  .toast {
+    position:fixed; bottom:30px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    padding:12px 24px; border-radius:4px;
+    font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:1px;
+    opacity:0; transition:all .3s; pointer-events:none; z-index:100;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.green { background:rgba(0,255,136,.15); border:1px solid var(--green); color:var(--green); }
+  .toast.red   { background:rgba(255,34,85,.15);  border:1px solid var(--red);   color:var(--red); }
+  .toast.yellow{ background:rgba(255,204,0,.12);  border:1px solid var(--yellow);color:var(--yellow); }
+
+  /* spinner */
+  .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.15); border-top-color:var(--cyan); border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="hexa-logo">
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="none" stroke="#00ff88" stroke-width="1.5"/>
+        <polygon points="20,8 30,14 30,26 20,32 10,26 10,14" fill="none" stroke="#00ff88" stroke-width="0.8" opacity="0.4"/>
+        <circle cx="20" cy="20" r="3" fill="#00ff88" opacity="0.8"/>
+      </svg>
+    </div>
+    <div>
+      <div class="admin-title">Hexa Platform</div>
+      <div class="admin-subtitle">Admin Surveillance</div>
+    </div>
+    <div class="badge-count" id="badge-count">— FLAGGED</div>
+  </div>
+
+  <!-- Loading state -->
+  <div class="state-msg" id="state-loading">
+    <span class="spinner"></span> Loading flagged content...
+  </div>
+
+  <!-- Empty state -->
+  <div class="state-msg" id="state-empty" style="display:none;">
+    <div class="icon">✅</div>
+    NO PENDING FLAGS<br>
+    <span style="font-size:10px;opacity:.6;">All clear — nothing to review</span>
+    <br><br>
+    <button onclick="loadFlags()" style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.12em;padding:7px 18px;background:rgba(0,255,238,.06);border:1px solid rgba(0,255,238,.2);color:#00ffee;border-radius:2px;cursor:pointer;">↻ REFRESH</button>
+  </div>
+
+  <!-- Navigation between multiple flags -->
+  <div class="nav-row" id="nav-row" style="display:none;">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)">◀ PREV</button>
+    <span class="nav-counter" id="nav-counter">1 / 1</span>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">NEXT ▶</button>
+  </div>
+
+  <!-- Flag Card -->
+  <div class="flag-card" id="flag-card" style="display:none;">
+
+    <div class="card-topbar">
+      <span class="warn-icon">⚠️</span>
+      <span class="card-topbar-label">Suspicious Content Detected</span>
+      <span class="card-topbar-time" id="card-time"></span>
+    </div>
+    <div id="auto-delete-bar" style="padding:7px 18px;background:rgba(255,100,0,.07);border-bottom:1px solid rgba(255,100,0,.15);display:none;align-items:center;justify-content:space-between;">
+      <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,150,0,.7);letter-spacing:.12em;">⏳ AUTO-DELETES IN</span>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#ff9944;letter-spacing:.1em;" id="auto-delete-countdown">—</span>
+    </div>
+
+    <div class="user-row">
+      <div class="avatar" id="card-avatar">?</div>
+      <div class="user-info">
+        <div class="username" id="card-username">—</div>
+        <div class="user-email" id="card-email">—</div>
+        <div class="user-id" id="card-userid"></div>
+      </div>
+      <div class="blocked-tag">BLOCKED</div>
+    </div>
+
+    <div class="image-section">
+      <div class="section-label">Flagged Image</div>
+      <div class="image-preview" id="img-preview" onclick="revealImage()">
+        <div class="image-preview-blur"></div>
+        <div class="image-preview-content">
+          <div class="eye-icon">🔒</div>
+          <div class="preview-text">CONTENT HIDDEN</div>
+          <button class="preview-reveal-btn">CLICK TO REVIEW</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="detection-row" id="detection-row">
+      <div class="section-label" style="width:100%;margin-bottom:4px;">Detection Results</div>
+      <!-- filled dynamically -->
+    </div>
+
+    <div class="conf-row">
+      <span class="conf-label">CONFIDENCE</span>
+      <span class="conf-value" id="card-confidence">—</span>
+    </div>
+
+    <div class="scan-detail" id="scan-detail" style="display:none;"></div>
+
+    <div class="actions">
+      <button class="btn btn-release" id="btn-release" onclick="handleRelease()">✅ RELEASE</button>
+      <button class="btn btn-delete"  id="btn-delete"  onclick="handleDelete()">🗑️ DELETE</button>
+    </div>
+
+  </div>
+
+  <!-- User-facing blocked screen preview -->
+  <div id="blocked-preview-wrap" style="display:none;">
+    <div class="divider-label">User Side — Blocked Login Screen</div>
+    <div class="blocked-screen">
+      <div class="blocked-screen-label">Login Attempt</div>
+      <div class="blocked-screen-title">⛔ Account Blocked</div>
+      <div class="blocked-screen-sub">
+        Your account has been temporarily blocked pending admin review.<br>
+        No action is required from you at this time.
+      </div>
+      <div class="blocked-email" id="blocked-email-display">—</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ CONFIG ══════════════════════════════════════════════════════
+const SB_URL      = 'https://nfxyxnmatuzmqctttqnk.supabase.co';
+const SB_KEY      = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg';
+const SB_HDR      = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+const ADMIN_EMAIL = 'hexainfooohexa@gmail.com';
+const AUTO_DELETE_HOURS = 72;
+
+/*
+  ══════════════════════════════════════════════════════════════════
+  TABLE: flagged_content
+  ══════════════════════════════════════════════════════════════════
+  id            uuid  primary key default uuid_generate_v4()
+  username      text  not null
+  email         text
+  user_id       text
+  image_url     text                 -- Supabase Storage path or full URL
+  detections    jsonb                -- [{"label":"NUDITY","hit":true}, ...]
+  confidence    numeric              -- 0–100
+  scan_detail   text
+  status        text  default 'pending'  -- pending | released | deleted | auto-deleted
+  flagged_at    timestamptz default now()
+  reviewed_at   timestamptz
+  reviewed_by   text
+
+  Also used:
+    registered_users  (blocked boolean)
+    online_users      (username)
+
+  ══════════════════════════════════════════════════════════════════
+  STEP 1 — EMAIL ALERT (Supabase Edge Function)
+  ══════════════════════════════════════════════════════════════════
+  Create Edge Function: notify-admin-flag
+  Add secrets: RESEND_API_KEY, ADMIN_EMAIL = hexainfooohexa@gmail.com
+
+  // notify-admin-flag/index.ts
+  import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+  serve(async (req) => {
+    const { record } = await req.json();
+    const autoDeleteAt = new Date(new Date(record.flagged_at).getTime() + 72*60*60*1000);
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${Deno.env.get("RESEND_API_KEY")}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        from: "HEXA Platform <onboarding@resend.dev>",
+        to: [Deno.env.get("ADMIN_EMAIL") || "hexainfooohexa@gmail.com"],
+        subject: `⚠ HEXA FLAG — @${record.username} · Review required`,
+        html: `
+          <div style="font-family:monospace;background:#00030a;color:#fff;padding:24px;border-radius:8px;max-width:500px;">
+            <h2 style="color:#ff2255;letter-spacing:2px;margin:0 0 8px;">⚠ FLAGGED CONTENT</h2>
+            <p style="color:#aaa;font-size:13px;margin:0 0 16px;">A new content flag requires your review.</p>
+            <table style="width:100%;font-size:13px;border-collapse:collapse;">
+              <tr><td style="color:#4a6080;padding:5px 0;width:120px;">USER</td><td style="color:#fff;">@${record.username}</td></tr>
+              <tr><td style="color:#4a6080;padding:5px 0;">EMAIL</td><td style="color:#fff;">${record.email || '—'}</td></tr>
+              <tr><td style="color:#4a6080;padding:5px 0;">CONFIDENCE</td><td style="color:#ffcc00;">${record.confidence ?? '—'}%</td></tr>
+              <tr><td style="color:#4a6080;padding:5px 0;">FLAGGED AT</td><td style="color:#fff;">${record.flagged_at}</td></tr>
+              <tr><td style="color:#4a6080;padding:5px 0;">AUTO-DELETE</td><td style="color:#ff6688;">${autoDeleteAt.toISOString()} (72h)</td></tr>
+            </table>
+            <div style="margin:18px 0;padding:12px;background:rgba(255,34,85,.12);border-left:3px solid #ff2255;color:#ff8899;font-size:12px;line-height:1.7;">
+              ⏳ This account will be <strong>automatically deleted in 72 hours</strong> if you take no action.<br>
+              Open admin review to RELEASE or DELETE manually.
+            </div>
+          </div>`
+      })
+    });
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  });
+
+  Then create a Database Webhook:
+    Table: flagged_content  |  Event: INSERT  |  Function: notify-admin-flag
+
+  ══════════════════════════════════════════════════════════════════
+  STEP 2 — AUTO-DELETE AFTER 72H (pg_cron)
+  ══════════════════════════════════════════════════════════════════
+  Run this SQL once in Supabase SQL Editor:
+
+  create extension if not exists pg_cron;
+
+  select cron.schedule(
+    'hexa-auto-delete-blocked-72h',
+    '0 * * * *',
+    $$
+      with expired as (
+        select username from flagged_content
+        where status = 'pending'
+          and flagged_at < now() - interval '72 hours'
+      )
+      delete from registered_users where username in (select username from expired);
+
+      delete from online_users where username in (
+        select username from flagged_content
+        where status = 'pending' and flagged_at < now() - interval '72 hours'
+      );
+
+      update flagged_content
+        set status = 'auto-deleted',
+            reviewed_at = now(),
+            reviewed_by = 'system:auto-72h'
+      where status = 'pending'
+        and flagged_at < now() - interval '72 hours';
+    $$
+  );
+*/
+
+let _flags   = [];   // all pending flags loaded
+let _idx     = 0;    // current index
+let _imageUrl = null;
+
+// ── INIT ────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', loadFlags);
+
+async function sb(path, opts = {}) {
+  const url = SB_URL + path;
+  const fetchOpts = {
+    mode: 'cors',
+    headers: { ...SB_HDR, ...(opts.headers || {}) },
+    ...opts
+  };
+  delete fetchOpts.headers; // rebuild cleanly
+  fetchOpts.headers = { ...SB_HDR, ...(opts.headers || {}) };
+
+  let res;
+  try {
+    res = await fetch(url, fetchOpts);
+  } catch(e) {
+    // Network/CORS error — show helpful message
+    throw new Error('NETWORK: ' + e.message + ' — Is the file served from a web server? (not file://)');
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error('HTTP ' + res.status + ': ' + body);
+  }
+  const ct = res.headers.get('content-type') || '';
+  if (res.status === 204) return null;
+  return ct.includes('json') ? res.json() : null;
+}
+
+async function loadFlags() {
+  showEl('state-loading', true);
+  showEl('state-empty',   false);
+  showEl('flag-card',     false);
+  showEl('nav-row',       false);
+  showEl('blocked-preview-wrap', false);
+
+  // Check if file is opened as file:// — Supabase will block CORS
+  if (location.protocol === 'file:') {
+    showEl('state-loading', false);
+    document.getElementById('state-empty').innerHTML = `
+      <div class="icon">⚠️</div>
+      FILE:// NOT SUPPORTED<br>
+      <span style="font-size:10px;opacity:.6;line-height:2;">
+        Open this file from a web server or your Hexa domain.<br>
+        Supabase blocks requests from local file:// origins.
+      </span>`;
+    showEl('state-empty', true);
+    return;
+  }
+
+  try {
+    _flags = await sb(
+      '/rest/v1/flagged_content?status=eq.pending&order=flagged_at.asc&select=*'
+    );
+    _flags = _flags || [];
+  } catch(e) {
+    console.error('[loadFlags]', e);
+    _flags = [];
+    const msg = e.message || '';
+    if (msg.includes('NETWORK') || msg.includes('Failed to fetch')) {
+      showToast('⚠ Network error — check your connection or CORS settings', 'yellow');
+      document.getElementById('state-empty').innerHTML = `
+        <div class="icon">🔌</div>
+        CANNOT REACH SUPABASE<br>
+        <span style="font-size:10px;opacity:.6;line-height:2;">
+          Check: table exists · RLS allows anon read · network is online
+        </span>`;
+    } else if (msg.includes('404') || msg.includes('relation') || msg.includes('does not exist')) {
+      showToast('⚠ Table "flagged_content" not found — create it first', 'yellow');
+      document.getElementById('state-empty').innerHTML = `
+        <div class="icon">🗄️</div>
+        TABLE NOT FOUND<br>
+        <span style="font-size:10px;opacity:.6;line-height:2;">
+          Create the "flagged_content" table in Supabase first.<br>
+          See the SQL in the script comments.
+        </span>`;
+    } else if (msg.includes('401') || msg.includes('403') || msg.includes('JWT')) {
+      showToast('⚠ Auth error — check your Supabase anon key', 'yellow');
+      document.getElementById('state-empty').innerHTML = `
+        <div class="icon">🔑</div>
+        AUTH ERROR<br>
+        <span style="font-size:10px;opacity:.6;line-height:2;">
+          Supabase rejected the API key.<br>
+          Check RLS policies allow anon SELECT on flagged_content.
+        </span>`;
+    } else {
+      showToast('⚠ ' + msg.slice(0, 80), 'yellow');
+    }
+    showEl('state-loading', false);
+    showEl('state-empty', true);
+    return;
+  }
+
+  showEl('state-loading', false);
+
+  const count = _flags.length;
+  document.getElementById('badge-count').textContent = count + (count === 1 ? ' FLAGGED' : ' FLAGGED');
+
+  if (count === 0) {
+    showEl('state-empty', true);
+    return;
+  }
+
+  _idx = 0;
+  renderFlag(_idx);
+  updateNav();
+}
+
+function renderFlag(i) {
+  const f = _flags[i];
+  if (!f) return;
+
+  _imageUrl = f.image_url || null;
+
+  // avatar initial
+  const initial = (f.username || '?')[0].toUpperCase();
+  document.getElementById('card-avatar').textContent    = initial;
+  document.getElementById('card-username').textContent  = '@' + (f.username || '—');
+  document.getElementById('card-email').textContent     = f.email || '—';
+  document.getElementById('card-userid').textContent    = f.user_id ? 'ID: ' + f.user_id : '';
+  document.getElementById('card-time').textContent      = f.flagged_at
+    ? new Date(f.flagged_at).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'})
+    : '—';
+  document.getElementById('card-confidence').textContent =
+    f.confidence != null ? Number(f.confidence).toFixed(1) + '%' : '—';
+
+  // scan detail
+  const sdEl = document.getElementById('scan-detail');
+  if (f.scan_detail) {
+    sdEl.style.display = '';
+    sdEl.innerHTML = 'SCAN: <span>' + esc(f.scan_detail) + '</span>';
+  } else {
+    sdEl.style.display = 'none';
+  }
+
+  // detections
+  const detRow = document.getElementById('detection-row');
+  detRow.innerHTML = '<div class="section-label" style="width:100%;margin-bottom:4px;">Detection Results</div>';
+  const dets = Array.isArray(f.detections) ? f.detections : [];
+  dets.forEach(d => {
+    const tag = document.createElement('span');
+    tag.className = 'det-tag ' + (d.hit ? 'hit' : 'miss');
+    tag.textContent = (d.hit ? '' : '') + esc(d.label) + (d.hit ? ' DETECTED' : ' — CLEAR');
+    detRow.appendChild(tag);
+  });
+  if (!dets.length) {
+    const tag = document.createElement('span');
+    tag.className = 'det-tag hit';
+    tag.textContent = 'CONTENT FLAGGED';
+    detRow.appendChild(tag);
+  }
+
+  // reset image to hidden
+  const preview = document.getElementById('img-preview');
+  preview.style.cursor = 'pointer';
+  preview.onclick = revealImage;
+  preview.innerHTML = `
+    <div class="image-preview-blur"></div>
+    <div class="image-preview-content">
+      <div class="eye-icon">🔒</div>
+      <div class="preview-text">CONTENT HIDDEN</div>
+      <button class="preview-reveal-btn">CLICK TO REVIEW</button>
+    </div>`;
+
+  // enable buttons
+  document.getElementById('btn-release').disabled = false;
+  document.getElementById('btn-delete').disabled  = false;
+
+  // blocked screen preview
+  if (f.email) {
+    document.getElementById('blocked-email-display').textContent = f.email;
+    showEl('blocked-preview-wrap', true);
+  }
+
+  showEl('flag-card', true);
+  // animate card
+  const card = document.getElementById('flag-card');
+  card.style.animation = 'none';
+  card.offsetHeight; // reflow
+  card.style.animation = 'card-in .35s ease';
+}
+
+function revealImage() {
+  const preview = document.getElementById('img-preview');
+  preview.onclick = null;
+  preview.style.cursor = 'default';
+
+  if (_imageUrl) {
+    // Resolve Supabase Storage path if needed
+    const url = _imageUrl.startsWith('http')
+      ? _imageUrl
+      : SB_URL + '/storage/v1/object/public/' + _imageUrl;
+
+    preview.innerHTML = `<img class="revealed-img" src="${url}" alt="Flagged content"
+      onerror="this.parentElement.innerHTML='<div style=\'padding:20px;text-align:center;font-family:Share Tech Mono,monospace;font-size:11px;color:#4a6080;\'>⚠ Image could not be loaded<br><span style=\'font-size:9px;opacity:.6;\'>${esc(url)}</span></div>'"
+    />`;
+  } else {
+    preview.innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;
+        justify-content:center;gap:8px;background:linear-gradient(135deg,#0a0a1a,#1a0a0a);
+        font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a6080;letter-spacing:1px;">
+        <span style="font-size:30px;opacity:.3;">🖼️</span>
+        <span>No image URL stored</span>
+      </div>`;
+  }
+}
+
+// ── RELEASE ──────────────────────────────────────────────────────
+async function handleRelease() {
+  const f = _flags[_idx];
+  if (!f) return;
+  if (!confirm('Release @' + f.username + '? The user will be unblocked and remain on the platform.')) return;
+
+  disableActions();
+  try {
+    // 1. Mark flag as released
+    await sb('/rest/v1/flagged_content?id=eq.' + f.id, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'released', reviewed_at: new Date().toISOString() })
+    });
+
+    // 2. Unblock user in registered_users
+    await sb('/rest/v1/registered_users?username=eq.' + encodeURIComponent(f.username), {
+      method: 'PATCH',
+      body: JSON.stringify({ blocked: false })
+    });
+
+    // 3. Update user_suspicion score (reduce)
+    try {
+      const susRes = await sb('/rest/v1/user_suspicion?username=eq.' + encodeURIComponent(f.username) + '&select=*&limit=1');
+      if (susRes && susRes.length > 0) {
+        const row = susRes[0];
+        const newScore = Math.max(0, (row.score || 0) - 20);
+        await sb('/rest/v1/user_suspicion?username=eq.' + encodeURIComponent(f.username), {
+          method: 'PATCH',
+          body: JSON.stringify({
+            score: newScore,
+            cleared_count: (row.cleared_count || 0) + 1,
+            updated_at: new Date().toISOString()
+          })
+        });
+      }
+    } catch(e) { /* suspicion table optional */ }
+
+    showToast('✅ @' + f.username + ' RELEASED — account unblocked', 'green');
+    advanceAfterAction();
+  } catch(e) {
+    console.error(e);
+    showToast('✕ Release failed: ' + e.message, 'red');
+    enableActions();
+  }
+}
+
+// ── DELETE ───────────────────────────────────────────────────────
+async function handleDelete() {
+  const f = _flags[_idx];
+  if (!f) return;
+  if (!confirm('DELETE @' + f.username + ' permanently?\n\nThis will:\n• Delete their account\n• Remove all their messages\n• Cannot be undone.')) return;
+
+  disableActions();
+  try {
+    // 1. Mark flag as deleted
+    await sb('/rest/v1/flagged_content?id=eq.' + f.id, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'deleted', reviewed_at: new Date().toISOString() })
+    });
+
+    // 2. Delete from registered_users
+    await sb('/rest/v1/registered_users?username=eq.' + encodeURIComponent(f.username), {
+      method: 'DELETE'
+    });
+
+    // 3. Remove from online_users (kick session)
+    try {
+      await sb('/rest/v1/online_users?username=eq.' + encodeURIComponent(f.username), {
+        method: 'DELETE'
+      });
+    } catch(e) { /* ignore if not online */ }
+
+    // 4. Remove suspicion row
+    try {
+      await sb('/rest/v1/user_suspicion?username=eq.' + encodeURIComponent(f.username), {
+        method: 'DELETE'
+      });
+    } catch(e) { /* optional */ }
+
+    showToast('🗑️ @' + f.username + ' DELETED — account permanently removed', 'red');
+    advanceAfterAction();
+  } catch(e) {
+    console.error(e);
+    showToast('✕ Delete failed: ' + e.message, 'red');
+    enableActions();
+  }
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────────
+function navigate(dir) {
+  _idx = Math.max(0, Math.min(_flags.length - 1, _idx + dir));
+  renderFlag(_idx);
+  updateNav();
+}
+
+function updateNav() {
+  const count = _flags.length;
+  const navRow = document.getElementById('nav-row');
+  navRow.style.display = count > 1 ? 'flex' : 'none';
+  document.getElementById('nav-counter').textContent = (_idx + 1) + ' / ' + count;
+  document.getElementById('btn-prev').disabled = _idx === 0;
+  document.getElementById('btn-next').disabled = _idx === count - 1;
+}
+
+function advanceAfterAction() {
+  // Fade card out then remove from list and move to next
+  const card = document.getElementById('flag-card');
+  card.style.transition = 'all .4s';
+  card.style.opacity = '0';
+  card.style.transform = 'scale(.97)';
+  setTimeout(() => {
+    card.style.transition = '';
+    card.style.opacity = '';
+    card.style.transform = '';
+    _flags.splice(_idx, 1);
+    const count = _flags.length;
+    document.getElementById('badge-count').textContent = count + (count === 1 ? ' FLAGGED' : ' FLAGGED');
+    if (count === 0) {
+      showEl('flag-card', false);
+      showEl('nav-row', false);
+      showEl('blocked-preview-wrap', false);
+      showEl('state-empty', true);
+    } else {
+      _idx = Math.min(_idx, count - 1);
+      renderFlag(_idx);
+      updateNav();
+    }
+  }, 420);
+}
+
+function disableActions() {
+  document.getElementById('btn-release').disabled = true;
+  document.getElementById('btn-delete').disabled  = true;
+}
+function enableActions() {
+  document.getElementById('btn-release').disabled = false;
+  document.getElementById('btn-delete').disabled  = false;
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────
+function showEl(id, visible) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = visible ? '' : 'none';
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  clearTimeout(t._timer);
+  setTimeout(() => t.classList.add('show'), 10);
+  t._timer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function esc(str) {
+  return String(str || '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
