@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HEXA · Register</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: #00030a;
+    color: #fff;
+    font-family: 'Barlow', sans-serif;
+  }
+
+  #hexCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  #leftCanvas, #rightCanvas {
+    position: fixed;
+    top: 0;
+    width: clamp(140px, 15vw, 260px);
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+  #leftCanvas { left: 0; }
+  #rightCanvas { right: 0; }
+  @media (min-width: 768px) and (max-width: 1024px) {
+    #leftCanvas, #rightCanvas { display: none; }
+  }
+
+  .page {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 20px 0;
+    width: 100%;
+  }
+
+  @media (max-height: 600px) {
+    .page {
+      padding: 10px 0;
+      justify-content: flex-start;
+    }
+  }
+
+  @media (orientation: landscape) {
+    .page {
+      padding: 16px 0;
+      justify-content: center;
+    }
+  }
+
+  .center-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    padding: 0 24px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  @media (orientation: landscape) {
+    .center-col {
+      max-width: 70vw;
+      padding: 0 16px;
+    }
+  }
+
+  /* ── LOGO ── */
+  .logo-area {
+    position: relative;
+    width: 70%;
+    max-width: 200px;
+    height: 70px;
+    margin-bottom: 2px;
+    margin-top: 12px;
+    margin-left: 20px;
+    margin-right: 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  #logoCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: none;
+  }
+
+  .logo-text {
+    position: relative;
+    z-index: 2;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.04em;
+    background: linear-gradient(135deg, #fff 30%, #00f0ff 70%, #ff00ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 15px rgba(0,240,255,0.6)) drop-shadow(0 0 8px rgba(255,0,255,0.4));
+    animation: logoPulse 3s ease-in-out infinite;
+    white-space: nowrap;
+    margin: 0 auto;
+    padding: 0;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  @keyframes logoPulse {
+    0%, 100% { filter: drop-shadow(0 0 12px rgba(0,240,255,0.5)); }
+    50% { filter: drop-shadow(0 0 24px rgba(255,0,255,0.7)); }
+  }
+
+  .subtitle {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.55em;
+    color: #00f0ff;
+    margin-bottom: 4px;
+    margin-top: 2px;
+    opacity: 0.9;
+    text-transform: uppercase;
+  }
+
+  /* ── TAB ROW ── */
+  .tab-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 7px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    padding: 8px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .tab-btn.active {
+    background: linear-gradient(135deg, #00f0ff, #0077cc);
+    color: #000;
+    border: none;
+  }
+
+  .tab-btn.inactive {
+    background: transparent;
+    color: #00f0ff;
+    border: 1px solid rgba(0,240,255,0.35);
+  }
+
+  .tab-btn.inactive:hover {
+    border-color: #ff00ff;
+    color: #ff00ff;
+  }
+
+  /* ── CARD ── */
+  .card {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(0,240,255,0.25);
+    border-radius: 4px;
+    padding: 12px 16px;
+    backdrop-filter: blur(0px);
+    animation: slideUp 0.5s ease forwards;
+    opacity: 0;
+    transform: none;
+  }
+
+  @keyframes slideUp {
+    to { opacity: 1; }
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.25em;
+    color: #fff;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  /* ── TWO COLUMN FIELDS ── */
+  .fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px 10px;
+    margin-bottom: 8px;
+  }
+
+  .field-full {
+    grid-column: 1 / -1;
+  }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.95);
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+
+  .field input {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 2px;
+    padding: 8px 10px;
+    color: #fff;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+
+  .field input:focus {
+    border-color: #00f0ff;
+    box-shadow: 0 0 10px rgba(0,240,255,0.12);
+  }
+
+  .field input::placeholder { color: rgba(255,255,255,0.65); }
+
+  .field-note {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 3px;
+    letter-spacing: 0.04em;
+  }
+
+  .age-note {
+    font-size: 11px;
+    color: #ff4466;
+    margin-top: 3px;
+    display: none;
+  }
+
+  .pw-wrap { position: relative; display: flex; align-items: center; }
+  .pw-wrap input { flex: 1; padding-right: 30px; }
+  .pw-eye {
+    position: absolute; right: 8px;
+    cursor: pointer; font-size: 13px;
+    color: rgba(255,255,255,.85);
+    user-select: none; -webkit-user-select: none;
+  }
+  .pw-eye:hover { color: #fff; }
+
+  /* strength bar */
+  .strength-track {
+    height: 2px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+  }
+  .strength-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 2px;
+    transition: width .3s, background-color .3s;
+  }
+  .strength-label {
+    font-size: 8px;
+    letter-spacing: .1em;
+    color: rgba(255,255,255,.6);
+    margin-top: 2px;
+  }
+
+  /* ── REGISTER BUTTON ── */
+  .btn-register {
+    width: 100%;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.25em;
+    padding: 10px;
+    background: linear-gradient(135deg, #00f0ff, #0077cc);
+    color: #000;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 8px;
+    margin-top: 2px;
+  }
+
+  .btn-register::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #ff00ff, #7700ff);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .btn-register:hover::after { opacity: 1; }
+  .btn-register span { position: relative; z-index: 1; color: #000; }
+  .btn-register:hover span { color: #fff; }
+  .btn-register:hover { transform: translateY(-1px); box-shadow: 0 0 20px rgba(0,240,255,0.3); }
+
+  .signin-link {
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .signin-link a { color: #ff00ff; text-decoration: none; font-weight: 600; }
+  .signin-link a:hover { color: #00f0ff; }
+
+  /* ── SUCCESS ── */
+  .success {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  .success-hex {
+    font-size: 40px;
+    animation: spin 4s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .success h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.2em;
+    color: #00f0ff;
+  }
+
+  .success p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+  }
+
+  .back-link {
+    margin-top: 6px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+  }
+
+  .back-link:hover { color: #00f0ff; }
+
+  /* ── LOGIN MODAL ── */
+  .login-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
+  .login-modal.on { display:flex; }
+  .login-box { background: rgba(0,3,15,0.97); border:1px solid rgba(0,240,255,.35); border-radius:4px; padding:28px 28px; width:100%; max-width:340px; position:relative; box-shadow: 0 0 40px rgba(0,240,255,0.08); }
+  .login-box h2 { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:.25em; color:#fff; margin-bottom:18px; text-align:center; }
+  .login-field { margin-bottom:12px; }
+  .login-field label { display:block; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.75); margin-bottom:5px; }
+  .login-field input { width:100%; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.2); border-radius:2px; padding:9px 12px; color:#fff; font-family:'Barlow',sans-serif; font-size:13px; outline:none; }
+  .login-field input:focus { border-color:#00f0ff; }
+  .login-remember {
+    padding: 4px 0 8px;
+  }
+  .login-btn { width:100%; font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:.2em; padding:11px; background:linear-gradient(135deg,#00f0ff,#0077cc); color:#000; border:none; border-radius:2px; cursor:pointer; margin-top:6px; }
+  .login-close { position:absolute; top:10px; right:14px; background:none; border:none; color:rgba(255,255,255,.65); font-size:18px; cursor:pointer; }
+  .login-error { color:#ff4466; font-size:11px; margin-top:7px; text-align:center; display:none; }
+  .login-success { color:#00ff88; font-size:11px; margin-top:7px; text-align:center; display:none; }
+  .login-pw-wrap { position:relative; display:flex; align-items:center; }
+  .login-pw-wrap input { flex:1; padding-right:38px; }
+  .login-pw-eye { position:absolute; right:10px; cursor:pointer; font-size:15px; color:rgba(255,255,255,.85); user-select:none; }
+  .login-pw-eye:hover { color:#fff; }
+  .forgot-link { display:block; text-align:right; font-size:10px; letter-spacing:.1em; color:rgba(0,240,255,.55); cursor:pointer; margin-top:4px; text-decoration:none; text-transform:uppercase; }
+  .forgot-link:hover { color:#00f0ff; }
+
+  /* ── RESET MODAL ── */
+  #resetModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1001; align-items:center; justify-content:center; }
+  #resetModal.on { display:flex; }
+  .reset-box { background: rgba(0,3,15,0.97); border:1px solid rgba(0,240,255,.35); border-radius:4px; padding:28px 28px; width:100%; max-width:340px; position:relative; box-shadow: 0 0 40px rgba(0,240,255,0.08); }
+  .reset-box h2 { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:.2em; color:#00f0ff; margin-bottom:3px; text-align:center; }
+  .reset-subtitle { font-family:'Bebas Neue',sans-serif; font-size:9px; letter-spacing:.15em; color:rgba(255,255,255,.65); text-align:center; margin-bottom:16px; text-transform:uppercase; }
+  .reset-close { position:absolute; top:10px; right:14px; background:none; border:none; color:rgba(255,255,255,.65); font-size:18px; cursor:pointer; }
+  .reset-field { margin-bottom:11px; }
+  .reset-field label { display:block; font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.75); margin-bottom:5px; }
+  .reset-field input { width:100%; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.2); border-radius:2px; padding:9px 12px; color:#fff; font-family:'Barlow',sans-serif; font-size:13px; outline:none; transition:border-color .2s; }
+  .reset-field input:focus { border-color:#00f0ff; }
+  .reset-btn { width:100%; font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:.2em; padding:11px; background:linear-gradient(135deg,#00f0ff,#0077cc); color:#000; border:none; border-radius:2px; cursor:pointer; margin-top:4px; }
+  .reset-btn:disabled { opacity:.35; cursor:not-allowed; }
+  .reset-error { color:#ff4466; font-size:10px; margin-top:4px; display:none; }
+  .reset-back-link { display:block; text-align:center; font-size:10px; letter-spacing:.12em; color:rgba(0,240,255,.5); cursor:pointer; margin-top:12px; text-transform:uppercase; }
+  .reset-back-link:hover { color:#00f0ff; }
+  .reset-success { color:#00ff88; font-size:11px; text-align:center; margin-top:8px; display:none; }
+
+  /* ── TABLET ONLY (768px – 1024px) ── */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    /* root layout — always centered, never jumping */
+    html, body { overflow-y: auto; overflow-x: hidden; }
+    .page {
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 32px 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .center-col {
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+      left: 0; right: 0;
+      padding: 0 48px;
+      position: relative;
+      margin: 0 auto;
+      align-items: center;
+      text-align: center;
+    }
+
+    /* logo */
+    .logo-area { max-width: 280px; height: 90px; margin-bottom: 8px; }
+    .logo-text { font-size: 58px; }
+    .subtitle { font-size: 13px; letter-spacing: 0.6em; margin-bottom: 12px; }
+
+    /* tabs */
+    .tab-row { gap: 12px; margin-bottom: 14px; }
+    .tab-btn { font-size: 18px; padding: 14px 20px; }
+
+    /* card */
+    .card {
+      padding: 32px 40px;
+      background: rgba(0,3,15,0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      width: 100%;
+    }
+    .card-title { font-size: 26px; margin-bottom: 20px; text-align: center; }
+
+    /* fields */
+    .fields-grid { gap: 14px 20px; margin-bottom: 18px; }
+    .field label { font-size: 13px; letter-spacing: 0.24em; margin-bottom: 8px; }
+    .field input, .field select {
+      padding: 14px 16px;
+      font-size: 16px;
+      border-radius: 3px;
+    }
+    .field-note { font-size: 12px; }
+    .age-note { font-size: 12px; }
+    .pw-wrap input { padding-right: 42px; }
+    .pw-eye { font-size: 18px; right: 13px; }
+    .strength-track { margin-top: 8px; height: 3px; }
+    .strength-label { font-size: 10px; margin-top: 4px; }
+
+    /* register button */
+    .btn-register { font-size: 20px; padding: 16px; margin-bottom: 14px; margin-top: 6px; }
+    .signin-link { font-size: 15px; }
+    .back-link { font-size: 14px; margin-top: 14px; }
+
+    /* success */
+    .success-hex { font-size: 56px; }
+    .success h3 { font-size: 30px; }
+    .success p { font-size: 14px; }
+
+    /* login modal — centered, properly sized */
+    .login-modal { align-items: center; justify-content: center; }
+    .login-box {
+      max-width: 500px;
+      width: 90%;
+      padding: 44px 40px;
+      margin: auto;
+    }
+    .login-box h2 { font-size: 30px; margin-bottom: 24px; }
+    .login-field { margin-bottom: 18px; }
+    .login-field label { font-size: 12px; margin-bottom: 8px; }
+    .login-field input { padding: 14px 16px; font-size: 16px; }
+    .login-btn { font-size: 19px; padding: 15px; margin-top: 10px; }
+    .login-error, .login-success { font-size: 13px; }
+    .forgot-link { font-size: 12px; margin-top: 6px; }
+
+    /* reset modal */
+    .login-modal#resetModal { align-items: center; justify-content: center; }
+    .reset-box {
+      max-width: 500px;
+      width: 90%;
+      padding: 44px 40px;
+    }
+    .reset-box h2 { font-size: 24px; margin-bottom: 6px; }
+    .reset-subtitle { font-size: 11px; margin-bottom: 22px; }
+    .reset-field { margin-bottom: 16px; }
+    .reset-field label { font-size: 12px; margin-bottom: 8px; }
+    .reset-field input { padding: 14px 16px; font-size: 16px; }
+    .reset-btn { font-size: 18px; padding: 15px; }
+  }
+
+  /* ── TABLET LANDSCAPE specific ── */
+  @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .page { padding: 20px 0; align-items: flex-start; }
+    .center-col { max-width: 720px; padding: 0 40px; }
+    .logo-area { max-width: 200px; height: 70px; }
+    .logo-text { font-size: 46px; }
+    .card { padding: 24px 36px; }
+  }
+
+</style>
+</head>
+<body>
+
+<canvas id="hexCanvas"></canvas>
+<canvas id="leftCanvas"></canvas>
+<canvas id="rightCanvas"></canvas>
+
+<div class="page">
+  <div class="center-col">
+
+    <div class="logo-area">
+      <canvas id="logoCanvas"></canvas>
+      <div class="logo-text">HEXA</div>
+    </div>
+
+    <div class="subtitle">Create Your Account</div>
+
+    <div class="tab-row">
+      <button class="tab-btn active">REGISTER</button>
+      <button class="tab-btn inactive" onclick="openLoginModal()">SIGN IN</button>
+    </div>
+
+    <div class="card" id="formCard">
+      <!-- Hidden fields to absorb browser autofill -->
+      <input type="text" style="display:none;" name="prevent_autofill" autocomplete="off"/>
+      <input type="password" style="display:none;" name="prevent_autofill_pw" autocomplete="new-password"/>
+      <div class="card-title">Join HEXA</div>
+
+      <div class="fields-grid">
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="fullname" placeholder="Your name" autocomplete="off" name="hexa_fullname" readonly onfocus="this.removeAttribute('readonly')" />
+        </div>
+
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="user_handle" autocomplete="off" name="hexa_handle" readonly onfocus="this.removeAttribute('readonly')" oninput="this.value=this.value.replace(/\s/g,'_')" />
+          <div class="field-note">Public display name</div>
+        </div>
+
+        <div class="field">
+          <label>Age</label>
+          <input type="number" id="age" placeholder="Age" min="1" max="120" />
+          <div class="age-note" id="ageNote">⚠ Must be 16+</div>
+        </div>
+
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="your@email.com" autocomplete="email" name="email" />
+        </div>
+
+        <div class="field">
+          <label>Country</label>
+          <select id="country" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:2px;color:#fff;font-family:'Barlow',sans-serif;font-size:13px;outline:none;cursor:pointer;">
+            <option value="">Select Country</option>
+            <option value="🇦🇫">🇦🇫 Afghanistan</option>
+            <option value="🇦🇱">🇦🇱 Albania</option>
+            <option value="🇩🇿">🇩🇿 Algeria</option>
+            <option value="🇦🇩">🇦🇩 Andorra</option>
+            <option value="🇦🇴">🇦🇴 Angola</option>
+            <option value="🇦🇬">🇦🇬 Antigua & Barbuda</option>
+            <option value="🇦🇷">🇦🇷 Argentina</option>
+            <option value="🇦🇲">🇦🇲 Armenia</option>
+            <option value="🇦🇺">🇦🇺 Australia</option>
+            <option value="🇦🇹">🇦🇹 Austria</option>
+            <option value="🇦🇿">🇦🇿 Azerbaijan</option>
+            <option value="🇧🇸">🇧🇸 Bahamas</option>
+            <option value="🇧🇭">🇧🇭 Bahrain</option>
+            <option value="🇧🇩">🇧🇩 Bangladesh</option>
+            <option value="🇧🇧">🇧🇧 Barbados</option>
+            <option value="🇧🇾">🇧🇾 Belarus</option>
+            <option value="🇧🇪">🇧🇪 Belgium</option>
+            <option value="🇧🇿">🇧🇿 Belize</option>
+            <option value="🇧🇯">🇧🇯 Benin</option>
+            <option value="🇧🇹">🇧🇹 Bhutan</option>
+            <option value="🇧🇴">🇧🇴 Bolivia</option>
+            <option value="🇧🇦">🇧🇦 Bosnia & Herzegovina</option>
+            <option value="🇧🇼">🇧🇼 Botswana</option>
+            <option value="🇧🇷">🇧🇷 Brazil</option>
+            <option value="🇧🇳">🇧🇳 Brunei</option>
+            <option value="🇧🇬">🇧🇬 Bulgaria</option>
+            <option value="🇧🇫">🇧🇫 Burkina Faso</option>
+            <option value="🇧🇮">🇧🇮 Burundi</option>
+            <option value="🇨🇻">🇨🇻 Cabo Verde</option>
+            <option value="🇰🇭">🇰🇭 Cambodia</option>
+            <option value="🇨🇲">🇨🇲 Cameroon</option>
+            <option value="🇨🇦">🇨🇦 Canada</option>
+            <option value="🇨🇫">🇨🇫 Central African Republic</option>
+            <option value="🇹🇩">🇹🇩 Chad</option>
+            <option value="🇨🇱">🇨🇱 Chile</option>
+            <option value="🇨🇳">🇨🇳 China</option>
+            <option value="🇨🇴">🇨🇴 Colombia</option>
+            <option value="🇰🇲">🇰🇲 Comoros</option>
+            <option value="🇨🇬">🇨🇬 Congo</option>
+            <option value="🇨🇩">🇨🇩 Congo DR</option>
+            <option value="🇨🇷">🇨🇷 Costa Rica</option>
+            <option value="🇨🇮">🇨🇮 Côte d'Ivoire</option>
+            <option value="🇭🇷">🇭🇷 Croatia</option>
+            <option value="🇨🇺">🇨🇺 Cuba</option>
+            <option value="🇨🇾">🇨🇾 Cyprus</option>
+            <option value="🇨🇿">🇨🇿 Czech Republic</option>
+            <option value="🇩🇰">🇩🇰 Denmark</option>
+            <option value="🇩🇯">🇩🇯 Djibouti</option>
+            <option value="🇩🇲">🇩🇲 Dominica</option>
+            <option value="🇩🇴">🇩🇴 Dominican Republic</option>
+            <option value="🇪🇨">🇪🇨 Ecuador</option>
+            <option value="🇪🇬">🇪🇬 Egypt</option>
+            <option value="🇸🇻">🇸🇻 El Salvador</option>
+            <option value="🇬🇶">🇬🇶 Equatorial Guinea</option>
+            <option value="🇪🇷">🇪🇷 Eritrea</option>
+            <option value="🇪🇪">🇪🇪 Estonia</option>
+            <option value="🇪🇹">🇪🇹 Ethiopia</option>
+            <option value="🇫🇯">🇫🇯 Fiji</option>
+            <option value="🇫🇮">🇫🇮 Finland</option>
+            <option value="🇫🇷">🇫🇷 France</option>
+            <option value="🇬🇦">🇬🇦 Gabon</option>
+            <option value="🇬🇲">🇬🇲 Gambia</option>
+            <option value="🇬🇪">🇬🇪 Georgia</option>
+            <option value="🇩🇪">🇩🇪 Germany</option>
+            <option value="🇬🇭">🇬🇭 Ghana</option>
+            <option value="🇬🇮">🇬🇮 Gibraltar</option>
+            <option value="🇬🇷">🇬🇷 Greece</option>
+            <option value="🇬🇩">🇬🇩 Grenada</option>
+            <option value="🇬🇹">🇬🇹 Guatemala</option>
+            <option value="🇬🇬">🇬🇬 Guernsey</option>
+            <option value="🇬🇳">🇬🇳 Guinea</option>
+            <option value="🇬🇼">🇬🇼 Guinea-Bissau</option>
+            <option value="🇬🇾">🇬🇾 Guyana</option>
+            <option value="🇭🇹">🇭🇹 Haiti</option>
+            <option value="🇭🇳">🇭🇳 Honduras</option>
+            <option value="🇭🇰">🇭🇰 Hong Kong</option>
+            <option value="🇭🇺">🇭🇺 Hungary</option>
+            <option value="🇮🇸">🇮🇸 Iceland</option>
+            <option value="🇮🇳">🇮🇳 India</option>
+            <option value="🇮🇩">🇮🇩 Indonesia</option>
+            <option value="🇮🇷">🇮🇷 Iran</option>
+            <option value="🇮🇶">🇮🇶 Iraq</option>
+            <option value="🇮🇪">🇮🇪 Ireland</option>
+            <option value="🇮🇲">🇮🇲 Isle of Man</option>
+            <option value="🇮🇱">🇮🇱 Israel</option>
+            <option value="🇮🇹">🇮🇹 Italy</option>
+            <option value="🇯🇲">🇯🇲 Jamaica</option>
+            <option value="🇯🇵">🇯🇵 Japan</option>
+            <option value="🇯🇪">🇯🇪 Jersey</option>
+            <option value="🇯🇴">🇯🇴 Jordan</option>
+            <option value="🇰🇿">🇰🇿 Kazakhstan</option>
+            <option value="🇰🇪">🇰🇪 Kenya</option>
+            <option value="🇰🇮">🇰🇮 Kiribati</option>
+            <option value="🇰🇵">🇰🇵 Korea North</option>
+            <option value="🇰🇷">🇰🇷 Korea South</option>
+            <option value="🇰🇼">🇰🇼 Kuwait</option>
+            <option value="🇰🇬">🇰🇬 Kyrgyzstan</option>
+            <option value="🇱🇦">🇱🇦 Laos</option>
+            <option value="🇱🇻">🇱🇻 Latvia</option>
+            <option value="🇱🇧">🇱🇧 Lebanon</option>
+            <option value="🇱🇸">🇱🇸 Lesotho</option>
+            <option value="🇱🇷">🇱🇷 Liberia</option>
+            <option value="🇱🇾">🇱🇾 Libya</option>
+            <option value="🇱🇮">🇱🇮 Liechtenstein</option>
+            <option value="🇱🇹">🇱🇹 Lithuania</option>
+            <option value="🇱🇺">🇱🇺 Luxembourg</option>
+            <option value="🇲🇴">🇲🇴 Macao</option>
+            <option value="🇲🇬">🇲🇬 Madagascar</option>
+            <option value="🇲🇼">🇲🇼 Malawi</option>
+            <option value="🇲🇾">🇲🇾 Malaysia</option>
+            <option value="🇲🇻">🇲🇻 Maldives</option>
+            <option value="🇲🇱">🇲🇱 Mali</option>
+            <option value="🇲🇹">🇲🇹 Malta</option>
+            <option value="🇲🇭">🇲🇭 Marshall Islands</option>
+            <option value="🇲🇶">🇲🇶 Martinique</option>
+            <option value="🇲🇷">🇲🇷 Mauritania</option>
+            <option value="🇲🇺">🇲🇺 Mauritius</option>
+            <option value="🇾🇹">🇾🇹 Mayotte</option>
+            <option value="🇲🇽">🇲🇽 Mexico</option>
+            <option value="🇫🇲">🇫🇲 Micronesia</option>
+            <option value="🇲🇩">🇲🇩 Moldova</option>
+            <option value="🇲🇨">🇲🇨 Monaco</option>
+            <option value="🇲🇳">🇲🇳 Mongolia</option>
+            <option value="🇲🇪">🇲🇪 Montenegro</option>
+            <option value="🇲🇦">🇲🇦 Morocco</option>
+            <option value="🇲🇿">🇲🇿 Mozambique</option>
+            <option value="🇲🇲">🇲🇲 Myanmar</option>
+            <option value="🇳🇦">🇳🇦 Namibia</option>
+            <option value="🇳🇷">🇳🇷 Nauru</option>
+            <option value="🇳🇵">🇳🇵 Nepal</option>
+            <option value="🇳🇱">🇳🇱 Netherlands</option>
+            <option value="🇳🇿">🇳🇿 New Zealand</option>
+            <option value="🇳🇮">🇳🇮 Nicaragua</option>
+            <option value="🇳🇪">🇳🇪 Niger</option>
+            <option value="🇳🇬">🇳🇬 Nigeria</option>
+            <option value="🇳🇴">🇳🇴 Norway</option>
+            <option value="🇴🇲">🇴🇲 Oman</option>
+            <option value="🇵🇰">🇵🇰 Pakistan</option>
+            <option value="🇵🇼">🇵🇼 Palau</option>
+            <option value="🇵🇸">🇵🇸 Palestine</option>
+            <option value="🇵🇦">🇵🇦 Panama</option>
+            <option value="🇵🇬">🇵🇬 Papua New Guinea</option>
+            <option value="🇵🇾">🇵🇾 Paraguay</option>
+            <option value="🇵🇪">🇵🇪 Peru</option>
+            <option value="🇵🇭">🇵🇭 Philippines</option>
+            <option value="🇵🇱">🇵🇱 Poland</option>
+            <option value="🇵🇹">🇵🇹 Portugal</option>
+            <option value="🇶🇦">🇶🇦 Qatar</option>
+            <option value="🇷🇪">🇷🇪 Reunion</option>
+            <option value="🇷🇴">🇷🇴 Romania</option>
+            <option value="🇷🇺">🇷🇺 Russia</option>
+            <option value="🇷🇼">🇷🇼 Rwanda</option>
+            <option value="🇧🇱">🇧🇱 Saint Barthelemy</option>
+            <option value="🇰🇳">🇰🇳 Saint Kitts & Nevis</option>
+            <option value="🇱🇨">🇱🇨 Saint Lucia</option>
+            <option value="🇲🇫">🇲🇫 Saint Martin</option>
+            <option value="🇵🇲">🇵🇲 Saint Pierre & Miquelon</option>
+            <option value="🇻🇨">🇻🇨 Saint Vincent & Grenadines</option>
+            <option value="🇼🇸">🇼🇸 Samoa</option>
+            <option value="🇸🇲">🇸🇲 San Marino</option>
+            <option value="🇸🇹">🇸🇹 Sao Tome & Principe</option>
+            <option value="🇸🇦">🇸🇦 Saudi Arabia</option>
+            <option value="🇸🇳">🇸🇳 Senegal</option>
+            <option value="🇷🇸">🇷🇸 Serbia</option>
+            <option value="🇸🇨">🇸🇨 Seychelles</option>
+            <option value="🇸🇱">🇸🇱 Sierra Leone</option>
+            <option value="🇸🇬">🇸🇬 Singapore</option>
+            <option value="🇸🇽">🇸🇽 Sint Maarten</option>
+            <option value="🇸🇰">🇸🇰 Slovakia</option>
+            <option value="🇸🇮">🇸🇮 Slovenia</option>
+            <option value="🇸🇧">🇸🇧 Solomon Islands</option>
+            <option value="🇸🇴">🇸🇴 Somalia</option>
+            <option value="🇿🇦">🇿🇦 South Africa</option>
+            <option value="🇸🇸">🇸🇸 South Sudan</option>
+            <option value="🇪🇸">🇪🇸 Spain</option>
+            <option value="🇱🇰">🇱🇰 Sri Lanka</option>
+            <option value="🇸🇩">🇸🇩 Sudan</option>
+            <option value="🇸🇷">🇸🇷 Suriname</option>
+            <option value="🇸🇪">🇸🇪 Sweden</option>
+            <option value="🇨🇭">🇨🇭 Switzerland</option>
+            <option value="🇸🇾">🇸🇾 Syria</option>
+            <option value="🇹🇼">🇹🇼 Taiwan</option>
+            <option value="🇹🇯">🇹🇯 Tajikistan</option>
+            <option value="🇹🇿">🇹🇿 Tanzania</option>
+            <option value="🇹🇭">🇹🇭 Thailand</option>
+            <option value="🇹🇱">🇹🇱 Timor Leste</option>
+            <option value="🇹🇬">🇹🇬 Togo</option>
+            <option value="🇹🇴">🇹🇴 Tonga</option>
+            <option value="🇹🇹">🇹🇹 Trinidad & Tobago</option>
+            <option value="🇹🇳">🇹🇳 Tunisia</option>
+            <option value="🇹🇷">🇹🇷 Turkey</option>
+            <option value="🇹🇲">🇹🇲 Turkmenistan</option>
+            <option value="🇹🇨">🇹🇨 Turks & Caicos</option>
+            <option value="🇹🇻">🇹🇻 Tuvalu</option>
+            <option value="🇺🇬">🇺🇬 Uganda</option>
+            <option value="🇺🇦">🇺🇦 Ukraine</option>
+            <option value="🇦🇪">🇦🇪 United Arab Emirates</option>
+            <option value="🇬🇧">🇬🇧 United Kingdom</option>
+            <option value="🇺🇸">🇺🇸 United States</option>
+            <option value="🇺🇾">🇺🇾 Uruguay</option>
+            <option value="🇺🇿">🇺🇿 Uzbekistan</option>
+            <option value="🇻🇺">🇻🇺 Vanuatu</option>
+            <option value="🇻🇦">🇻🇦 Vatican City</option>
+            <option value="🇻🇪">🇻🇪 Venezuela</option>
+            <option value="🇻🇳">🇻🇳 Vietnam</option>
+            <option value="🇾🇪">🇾🇪 Yemen</option>
+            <option value="🇿🇲">🇿🇲 Zambia</option>
+            <option value="🇿🇼">🇿🇼 Zimbabwe</option>
+          </select>
+        </div>
+
+        <div class="field field-full">
+          <label>Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password" name="password" oninput="checkStrength()" />
+            <span class="pw-eye" id="pw-eye" onclick="var i=document.getElementById('password'),e=document.getElementById('pw-eye');i.type=i.type==='password'?'text':'password';e.textContent=i.type==='password'?'👁':'🙈';">👁</span>
+          </div>
+          <div class="strength-track"><div class="strength-bar" id="strengthBar"></div></div>
+          <div class="strength-label" id="strengthLabel"></div>
+        </div>
+      </div>
+
+      <button class="btn-register" onclick="handleRegister()">
+        <span>Create Account</span>
+      </button>
+
+      <div class="signin-link">
+        Already a member? <a href="#" onclick="document.getElementById('loginModal').classList.add('on');setTimeout(()=>document.getElementById('loginEmail').focus({ preventScroll: true }),100);return false;">Sign In</a>
+      </div>
+
+      <div class="success" id="successMsg">
+        <div class="success-hex">⬡</div>
+        <h3>Welcome to HEXA</h3>
+        <p>Your account has been created.<br>You're now part of the HEXA community.</p>
+      </div>
+    </div>
+
+    <a href="index.html" class="back-link">← Back to HEXA</a>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="login-modal" id="loginModal">
+  <div class="login-box">
+    <button class="login-close" onclick="closeLoginModal()">✕</button>
+    <h2>Sign In</h2>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email" name="email" disabled />
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <div class="login-pw-wrap">
+        <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password" name="password" onkeydown="if(event.key==='Enter') submitLogin()" disabled />
+        <span class="login-pw-eye" id="login-pw-eye" onclick="var i=document.getElementById('loginPassword'),e=document.getElementById('login-pw-eye');i.type=i.type==='password'?'text':'password';e.textContent=i.type==='password'?'👁':'🙈';">👁</span>
+      </div>
+      <a class="forgot-link" onclick="openResetModal()">Forgot password?</a>
+    </div>
+    <div class="login-remember">
+      <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',sans-serif;font-size:11px;color:rgba(255,255,255,.5);cursor:pointer;letter-spacing:.08em;">
+        <input type="checkbox" id="rememberMe" style="accent-color:#00f0ff;width:14px;height:14px;cursor:pointer;" />
+        REMEMBER ME
+      </label>
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-success" id="loginSuccess"></div>
+    <button class="login-btn" onclick="submitLogin()">SIGN IN</button>
+  </div>
+</div>
+
+<!-- RESET MODAL -->
+<div id="resetModal">
+  <div class="reset-box">
+    <button class="reset-close" onclick="closeResetModal()">✕</button>
+    <h2>🔑 RESET PASSWORD</h2>
+    <p class="reset-subtitle">Enter your email and new password</p>
+    <div class="reset-field">
+      <label>Email Address</label>
+      <input type="email" id="resetEmail" placeholder="your@email.com" />
+      <div class="reset-error" id="resetEmailError"></div>
+    </div>
+    <div class="reset-field">
+      <label>New Password</label>
+      <div class="login-pw-wrap">
+        <input type="password" id="resetNewPassword" placeholder="New password" oninput="checkResetStrength()" />
+        <span class="login-pw-eye" onclick="var i=document.getElementById('resetNewPassword');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈';">👁</span>
+      </div>
+      <div style="height:2px;background:rgba(255,255,255,0.07);border-radius:2px;margin-top:5px;overflow:hidden;">
+        <div id="resetStrengthBar" style="height:100%;width:0%;border-radius:2px;transition:width .3s,background-color .3s;"></div>
+      </div>
+      <div id="resetStrengthText" style="font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-top:2px;"></div>
+      <div class="reset-error" id="resetNewPasswordError"></div>
+    </div>
+    <div class="reset-field">
+      <label>Confirm Password</label>
+      <div class="login-pw-wrap">
+        <input type="password" id="resetConfirmPassword" placeholder="Confirm new password" onkeydown="if(event.key==='Enter') submitPasswordReset()" />
+        <span class="login-pw-eye" onclick="var i=document.getElementById('resetConfirmPassword');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈';">👁</span>
+      </div>
+      <div class="reset-error" id="resetConfirmPasswordError"></div>
+    </div>
+    <button class="reset-btn" id="resetSubmitBtn" onclick="submitPasswordReset()">RESET PASSWORD</button>
+    <div class="reset-success" id="resetSuccess"></div>
+    <a class="reset-back-link" onclick="closeResetModal()">← Back to Sign In</a>
+  </div>
+</div>
+
+<script>
+// ── COLORS ──────────────────────────────────────────────────
+const COLORS = ['#00f0ff','#ff00ff','#7700ff','#0044ff','#00ffaa','#ff4466','#ffcc00'];
+
+// ── BACKGROUND HEX CANVAS ────────────────────────────────────
+const bgCanvas = document.getElementById('hexCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+let BW, BH, bgHexs = [], bgFrame = 0;
+
+// Floating particles for depth
+const bgParticles = Array.from({length:60},()=>({
+  x: Math.random(), y: Math.random(),
+  vx: (Math.random()-.5)*0.0003, vy: (Math.random()-.5)*0.0003,
+  r: 0.8+Math.random()*2,
+  alpha: 0.15+Math.random()*0.45,
+  tw: Math.random()*Math.PI*2,
+  twSpd: 0.015+Math.random()*0.025,
+  col: COLORS[Math.floor(Math.random()*COLORS.length)]
+}));
+
+// Energy wave ripples
+const ripples = Array.from({length:3},(_,i)=>({
+  phase: (i/3)*Math.PI*2, speed: 0.008+i*0.003
+}));
+
+function bgResize() {
+  BW = bgCanvas.width = window.innerWidth;
+  BH = bgCanvas.height = window.innerHeight;
+  buildBg();
+}
+
+function buildBg() {
+  bgHexs = [];
+  const r = 42;
+  const cols = Math.ceil(BW / (r*1.75)) + 2;
+  const rows = Math.ceil(BH / (r*1.52)) + 2;
+  for (let row = -1; row < rows; row++) {
+    for (let col = -1; col < cols; col++) {
+      const hx = col*r*1.75 + (row%2===0 ? 0 : r*0.875);
+      const hy = row*r*1.52;
+      bgHexs.push({
+        x: hx, y: hy, r,
+        color: COLORS[Math.floor(Math.random()*COLORS.length)],
+        targetColor: COLORS[Math.floor(Math.random()*COLORS.length)],
+        progress: Math.random(), speed: 0.003 + Math.random()*0.005,
+        baseAlpha: 0.08 + Math.random()*0.18,
+        pulse: Math.random()*Math.PI*2,
+        pulseSpeed: 0.012+Math.random()*0.018,
+        lit: Math.random() < 0.12  // some hexes glow brighter
+      });
+    }
+  }
+}
+
+function lerpColor(c1, c2, t) {
+  const parse = c => [parseInt(c.slice(1,3),16), parseInt(c.slice(3,5),16), parseInt(c.slice(5,7),16)];
+  const [r1,g1,b1] = parse(c1), [r2,g2,b2] = parse(c2);
+  return `rgb(${Math.round(r1+(r2-r1)*t)},${Math.round(g1+(g2-g1)*t)},${Math.round(b1+(b2-b1)*t)})`;
+}
+
+function drawBgHex(x, y, r, color, alpha, filled) {
+  bgCtx.beginPath();
+  for (let i=0;i<6;i++) {
+    const ang = Math.PI/180*(60*i-30);
+    i===0 ? bgCtx.moveTo(x+r*Math.cos(ang), y+r*Math.sin(ang))
+           : bgCtx.lineTo(x+r*Math.cos(ang), y+r*Math.sin(ang));
+  }
+  bgCtx.closePath();
+  bgCtx.strokeStyle = color;
+  bgCtx.globalAlpha = Math.min(0.95, alpha);
+  bgCtx.lineWidth = filled ? 1.5 : 1;
+  bgCtx.stroke();
+  if (filled) {
+    bgCtx.fillStyle = color;
+    bgCtx.globalAlpha = alpha * 0.12;
+    bgCtx.fill();
+  }
+}
+
+// ── FAST CYAN HEXAGON ANIMATION ────────────────────────────
+const hexCanvas = document.getElementById('hexCanvas');
+const hexCtx = hexCanvas.getContext('2d');
+const hexRadius = 150;
+const hexMaxSpeed = 0.08;
+const hexMinSpeed = 0.01;
+const hexSize = 20;
+let hexAngle = 0;
+let hexCurrentSpeed = hexMinSpeed;
+let hexSpeedDirection = 1; // 1 = speeding up, -1 = slowing down
+const hexAcceleration = 0.001;
+
+function drawFastHexagon(ctx, x, y, size, rotation, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2;
+    const px = size * Math.cos(angle);
+    const py = size * Math.sin(angle);
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.9;
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.2;
+  ctx.fill();
+  ctx.restore();
+}
+
+function animateFastHexagon() {
+  // Gradually accelerate and decelerate
+  hexCurrentSpeed += hexSpeedDirection * hexAcceleration;
+  
+  // Change direction at max and min speeds
+  if (hexCurrentSpeed >= hexMaxSpeed) {
+    hexCurrentSpeed = hexMaxSpeed;
+    hexSpeedDirection = -1; // Start slowing down
+  } else if (hexCurrentSpeed <= hexMinSpeed) {
+    hexCurrentSpeed = hexMinSpeed;
+    hexSpeedDirection = 1; // Start speeding up
+  }
+  
+  hexAngle -= hexCurrentSpeed;
+  
+  // Calculate position in circle around center of page
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2.5; // Positioned around HEXA area
+  const hexX = centerX + hexRadius * Math.cos(hexAngle);
+  const hexY = centerY + hexRadius * Math.sin(hexAngle);
+  
+  // Draw rotating hexagon with glow
+  hexCtx.shadowColor = '#00ffee';
+  hexCtx.shadowBlur = 15;
+  drawFastHexagon(hexCtx, hexX, hexY, hexSize, hexAngle, '#00ffee');
+  hexCtx.shadowBlur = 0;
+}
+
+// ── TABLET: is tablet check ───────────────────────────────────
+function isTablet() { return window.innerWidth >= 768 && window.innerWidth <= 1024; }
+
+// ── TABLET: welcome hex tunnel functions ──────────────────────
+let tunnelFrame = 0;
+
+function tunnelEaseOut(t){ return 1 - Math.pow(1-t,3); }
+function tunnelFrac(f,s,e){ return Math.max(0, Math.min(1, (f-s)/(e-s))); }
+
+const tunnelParticles = Array.from({length:100}, () => ({
+  x: Math.random(), y: Math.random(),
+  r: 0.5 + Math.random()*1.8,
+  alpha: Math.random(),
+  tw: Math.random()*Math.PI*2,
+  twSpd: 0.02 + Math.random()*0.04,
+  col: Math.random() > 0.5 ? '#00e6dc' : '#aa66ff',
+}));
+
+function drawTunnelParticles(a) {
+  tunnelParticles.forEach(p => {
+    p.tw += p.twSpd;
+    const pa = a * p.alpha * (0.3 + 0.7*Math.abs(Math.sin(p.tw)));
+    bgCtx.beginPath(); bgCtx.arc(p.x*BW, p.y*BH, p.r, 0, Math.PI*2);
+    bgCtx.fillStyle = p.col; bgCtx.globalAlpha = pa; bgCtx.fill();
+  });
+  bgCtx.globalAlpha = 1;
+}
+
+function drawHexTunnel(cx, cy, maxR, rot, alpha, rings) {
+  for (let i = rings; i >= 0; i--) {
+    const t = i/rings;
+    const r = maxR * (0.08 + t*0.92);
+    const gi = Math.round(t*40 + (1-t)*200);
+    const bi = Math.round(t*80 + (1-t)*255);
+    const strokeA = alpha * (1 - t*0.5) * (0.5 + 0.5*Math.sin(tunnelFrame*0.03 + t*3));
+    if (i < rings && i > 0) {
+      const prevR = maxR * (0.08 + ((i+1)/rings)*0.92);
+      for (let v = 0; v < 6; v++) {
+        const a1 = (Math.PI/3)*v + rot;
+        bgCtx.beginPath();
+        bgCtx.moveTo(cx + r*Math.cos(a1), cy + r*Math.sin(a1));
+        bgCtx.lineTo(cx + prevR*Math.cos(a1), cy + prevR*Math.sin(a1));
+        bgCtx.strokeStyle = `rgba(0,${gi},${bi},${strokeA*0.3})`;
+        bgCtx.globalAlpha = alpha; bgCtx.lineWidth = 0.5; bgCtx.stroke();
+      }
+    }
+    bgCtx.beginPath();
+    for (let v = 0; v < 6; v++) {
+      const a = (Math.PI/3)*v + rot;
+      v===0 ? bgCtx.moveTo(cx+r*Math.cos(a), cy+r*Math.sin(a))
+            : bgCtx.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a));
+    }
+    bgCtx.closePath();
+    bgCtx.shadowColor = i < rings*0.3 ? '#00ffee' : `rgb(0,${gi},${bi})`;
+    bgCtx.shadowBlur = (1-t)*25;
+    bgCtx.strokeStyle = i < rings*0.25
+      ? `rgba(0,255,230,${alpha*(1-t)*1.5})`
+      : `rgba(0,${gi},${bi},${strokeA})`;
+    bgCtx.globalAlpha = alpha;
+    bgCtx.lineWidth = i < rings*0.3 ? 1.5 : 0.8;
+    bgCtx.stroke();
+    if (i === 0) {
+      const g = bgCtx.createRadialGradient(cx,cy,0, cx,cy, r*1.2);
+      g.addColorStop(0, `rgba(0,255,220,${alpha*0.6})`);
+      g.addColorStop(0.4, `rgba(0,180,200,${alpha*0.2})`);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      bgCtx.fillStyle = g; bgCtx.globalAlpha = alpha;
+      bgCtx.beginPath(); bgCtx.arc(cx,cy,r*1.5,0,Math.PI*2); bgCtx.fill();
+    }
+  }
+  bgCtx.shadowBlur = 0; bgCtx.globalAlpha = 1;
+}
+
+function drawOuterFrame(cx, cy, r, alpha) {
+  [r*1.04, r*1.0, r*0.96].forEach((rr, i) => {
+    bgCtx.beginPath();
+    for (let v = 0; v < 6; v++) {
+      const a = (Math.PI/3)*v + Math.PI/6;
+      v===0 ? bgCtx.moveTo(cx+rr*Math.cos(a), cy+rr*Math.sin(a))
+            : bgCtx.lineTo(cx+rr*Math.cos(a), cy+rr*Math.sin(a));
+    }
+    bgCtx.closePath();
+    bgCtx.shadowColor = '#00e6dc'; bgCtx.shadowBlur = 30 - i*8;
+    bgCtx.strokeStyle = ['rgba(0,230,220,0.9)','rgba(140,80,255,0.7)','rgba(0,200,255,0.5)'][i];
+    bgCtx.globalAlpha = alpha; bgCtx.lineWidth = 3 - i; bgCtx.stroke();
+  });
+  for (let v = 0; v < 6; v++) {
+    const a = (Math.PI/3)*v + Math.PI/6;
+    const gx = cx + r*Math.cos(a), gy = cy + r*Math.sin(a);
+    const gl = 0.4 + 0.6*Math.abs(Math.sin(tunnelFrame*0.05 + v));
+    bgCtx.shadowColor = '#fff'; bgCtx.shadowBlur = 15;
+    bgCtx.fillStyle = '#fff'; bgCtx.globalAlpha = alpha*gl*0.9;
+    bgCtx.beginPath(); bgCtx.arc(gx, gy, 2.5, 0, Math.PI*2); bgCtx.fill();
+  }
+  bgCtx.shadowBlur = 0; bgCtx.globalAlpha = 1;
+}
+
+function drawTabletBg() {
+  bgCtx.clearRect(0,0,BW,BH);
+  const cx = BW/2, cy = BH/2;
+  const bgGrad = bgCtx.createRadialGradient(cx,cy,0, cx,cy, Math.min(BW,BH)*0.7);
+  bgGrad.addColorStop(0,   'rgba(0,8,25,1)');
+  bgGrad.addColorStop(0.6, 'rgba(0,3,12,1)');
+  bgGrad.addColorStop(1,   'rgba(0,0,0,1)');
+  bgCtx.fillStyle = bgGrad; bgCtx.globalAlpha = 1; bgCtx.fillRect(0,0,BW,BH);
+  drawTunnelParticles(Math.min(1, tunnelFrame/120) * 0.5);
+  const tunnelA   = tunnelEaseOut(tunnelFrac(tunnelFrame, 20, 100));
+  const tunnelRot = Math.PI/6 + tunnelFrame*0.004;
+  drawHexTunnel(cx, cy, Math.min(BW,BH)*0.42, tunnelRot, tunnelA, 18);
+  drawOuterFrame(cx, cy, Math.min(BW,BH)*0.44, tunnelEaseOut(tunnelFrac(tunnelFrame, 30, 110)));
+}
+
+// ── MAIN ANIMATE (branches on device type) ───────────────────
+function bgAnimate() {
+  bgFrame++;
+  if (isTablet()) {
+    tunnelFrame++;
+    drawTabletBg();
+  } else {
+    // ── original mobile/PC animation ──
+    bgCtx.clearRect(0,0,BW,BH);
+
+    // Deep background gradient
+    const grad = bgCtx.createRadialGradient(BW/2,BH/2,0,BW/2,BH/2,Math.max(BW,BH)*0.7);
+    grad.addColorStop(0,'rgba(0,12,35,1)');
+    grad.addColorStop(0.5,'rgba(0,5,18,1)');
+    grad.addColorStop(1,'rgba(0,3,10,1)');
+    bgCtx.fillStyle = grad; bgCtx.globalAlpha = 1;
+    bgCtx.fillRect(0,0,BW,BH);
+
+    // Pulsing radial waves from center
+    ripples.forEach(rp => {
+      rp.phase += rp.speed;
+      const waveR = (Math.sin(rp.phase)*0.5+0.5) * Math.max(BW,BH) * 0.65;
+      if (waveR < 1) return;
+      const wAlpha = Math.sin(rp.phase)*0.5+0.5;
+      const wg = bgCtx.createRadialGradient(BW/2,BH/2,waveR*0.85,BW/2,BH/2,waveR);
+      wg.addColorStop(0,'rgba(0,240,255,0)');
+      wg.addColorStop(0.5,`rgba(0,200,255,${wAlpha*0.04})`);
+      wg.addColorStop(1,'rgba(0,240,255,0)');
+      bgCtx.fillStyle = wg; bgCtx.globalAlpha = 1;
+      bgCtx.fillRect(0,0,BW,BH);
+    });
+
+    // Hex grid
+    bgHexs.forEach(h => {
+      h.progress += h.speed; h.pulse += h.pulseSpeed;
+      if (h.progress >= 1) {
+        h.progress=0; h.color=h.targetColor;
+        h.targetColor=COLORS[Math.floor(Math.random()*COLORS.length)];
+        if(Math.random()<0.05) h.lit = true;
+        else if(Math.random()<0.2) h.lit = false;
+      }
+      const col = lerpColor(h.color, h.targetColor, h.progress);
+      // proximity to center boosts glow
+      const dx = h.x - BW/2, dy = h.y - BH/2;
+      const dist = Math.sqrt(dx*dx+dy*dy);
+      const proximity = 1 - Math.min(1, dist / (Math.max(BW,BH)*0.55));
+      const pulseBoost = Math.sin(h.pulse)*0.07;
+      const a = h.baseAlpha + pulseBoost + proximity*0.25 + (h.lit ? 0.3 : 0);
+
+      if (h.lit) {
+        bgCtx.shadowColor = col; bgCtx.shadowBlur = 12;
+      }
+      drawBgHex(h.x, h.y, h.r, col, a, h.lit);
+      bgCtx.shadowBlur = 0;
+    });
+
+    // Floating particles
+    bgParticles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.tw += p.twSpd;
+      if(p.x<0) p.x=1; if(p.x>1) p.x=0;
+      if(p.y<0) p.y=1; if(p.y>1) p.y=0;
+      const pa = p.alpha * (0.4+0.6*Math.abs(Math.sin(p.tw)));
+      bgCtx.shadowColor = p.col; bgCtx.shadowBlur = 6;
+      bgCtx.beginPath();
+      bgCtx.arc(p.x*BW, p.y*BH, p.r, 0, Math.PI*2);
+      bgCtx.fillStyle = p.col; bgCtx.globalAlpha = pa;
+      bgCtx.fill();
+    });
+    bgCtx.shadowBlur = 0;
+    bgCtx.globalAlpha = 1;
+    animateFastHexagon();
+  }
+  requestAnimationFrame(bgAnimate);
+}
+window.addEventListener('load', () => {
+  bgResize(); 
+  bgAnimate();
+});
+window.addEventListener('resize', bgResize);
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => {
+    bgResize();
+    // Only reset scroll if no input is focused (avoids jump during typing)
+    if (!document.activeElement || document.activeElement.tagName !== 'INPUT') {
+      window.scrollTo(0, 0);
+    }
+  }, 200);
+});
+
+if (window.screen && window.screen.orientation) {
+  window.screen.orientation.addEventListener('change', () => {
+    setTimeout(() => {
+      bgResize();
+      if (!document.activeElement || document.activeElement.tagName !== 'INPUT') {
+        window.scrollTo(0, 0);
+      }
+    }, 200);
+  });
+}
+
+// Fallback for devices without orientation API
+window.addEventListener('fullscreenchange', bgResize);
+window.addEventListener('webkitfullscreenchange', bgResize);
+window.addEventListener('mozfullscreenchange', bgResize);
+window.addEventListener('msfullscreenchange', bgResize);
+
+// Handle visual viewport changes (mobile browsers with address bar)
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', bgResize);
+}
+
+bgResize();
+bgAnimate();
+
+// ── LOGO CANVAS ──────────────────────────────────────────────
+const lc = document.getElementById('logoCanvas');
+const lctx = lc.getContext('2d');
+lc.width = 100; lc.height = 100;
+const cx=50, cy=50;
+const orbiters = Array.from({length:6},(_,i)=>({
+  angle:(i/6)*Math.PI*2, radius:28+Math.random()*12,
+  speed:(0.01+Math.random()*0.015)*(Math.random()>0.5?1:-1),
+  size:4+Math.random()*5, color:COLORS[i%COLORS.length],
+  alpha:0.5+Math.random()*0.5, trail:[]
+}));
+
+function drawSmallHex(ctx,x,y,r,color,alpha){
+  ctx.beginPath();
+  for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);i===0?ctx.moveTo(x+r*Math.cos(a),y+r*Math.sin(a)):ctx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a));}
+  ctx.closePath();
+  ctx.strokeStyle=color; ctx.globalAlpha=alpha; ctx.lineWidth=1; ctx.stroke();
+  ctx.fillStyle=color; ctx.globalAlpha=alpha*0.2; ctx.fill();
+}
+
+function logoAnimate(){
+  lctx.clearRect(0,0,100,100);
+  const g=lctx.createRadialGradient(cx,cy,10,cx,cy,45);
+  g.addColorStop(0,'rgba(0,240,255,0.06)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  lctx.fillStyle=g; lctx.globalAlpha=1;
+  lctx.beginPath(); lctx.arc(cx,cy,45,0,Math.PI*2); lctx.fill();
+  orbiters.forEach(o=>{
+    o.angle+=o.speed;
+    const x=cx+Math.cos(o.angle)*o.radius, y=cy+Math.sin(o.angle)*o.radius;
+    o.trail.push({x,y,a:o.alpha});
+    if(o.trail.length>5) o.trail.shift();
+    o.trail.forEach((pt,i)=>drawSmallHex(lctx,pt.x,pt.y,o.size*.5,o.color,pt.a*(i/o.trail.length)*.35));
+    drawSmallHex(lctx,x,y,o.size,o.color,o.alpha);
+  });
+  lctx.globalAlpha=1;
+  requestAnimationFrame(logoAnimate);
+}
+logoAnimate();
+
+// ── SIDE CANVASES ────────────────────────────────────────────
+function initSideCanvas(canvas){
+  const ctx=canvas.getContext('2d');
+  let W,H;
+  function resize(){ W=canvas.width=canvas.offsetWidth; H=canvas.height=window.innerHeight; canvas.style.height=H+'px'; }
+  resize(); window.addEventListener('resize',resize);
+  const particles=[];
+  const rings=[];
+  const streams=[];
+  for(let i=0;i<6;i++) particles.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.7,vy:(Math.random()-.5)*.7,r:6+Math.random()*14,rot:Math.random()*Math.PI*2,rotSpd:(Math.random()-.5)*.02,col:COLORS[Math.floor(Math.random()*COLORS.length)],alpha:.45+Math.random()*.5,trail:[]});
+  for(let i=0;i<3;i++) rings.push({x:W*.5,y:H*(.15+i*.35),r:22+Math.random()*35,rot:Math.random()*Math.PI*2,rotSpd:(.003+Math.random()*.005)*(Math.random()>.5?1:-1),col:COLORS[Math.floor(Math.random()*COLORS.length)],alpha:.2+Math.random()*.25});
+  for(let i=0;i<20;i++) streams.push({x:Math.random()*W,y:Math.random()*H,vy:.4+Math.random()*1,r:1+Math.random()*2.5,col:COLORS[Math.floor(Math.random()*COLORS.length)],alpha:.22+Math.random()*.4,pulse:Math.random()*Math.PI*2,pulseSpd:.02+Math.random()*.04});
+  function drawHex(x,y,r,rot,col,alpha){ctx.beginPath();for(let i=0;i<6;i++){const a=(Math.PI/3)*i+rot;i===0?ctx.moveTo(x+r*Math.cos(a),y+r*Math.sin(a)):ctx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a));}ctx.closePath();ctx.strokeStyle=col;ctx.globalAlpha=alpha;ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=col;ctx.globalAlpha=alpha*.08;ctx.fill();}
+  function animate(){
+    ctx.clearRect(0,0,W,H);
+    rings.forEach(ring=>{ring.rot+=ring.rotSpd;drawHex(ring.x,ring.y,ring.r,ring.rot,ring.col,ring.alpha);drawHex(ring.x,ring.y,ring.r*.5,-ring.rot*1.5,ring.col,ring.alpha*.5);});
+    streams.forEach(s=>{s.y+=s.vy;s.pulse+=s.pulseSpd;if(s.y>H+8)s.y=-8;const a=s.alpha*(0.5+0.5*Math.sin(s.pulse));ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=s.col;ctx.globalAlpha=a;ctx.fill();});
+    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.rotSpd;if(p.x<-25)p.x=W+25;if(p.x>W+25)p.x=-25;if(p.y<-25)p.y=H+25;if(p.y>H+25)p.y=-25;p.trail.push({x:p.x,y:p.y});if(p.trail.length>6)p.trail.shift();p.trail.forEach((pt,i)=>drawHex(pt.x,pt.y,p.r*.45,p.rot,p.col,p.alpha*(i/p.trail.length)*.25));drawHex(p.x,p.y,p.r,p.rot,p.col,p.alpha);});
+    ctx.globalAlpha=1;
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+window.addEventListener('load',()=>{
+  const lc=document.getElementById('leftCanvas');
+  const rc=document.getElementById('rightCanvas');
+  if(lc) initSideCanvas(lc);
+  if(rc) initSideCanvas(rc);
+});
+
+// ── STRENGTH BAR ─────────────────────────────────────────────
+function checkStrength(){
+  const pw=document.getElementById('password').value;
+  const bar=document.getElementById('strengthBar');
+  const lbl=document.getElementById('strengthLabel');
+  let score=0;
+  if(pw.length>=8)score++;
+  if(/[A-Z]/.test(pw))score++;
+  if(/[0-9]/.test(pw))score++;
+  if(/[^A-Za-z0-9]/.test(pw))score++;
+  const widths=['0%','25%','50%','75%','100%'];
+  const colors=['transparent','#ff4466','#ffcc00','#00aaff','#00ff88'];
+  const labels=['','WEAK','FAIR','GOOD','STRONG'];
+  bar.style.width=widths[score];
+  bar.style.backgroundColor=colors[score];
+  lbl.textContent=pw.length?labels[score]:'';
+  lbl.style.color=colors[score]||'rgba(255,255,255,0.25)';
+}
+
+// ── REGISTER LOGIC ───────────────────────────────────────────
+// ── REGION DATA BY COUNTRY ────────────────────────────────
+
+async function handleRegister(){
+  const name=document.getElementById('fullname').value.trim();
+  const username=document.getElementById('username').value.trim();
+  const age=parseInt(document.getElementById('age').value);
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  const country=document.getElementById('country').value.trim();
+  const ageNote=document.getElementById('ageNote');
+  const btn=document.querySelector('.btn-register span');
+  if(!username){alert('Please choose a username.');return;}
+  if(age<16){ageNote.style.display='block';return;}
+  else{ageNote.style.display='none';}
+  if(!name||!age||!email||!password||!country){alert('Please fill in all required fields.');return;}
+  btn.textContent='Creating Account...';
+  try{
+    const res=await fetch('https://nfxyxnmatuzmqctttqnk.supabase.co/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg'},body:JSON.stringify({email,password,data:{username,full_name:name,country}})});
+    const data=await res.json();
+    if(data.error){alert('Error: '+data.error.message);btn.textContent='Create Account';return;}
+    const tok=data.access_token||null;
+    const authH='Bearer '+(tok||'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg');
+    const regRes=await fetch('https://nfxyxnmatuzmqctttqnk.supabase.co/rest/v1/registered_users',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg','Authorization':authH,'Prefer':'return=representation'},body:JSON.stringify({username,email,full_name:name,country})});
+    if(!regRes.ok){const regErr=await regRes.text();console.error('registered_users failed:',regRes.status,regErr);if(!regErr.includes('23505')){alert('Could not save your account. Check connection and try again.');btn.textContent='Create Account';return;}}
+    await fetch('https://nfxyxnmatuzmqctttqnk.supabase.co/rest/v1/online_users',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg','Authorization':authH},body:JSON.stringify({id:data.user?.id||('local_'+Date.now()),username,full_name:name,email,age,country})}).catch(()=>{});
+    const localToken=tok||'pending_'+Date.now();
+    sessionStorage.setItem('hexa_token',localToken);sessionStorage.setItem('hexa_username',username);sessionStorage.setItem('hexa_email',email);sessionStorage.setItem('hexa_fullname',name);sessionStorage.setItem('hexa_country',country);
+    localStorage.setItem('hexa_token',localToken);localStorage.setItem('hexa_username',username);localStorage.setItem('hexa_email',email);localStorage.setItem('hexa_fullname',name);localStorage.setItem('hexa_country',country);
+    document.querySelector('.card-title').style.display='none';
+    document.querySelectorAll('.field').forEach(f=>f.style.display='none');
+    document.querySelector('.btn-register').style.display='none';
+    document.querySelector('.signin-link').style.display='none';
+    document.getElementById('successMsg').style.display='flex';
+    setTimeout(()=>{localStorage.setItem('hexa_new_user','true');window.location.replace('hexa-welcome.html');},2000);
+  }catch(e){alert('Connection error. Please try again.');btn.textContent='Create Account';}
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────
+function openLoginModal(){
+  const modal = document.getElementById('loginModal');
+  modal.classList.add('on');
+  const em = document.getElementById('loginEmail');
+  const pw = document.getElementById('loginPassword');
+  const rm = document.getElementById('rememberMe');
+  if(em){ em.removeAttribute('disabled'); em.setAttribute('autocomplete','off'); }
+  if(pw){ pw.removeAttribute('disabled'); pw.setAttribute('autocomplete','off'); }
+  // Autofill from our own storage
+  const savedEmail = localStorage.getItem('hexa_remember_email');
+  const savedPw = localStorage.getItem('hexa_remember_pw');
+  if(savedEmail && em){ em.value = savedEmail; }
+  if(savedPw && pw){ pw.value = savedPw; }
+  if(rm && savedEmail){ rm.checked = true; }
+  if(!savedEmail && em){ setTimeout(()=>{ em.focus({ preventScroll: true }); }, 200); }
+  // Clear error
+  const err = document.getElementById('loginError');
+  if(err){ err.style.display='none'; err.textContent=''; }
+}
+function closeLoginModal(){
+  document.getElementById('loginModal').classList.remove('on');
+  const em = document.getElementById('loginEmail');
+  const pw = document.getElementById('loginPassword');
+  if(em){ em.value=''; em.setAttribute('disabled',''); }
+  if(pw){ pw.value=''; pw.setAttribute('disabled',''); }
+}
+async function submitLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  const err=document.getElementById('loginError');
+  const successEl=document.getElementById('loginSuccess');
+  if(!email||!password){err.textContent='Please fill in all fields.';err.style.display='block';return;}
+  err.style.display='none';successEl.style.display='none';
+  try{
+    const res=await fetch('https://nfxyxnmatuzmqctttqnk.supabase.co/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg'},body:JSON.stringify({email,password})});
+    const data=await res.json();
+    if(data.error){err.textContent='Invalid email or password.';err.style.display='block';return;}
+    sessionStorage.setItem('hexa_token',data.access_token);sessionStorage.setItem('hexa_email',email);
+    localStorage.setItem('hexa_token',data.access_token);localStorage.setItem('hexa_email',email);
+    const rm = document.getElementById('rememberMe');
+    if(rm && rm.checked){ localStorage.setItem('hexa_remember_email',email); localStorage.setItem('hexa_remember_pw',password); }
+    else { localStorage.removeItem('hexa_remember_email'); localStorage.removeItem('hexa_remember_pw'); }
+    try{
+      const uRes=await fetch('https://nfxyxnmatuzmqctttqnk.supabase.co/rest/v1/registered_users?email=eq.'+encodeURIComponent(email)+'&select=username,full_name&limit=1',{headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg','Authorization':'Bearer '+data.access_token}});
+      const ud=await uRes.json();
+      const un=ud[0]?.username;const fn=ud[0]?.full_name||'';
+      if(!un){err.textContent='Account not found. Please register first.';err.style.display='block';return;}
+      sessionStorage.setItem('hexa_username',un);sessionStorage.setItem('hexa_fullname',fn);
+      localStorage.setItem('hexa_username',un);localStorage.setItem('hexa_fullname',fn);
+    }catch(e2){err.textContent='Could not load your profile.';err.style.display='block';return;}
+    successEl.textContent='✔ Signed in! Redirecting...';successEl.style.display='block';
+    setTimeout(()=>{window.location.replace('dashboard.html');},1000);
+  }catch(e){err.textContent='Connection error. Try again.';err.style.display='block';}
+}
+
+// ── RESET PASSWORD ───────────────────────────────────────────
+function openResetModal(){document.getElementById('loginModal').classList.remove('on');document.getElementById('resetModal').classList.add('on');setTimeout(()=>document.getElementById('resetEmail').focus({ preventScroll: true }),100);}
+function closeResetModal(){
+  document.getElementById('resetModal').classList.remove('on');
+  document.getElementById('resetEmail').value='';document.getElementById('resetNewPassword').value='';document.getElementById('resetConfirmPassword').value='';
+  ['resetEmailError','resetNewPasswordError','resetConfirmPasswordError','resetSuccess'].forEach(id=>{const el=document.getElementById(id);el.textContent='';el.style.display='none';});
+  document.getElementById('resetStrengthBar').style.width='0%';document.getElementById('resetStrengthText').textContent='';
+  document.getElementById('resetSubmitBtn').disabled=false;document.getElementById('resetSubmitBtn').textContent='RESET PASSWORD';
+  document.getElementById('loginModal').classList.add('on');
+}
+function checkResetStrength(){
+  const pw=document.getElementById('resetNewPassword').value;
+  const bar=document.getElementById('resetStrengthBar');const text=document.getElementById('resetStrengthText');
+  let score=0;if(pw.length>=8)score++;if(/[A-Z]/.test(pw))score++;if(/[0-9]/.test(pw))score++;if(/[^A-Za-z0-9]/.test(pw))score++;
+  const widths=['0%','25%','50%','75%','100%'];const colors=['transparent','#ff4466','#ffcc00','#00aaff','#00ff88'];const labels=['','WEAK','FAIR','GOOD','STRONG'];
+  bar.style.width=widths[score];bar.style.backgroundColor=colors[score];text.textContent=pw.length?labels[score]:'';text.style.color=colors[score]||'rgba(255,255,255,0.25)';
+}
+async function submitPasswordReset(){
+  const email=document.getElementById('resetEmail').value.trim();
+  const newPw=document.getElementById('resetNewPassword').value;
+  const confirmPw=document.getElementById('resetConfirmPassword').value;
+  const emailErr=document.getElementById('resetEmailError');const newErr=document.getElementById('resetNewPasswordError');const confirmErr=document.getElementById('resetConfirmPasswordError');
+  const successEl=document.getElementById('resetSuccess');const btn=document.getElementById('resetSubmitBtn');
+  [emailErr,newErr,confirmErr].forEach(e=>{e.textContent='';e.style.display='none';});successEl.style.display='none';
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){emailErr.textContent='Please enter a valid email.';emailErr.style.display='block';return;}
+  if(!newPw||newPw.length<6){newErr.textContent='Password must be at least 6 characters.';newErr.style.display='block';return;}
+  if(newPw!==confirmPw){confirmErr.textContent='Passwords do not match.';confirmErr.style.display='block';return;}
+  btn.disabled=true;btn.textContent='UPDATING...';
+  try{
+    const fnRes=await fetch('https://nfxyxnmatuzmqctttqnk.supabase.co/functions/v1/bright-endpoint',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg'},body:JSON.stringify({email,password:newPw})});
+    let fnData={};try{fnData=await fnRes.json();}catch(e){}
+    if(!fnRes.ok||fnData.error){emailErr.textContent=fnData.error||'Could not update password. Try again.';emailErr.style.display='block';btn.disabled=false;btn.textContent='RESET PASSWORD';return;}
+    successEl.textContent='✓ Password updated!';successEl.style.display='block';btn.textContent='DONE';
+    setTimeout(()=>{closeResetModal();const loginErr=document.getElementById('loginError');loginErr.textContent='✓ Password updated — sign in with your new password.';loginErr.style.color='#00ff88';loginErr.style.display='block';document.getElementById('loginEmail').value=email;setTimeout(()=>{loginErr.style.display='none';loginErr.style.color='';},6000);},1500);
+  }catch(e){emailErr.textContent='Connection error. Please try again.';emailErr.style.display='block';btn.disabled=false;btn.textContent='RESET PASSWORD';}
+}
+</script>
+</body>
+</html>
