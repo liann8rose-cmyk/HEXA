@@ -295,6 +295,44 @@
   #wrong-password-popup .wp-bar-fill{height:100%;background:#ff4466;width:100%;transition:width 5s linear;}
 
   .pw-wrap{position:relative;display:flex;align-items:center;}
+
+  /* ── TABLET (768px – 1024px) ── */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    /* Age gate — centered, bigger */
+    .age-gate { gap: 28px; padding: 60px 40px; }
+    .age-gate h2 { font-size: clamp(48px, 7vw, 80px); letter-spacing: 0.18em; }
+    .age-gate p { font-size: 20px; max-width: 560px; line-height: 1.9; }
+    .age-yes, .age-no { font-size: 22px; padding: 18px 60px; border-radius: 4px; min-width: 220px; }
+    .age-gate-btns { gap: 24px; margin-top: 16px; }
+
+    /* Main content */
+    .container { padding: 60px 40px; }
+    .divider { margin: 40px auto; }
+    .btn { font-size: 22px; padding: 18px 56px; }
+    .btn-group { gap: 28px; margin-top: 52px; }
+
+    /* Login modal */
+    .login-box { max-width: 500px; padding: 48px 44px; }
+    .login-box h2 { font-size: 32px; margin-bottom: 28px; }
+    .login-field { margin-bottom: 20px; }
+    .login-field label { font-size: 13px; margin-bottom: 8px; }
+    .login-field input { padding: 14px 18px; font-size: 16px; }
+    .login-btn { font-size: 20px; padding: 16px; margin-top: 12px; }
+    .login-error { font-size: 14px; }
+    .forgot-link { font-size: 12px; margin-top: 6px; }
+    .pw-eye { font-size: 20px; right: 14px; }
+
+    /* Reset modal */
+    .reset-box { max-width: 500px; padding: 48px 44px; }
+    .reset-box h2 { font-size: 26px; margin-bottom: 6px; }
+    .reset-box .reset-subtitle { font-size: 12px; margin-bottom: 24px; }
+    .reset-field { margin-bottom: 18px; }
+    .reset-field label { font-size: 12px; margin-bottom: 8px; }
+    .reset-field input { padding: 14px 18px; font-size: 16px; }
+    .reset-btn { font-size: 18px; padding: 16px; margin-top: 8px; }
+    .reset-back { font-size: 13px; margin-top: 12px; }
+    .reset-error { font-size: 13px; }
+  }
   .pw-wrap input{flex:1;padding-right:40px;}
   .pw-eye{position:absolute;right:12px;cursor:pointer;font-size:18px;color:rgba(255,255,255,.9);user-select:none;-webkit-user-select:none;line-height:1;}
   .pw-eye:hover{color:rgba(255,255,255,.85);}
@@ -347,7 +385,7 @@
     sessionStorage.removeItem('hexa_reset_success');
     setTimeout(()=>{
       document.getElementById('loginModal').classList.add('on');
-      document.getElementById('loginEmail').focus();
+      document.getElementById('loginEmail').focus({preventScroll:true});
       const msg=document.getElementById('loginError');
       msg.textContent='✓ Password reset successful! Enter your new password to sign in.';
       msg.style.display='block';
@@ -360,12 +398,12 @@
 })();
 
 function enterSite(){location.href='hexa-register.html';}
-function doSignIn(){document.getElementById('loginModal').classList.add('on');setTimeout(()=>document.getElementById('loginEmail').focus(),100);}
+function doSignIn(){document.getElementById('loginModal').classList.add('on');setTimeout(()=>document.getElementById('loginEmail').focus({preventScroll:true}),100);}
 function closeLogin(){document.getElementById('loginModal').classList.remove('on');}
 function openResetModal(){
   document.getElementById('loginModal').classList.remove('on');
   document.getElementById('resetModal').classList.add('on');
-  setTimeout(()=>document.getElementById('resetEmail').focus(),100);
+  setTimeout(()=>document.getElementById('resetEmail').focus({preventScroll:true}),100);
 }
 function closeResetModal(){
   document.getElementById('resetModal').classList.remove('on');
@@ -396,7 +434,7 @@ async function verifyResetEmail(){
     btn.disabled=false;btn.textContent='CONTINUE';
     document.getElementById('resetVerifyStage').classList.remove('active');
     document.getElementById('resetPasswordStage').classList.add('active');
-    setTimeout(()=>document.getElementById('resetNewPw').focus(),100);
+    setTimeout(()=>document.getElementById('resetNewPw').focus({preventScroll:true}),100);
   }catch(e){err.textContent='Connection error.';err.classList.add('show');btn.disabled=false;btn.textContent='CONTINUE';}
 }
 function checkPasswordStrength(){
@@ -428,7 +466,7 @@ async function updatePassword(){
 function backToVerify(){
   document.getElementById('resetPasswordStage').classList.remove('active');
   document.getElementById('resetVerifyStage').classList.add('active');
-  setTimeout(()=>document.getElementById('resetEmail').focus(),100);
+  setTimeout(()=>document.getElementById('resetEmail').focus({preventScroll:true}),100);
 }
 function showPopup(id,barId,duration){
   const pop=document.getElementById(id);

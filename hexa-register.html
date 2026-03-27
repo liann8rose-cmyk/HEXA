@@ -414,62 +414,105 @@
 
   /* ── TABLET ONLY (768px – 1024px) ── */
   @media (min-width: 768px) and (max-width: 1024px) {
-    /* layout */
-    .page { align-items: center; justify-content: center; min-height: 100vh; }
-    .center-col { max-width: 700px; padding: 0 40px; position: relative; }
+    /* root layout — always centered, never jumping */
+    html, body { overflow-y: auto; overflow-x: hidden; }
+    .page {
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 32px 0;
+    }
+    .center-col {
+      max-width: 680px;
+      width: 100%;
+      padding: 0 48px;
+      position: relative;
+      margin: 0 auto;
+      align-items: center;
+    }
 
     /* logo */
-    .logo-area { max-width: 300px; height: 100px; }
-    .logo-text { font-size: 62px; }
-    .subtitle { font-size: 13px; letter-spacing: 0.6em; margin-bottom: 10px; }
+    .logo-area { max-width: 280px; height: 90px; margin-bottom: 8px; }
+    .logo-text { font-size: 58px; }
+    .subtitle { font-size: 13px; letter-spacing: 0.6em; margin-bottom: 12px; }
 
     /* tabs */
-    .tab-row { gap: 12px; margin-bottom: 12px; }
-    .tab-btn { font-size: 17px; padding: 13px; }
+    .tab-row { gap: 12px; margin-bottom: 14px; }
+    .tab-btn { font-size: 18px; padding: 14px 20px; }
 
     /* card */
-    .card { padding: 28px 36px; background: rgba(0,3,15,0.65); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-    .card-title { font-size: 26px; margin-bottom: 18px; }
+    .card {
+      padding: 32px 40px;
+      background: rgba(0,3,15,0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      width: 100%;
+    }
+    .card-title { font-size: 26px; margin-bottom: 20px; text-align: center; }
 
     /* fields */
-    .fields-grid { gap: 14px 18px; margin-bottom: 16px; }
+    .fields-grid { gap: 14px 20px; margin-bottom: 18px; }
     .field label { font-size: 13px; letter-spacing: 0.24em; margin-bottom: 8px; }
-    .field input, .field select { padding: 13px 15px; font-size: 16px; border-radius: 3px; }
+    .field input, .field select {
+      padding: 14px 16px;
+      font-size: 16px;
+      border-radius: 3px;
+    }
     .field-note { font-size: 12px; }
     .age-note { font-size: 12px; }
-    .pw-wrap input { padding-right: 38px; }
-    .pw-eye { font-size: 16px; right: 12px; }
+    .pw-wrap input { padding-right: 42px; }
+    .pw-eye { font-size: 18px; right: 13px; }
     .strength-track { margin-top: 8px; height: 3px; }
     .strength-label { font-size: 10px; margin-top: 4px; }
 
     /* register button */
-    .btn-register { font-size: 19px; padding: 15px; margin-bottom: 12px; margin-top: 4px; }
+    .btn-register { font-size: 20px; padding: 16px; margin-bottom: 14px; margin-top: 6px; }
     .signin-link { font-size: 15px; }
-    .back-link { font-size: 14px; margin-top: 12px; }
+    .back-link { font-size: 14px; margin-top: 14px; }
 
     /* success */
     .success-hex { font-size: 56px; }
     .success h3 { font-size: 30px; }
     .success p { font-size: 14px; }
 
-    /* login modal */
-    .login-box { max-width: 460px; padding: 36px; }
-    .login-box h2 { font-size: 30px; margin-bottom: 22px; }
-    .login-field { margin-bottom: 16px; }
-    .login-field label { font-size: 11px; margin-bottom: 7px; }
-    .login-field input { padding: 12px 15px; font-size: 15px; }
-    .login-btn { font-size: 18px; padding: 14px; }
+    /* login modal — centered, properly sized */
+    .login-modal { align-items: center; justify-content: center; }
+    .login-box {
+      max-width: 500px;
+      width: 90%;
+      padding: 44px 40px;
+      margin: auto;
+    }
+    .login-box h2 { font-size: 30px; margin-bottom: 24px; }
+    .login-field { margin-bottom: 18px; }
+    .login-field label { font-size: 12px; margin-bottom: 8px; }
+    .login-field input { padding: 14px 16px; font-size: 16px; }
+    .login-btn { font-size: 19px; padding: 15px; margin-top: 10px; }
     .login-error, .login-success { font-size: 13px; }
-    .forgot-link { font-size: 12px; }
+    .forgot-link { font-size: 12px; margin-top: 6px; }
 
     /* reset modal */
-    .reset-box { max-width: 460px; padding: 36px; }
-    .reset-box h2 { font-size: 24px; }
-    .reset-subtitle { font-size: 11px; margin-bottom: 20px; }
-    .reset-field { margin-bottom: 14px; }
-    .reset-field label { font-size: 11px; margin-bottom: 7px; }
-    .reset-field input { padding: 12px 15px; font-size: 15px; }
-    .reset-btn { font-size: 17px; padding: 14px; }
+    .login-modal#resetModal { align-items: center; justify-content: center; }
+    .reset-box {
+      max-width: 500px;
+      width: 90%;
+      padding: 44px 40px;
+    }
+    .reset-box h2 { font-size: 24px; margin-bottom: 6px; }
+    .reset-subtitle { font-size: 11px; margin-bottom: 22px; }
+    .reset-field { margin-bottom: 16px; }
+    .reset-field label { font-size: 12px; margin-bottom: 8px; }
+    .reset-field input { padding: 14px 16px; font-size: 16px; }
+    .reset-btn { font-size: 18px; padding: 15px; }
+  }
+
+  /* ── TABLET LANDSCAPE specific ── */
+  @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .page { padding: 20px 0; align-items: flex-start; }
+    .center-col { max-width: 720px; padding: 0 40px; }
+    .logo-area { max-width: 200px; height: 70px; }
+    .logo-text { font-size: 46px; }
+    .card { padding: 24px 36px; }
   }
 
 </style>
@@ -1170,17 +1213,21 @@ window.addEventListener('resize', bgResize);
 window.addEventListener('orientationchange', () => {
   setTimeout(() => {
     bgResize();
-    window.scrollTo(0, 0);
-  }, 100);
+    // Only reset scroll if no input is focused (avoids jump during typing)
+    if (!document.activeElement || document.activeElement.tagName !== 'INPUT') {
+      window.scrollTo(0, 0);
+    }
+  }, 200);
 });
 
-// Handle screen orientation for all devices (iOS, Android, Desktop)
 if (window.screen && window.screen.orientation) {
   window.screen.orientation.addEventListener('change', () => {
     setTimeout(() => {
       bgResize();
-      window.scrollTo(0, 0);
-    }, 100);
+      if (!document.activeElement || document.activeElement.tagName !== 'INPUT') {
+        window.scrollTo(0, 0);
+      }
+    }, 200);
   });
 }
 
