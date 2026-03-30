@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#000;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>HEXA · SoundCloud</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; background:#00060f; color:#fff; font-family:'Barlow',sans-serif; overflow:hidden; }
+  .topbar{ height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; background:rgba(0,3,8,.99); border-bottom:1px solid rgba(0,255,238,.1); }
+  .back-btn{ font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:.2em; color:#00ffee; background:rgba(0,255,238,.07); border:1px solid rgba(0,255,238,.25); border-radius:3px; padding:6px 14px; cursor:pointer; }
+  .topbar-title{ font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:.3em; color:#ff5500; }
+  .topbar-logo{ font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:.35em; background:linear-gradient(90deg,#00ffee,#ff00aa,#00ff88); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .page{ display:flex; flex-direction:column; height:100vh; }
+  .url-bar{ display:flex; gap:8px; padding:10px 14px; background:rgba(0,4,12,.98); border-bottom:1px solid rgba(255,85,0,.15); flex-shrink:0; }
+  .url-input{ flex:1; background:rgba(255,255,255,.05); border:1px solid rgba(255,85,0,.3); border-radius:3px; padding:8px 12px; color:#fff; font-family:'Share Tech Mono',monospace; font-size:11px; outline:none; }
+  .url-input:focus{ border-color:#ff5500; }
+  .url-input::placeholder{ color:rgba(255,255,255,.3); }
+  .load-btn{ font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:.15em; padding:8px 14px; background:linear-gradient(135deg,#ff5500,#cc3300); color:#fff; border:none; border-radius:3px; cursor:pointer; }
+  .embed-area{ flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .embed-area iframe{ width:100%; height:100%; border:none; }
+  .placeholder{ display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:14px; text-align:center; padding:24px; }
+  .sc-icon{ font-size:52px; animation:scPulse 2s ease-in-out infinite; }
+  @keyframes scPulse{ 0%,100%{ filter:drop-shadow(0 0 15px rgba(255,85,0,.4)); } 50%{ filter:drop-shadow(0 0 30px rgba(255,85,0,.8)); } }
+  .placeholder h2{ font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:.3em; color:#ff5500; }
+  .placeholder p{ font-family:'Share Tech Mono',monospace; font-size:10px; color:rgba(255,255,255,.35); line-height:1.8; }
+  .error{ font-family:'Share Tech Mono',monospace; font-size:10px; color:#ff4466; padding:6px 14px; display:none; flex-shrink:0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <div class="back-btn" onclick="goBack()">← HEXA</div>
+    <div class="topbar-title">☁ SOUNDCLOUD</div>
+    <div class="topbar-logo">HEXA</div>
+  </div>
+  <div class="url-bar">
+    <input class="url-input" id="sc-url" type="url" placeholder="Paste SoundCloud track or playlist URL..." />
+    <button class="load-btn" onclick="loadTrack()">LOAD</button>
+  </div>
+  <div class="error" id="sc-error">⚠ Paste a valid SoundCloud URL</div>
+  <div class="embed-area" id="embed-area">
+    <div class="placeholder">
+      <div class="sc-icon">☁</div>
+      <h2>SOUNDCLOUD</h2>
+      <p>Paste a SoundCloud track or<br>playlist URL above and hit LOAD.<br><br>Need to find a track?</p><div onclick="window.open('https://soundcloud.com','_blank')" style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.15em;padding:10px 20px;background:rgba(255,85,0,.08);border:1px solid rgba(255,85,0,.3);color:#ff5500;border-radius:3px;cursor:pointer;margin-top:4px;">🌐 BROWSE SOUNDCLOUD</div>
+    </div>
+  </div>
+</div>
+<script>
+function goBack(){ if(history.length > 1) history.back(); else window.location.href = 'dashboard.html'; }
+function loadTrack(){
+  const url = document.getElementById('sc-url').value.trim();
+  const err = document.getElementById('sc-error');
+  err.style.display = 'none';
+  if(!url || !url.includes('soundcloud.com')){ err.style.display = 'block'; return; }
+  document.getElementById('embed-area').innerHTML = `<iframe width="100%" height="100%" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23ff5500&auto_play=true&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true"></iframe>`;
+}
+document.getElementById('sc-url').addEventListener('keydown', e=>{ if(e.key==='Enter') loadTrack(); });
+</script>
+</body>
+</html>
