@@ -2,29 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=overlays-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <script>
-var _vpTimer = null;
 function adjustViewport(){
-  if(_vpTimer) return;
-  _vpTimer = setTimeout(function(){
-    _vpTimer = null;
-    var vp = document.querySelector('meta[name=viewport]');
-    if(!vp) return;
-    var isLandscape = window.innerWidth > window.innerHeight;
-    var isMobile = window.innerWidth <= 900 && window.innerHeight <= 500 || (isLandscape && Math.min(window.innerWidth,window.innerHeight) <= 500);
-    if(isLandscape && isMobile){
-      var scale = (window.innerHeight / 480).toFixed(2);
-      vp.content = 'width=device-width, initial-scale='+scale+', viewport-fit=cover, user-scalable=yes, interactive-widget=overlays-content';
-    } else if(isLandscape){
-      vp.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes, interactive-widget=overlays-content';
-    } else {
-      vp.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=overlays-content';
-    }
-  }, 300);
+  var vp = document.querySelector('meta[name=viewport]');
+  if(!vp) return;
+  var isLandscape = window.innerWidth > window.innerHeight;
+  var isMobile = window.innerWidth <= 900 && window.innerHeight <= 500 || (isLandscape && Math.min(window.innerWidth,window.innerHeight) <= 500);
+  if(isLandscape && isMobile){
+    var scale = (window.innerHeight / 600).toFixed(2);
+    vp.content = 'width=device-width, initial-scale='+scale+', viewport-fit=cover, user-scalable=yes';
+  } else if(isLandscape){
+    vp.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes';
+  } else {
+    vp.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
+  }
 }
 adjustViewport();
 window.addEventListener('orientationchange', function(){ setTimeout(adjustViewport, 300); });
+window.addEventListener('resize', adjustViewport);
 </script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -58,12 +54,12 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
   padding:0 16px;background:rgba(0,3,8,.99);
   border-bottom:1px solid rgba(0,255,238,.1);flex-shrink:0;z-index:100;position:relative;
 }
-.logo-wrap{cursor:pointer;line-height:1;flex-shrink:0;padding:0 10px 0 4px;}
+.logo-wrap{cursor:pointer;line-height:1;flex-shrink:0;}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.35em;
   background:linear-gradient(90deg,var(--cyan),var(--mag),var(--grn));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   filter:drop-shadow(0 0 8px rgba(0,255,238,.4));}
-.logo-sub{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.35em;color:var(--cyan);text-align:center;margin-top:1px;text-shadow:0 0 8px rgba(0,255,238,.6);}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.35em;color:rgba(0,255,238,.4);text-align:center;margin-top:1px;}
 .nav-tabs{display:flex;gap:2px;flex:1;min-width:0;margin:0 8px;overflow:hidden;}
 .tab{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.1em;
   flex:1;min-width:0;
@@ -213,13 +209,11 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
 .msg-view{background:var(--panel);width:100%;height:100%;position:relative;display:flex;flex-direction:column;}
 .marea{position:absolute;top:0;left:0;right:0;bottom:160px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 @media(min-width:600px){.marea{padding:10px 24px;align-items:center;}.marea .mb{max-width:580px;width:100%;align-self:center!important;margin-left:30px;margin-right:30px;}.marea .mb.alt-left{margin-left:0;margin-right:60px;}.marea .mb.alt-right{margin-left:60px;margin-right:0;}}
-@media(min-width:1025px){.marea{padding:10px 20px;align-items:center;}.marea .mb{max-width:680px;width:100%;align-self:center!important;margin-left:40px;margin-right:40px;}.marea .mb.alt-left{margin-left:0;margin-right:80px;}.marea .mb.alt-right{margin-left:80px;margin-right:0;}
-  #old-msgs-tab{font-size:16px!important;padding:5px 14px!important;}
-}
+@media(min-width:1025px){.marea{padding:10px 20px;align-items:center;}.marea .mb{max-width:680px;width:100%;align-self:center!important;margin-left:40px;margin-right:40px;}.marea .mb.alt-left{margin-left:0;margin-right:80px;}.marea .mb.alt-right{margin-left:80px;margin-right:0;}}
 
 
 
-@media(max-width:599px), (max-width:1024px) and (orientation:landscape){
+@media(max-width:599px), (max-width:767px) and (orientation:landscape){
   .logo{font-size:18px;letter-spacing:.25em;}
   .logo-sub{font-size:6px;}
   .nav-tabs{gap:2px;margin:0 6px;}
@@ -251,48 +245,39 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
 }
 
 /* ══ MOBILE LANDSCAPE — everything compact to fit screen ══ */
-@media(max-width:1024px) and (orientation:landscape){
+@media(max-width:767px) and (orientation:landscape){
   /* Scale whole app to fit landscape height */
   .wrap{transform-origin:top left;}
-  /* Force menu centered in landscape mobile */
-  .side-menu{position:fixed!important;top:50%!important;left:50%!important;right:auto!important;transform:translate(-50%,-50%) scale(0.92)!important;width:min(340px,80vw)!important;height:90dvh!important;max-height:90dvh!important;border-radius:8px!important;}
-  .side-menu.on{transform:translate(-50%,-50%) scale(1)!important;}
   /* Top nav compact */
-  .topnav{height:48px!important;padding:0 8px!important;}
+  .topnav{height:36px!important;padding:0 8px!important;}
   .logo{font-size:14px!important;}
   .logo-sub{display:none!important;}
-  .tab{font-size:20px!important;padding:8px 10px!important;}
+  .tab{font-size:10px!important;padding:3px 5px!important;}
   .nav-r{font-size:9px!important;}
-  /* Sidebar wider so Friends section is visible */
-  .sidebar{width:115px!important;min-width:90px!important;}
-  .sidebar{overflow-y:auto!important;}
+  /* Sidebar narrow */
+  .sidebar{width:90px!important;min-width:70px!important;}
   .slbl{display:none!important;}
   /* The Friends slbl has margin-top:200px inline — zero it in landscape so friend-list isn't pushed off screen */
   .sidebar .slbl[onclick]{margin-top:0!important;}
   /* Constrain friend-list height in mobile landscape so it fits within the short viewport */
-  #friend-list{max-height:none!important;overflow-y:visible!important;}
-  .sidebar{height:calc(100dvh - 36px - var(--sbar-h, 52px))!important;max-height:calc(100dvh - 36px - var(--sbar-h, 52px))!important;overflow-y:auto!important;}
-  .uname{font-size:13px!important;}
+  #friend-list{max-height:120px!important;}
+  .uname{font-size:9px!important;}
   .ustatus{display:none!important;}
-  .uavatar{width:20px!important;height:20px!important;}
-
-  /* Messages area */
-  .marea{bottom:calc(var(--sbar-h, 52px) + 60px)!important;top:36px!important;}
-  /* Status bar bigger */
-  .sbar{height:52px!important;}
-  .si{font-size:16px!important;gap:10px!important;}
-  html{--sbar-h:52px;}
-  /* Scroll messages button bigger — landscape only */
-  #old-msgs-tab{font-size:16px!important;padding:5px 14px!important;letter-spacing:.12em!important;}
+  .uavatar{width:14px!important;height:14px!important;}
+  /* Messages area — leave room for message box + sbar */
+  .marea{bottom:calc(var(--sbar-h, 36px) + 60px)!important;top:36px!important;}
+  /* Status bar — bigger in landscape so tabs are usable */
+  .sbar{height:36px!important;}
+  .si{font-size:9px!important;gap:8px!important;}
+  html{--sbar-h:36px;}
   /* ── LANDSCAPE MESSAGE BOX — COLLAPSED (default) ── */
   #inp-wrap{
-    position:absolute!important;
+    position:fixed!important;
     left:50%!important;
     transform:translateX(-50%)!important;
     bottom:calc(var(--sbar-h, 36px) + 4px)!important;
     top:auto!important;
-    width:clamp(440px,78vw,860px)!important;
-    max-width:calc(100vw - 32px)!important;
+    width:clamp(440px,82vw,860px)!important;
     max-height:150px!important;
     min-height:0!important;
     background:rgba(0,8,22,.96)!important;
@@ -315,11 +300,11 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
   #inp-wrap .emo-btn{font-size:26px!important;padding:4px 8px!important;}
   #inp-wrap .inp-row{padding:4px 16px 14px!important;flex:1!important;min-height:0!important;}
   #inp-wrap #minp{
-    font-size:28px;padding:10px 14px!important;min-height:56px!important;
+    font-size:20px!important;padding:10px 14px!important;min-height:56px!important;
     resize:none!important;color:rgba(255,255,255,.9)!important;
     border-color:rgba(0,255,200,.5)!important;
   }
-  #inp-wrap #minp::placeholder{color:rgba(255,255,255,.55)!important;font-size:14px;}
+  #inp-wrap #minp::placeholder{color:rgba(255,255,255,.55)!important;font-size:20px!important;}
   #inp-wrap .msend{font-size:18px!important;padding:0 24px!important;height:56px!important;min-width:72px!important;}
 
   /* ── LANDSCAPE MESSAGE BOX — EXPANDED (on focus) ── */
@@ -339,7 +324,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
   #inp-wrap.ls-expanded .emo-btn{font-size:16px!important;padding:3px 6px!important;}
   #inp-wrap.ls-expanded .inp-row{padding:4px 10px 10px!important;flex:1!important;}
   #inp-wrap.ls-expanded #minp{
-    font-size:14px;padding:8px 10px!important;
+    font-size:15px!important;padding:8px 10px!important;
     min-height:80px!important;max-height:none!important;
     color:#fff!important;border-color:rgba(0,255,200,.8)!important;
   }
@@ -427,7 +412,7 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
   .sidebar button[onclick*="searchUsers"]{font-size:20px!important;padding:8px 12px!important;height:44px!important;}
 
   /* ── SCROLL MESSAGES button (inline style override) ── */
-  #old-msgs-tab{font-size:20px!important;padding:10px 20px!important;border-radius:24px!important;}
+  #old-msgs-tab{font-size:16px!important;padding:8px 18px!important;border-radius:24px!important;}
   #chan-topbar{height:46px!important;padding:0 12px!important;}
   #country-flag-display{font-size:26px!important;width:36px!important;height:36px!important;}
   #location-banner{font-size:13px!important;}
@@ -436,9 +421,6 @@ html,body{height:100%;background:var(--bg);color:#fff;font-family:'Barlow',sans-
   .mb{font-size:22px!important;padding:10px 16px!important;line-height:1.65!important;}
   .msg-row .msg-text{font-size:22px!important;line-height:1.65!important;}
   .mmeta{font-size:14px!important;}
-body.ls-mode .mb{font-size:22px!important;padding:10px 16px!important;line-height:1.65!important;}
-body.ls-mode .msg-row .msg-text{font-size:22px!important;line-height:1.65!important;}
-body.ls-mode .mmeta{font-size:14px!important;}
   .mmeta .mn{font-size:16px!important;}
   .msg-row .msg-flag{font-size:18px!important;}
   .marea{top:46px!important;bottom:175px!important;}
@@ -714,7 +696,7 @@ body.ls-mode .mmeta{font-size:14px!important;}
 .side-menu{position:fixed;top:50%;left:50%;width:min(280px,85vw);max-height:96dvh;height:96dvh;background:rgba(0,6,16,.99);border:1px solid rgba(0,255,238,.2);border-radius:8px;z-index:9999;transform:translate(-50%,-50%) scale(0.92);opacity:0;pointer-events:none;transition:transform .25s cubic-bezier(.4,0,.2,1),opacity .25s;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(0,255,238,.08),0 20px 60px rgba(0,0,0,.8);touch-action:none;transform-origin:center center;}
 .side-menu.on{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:all;}
 /* ══ DESKTOP MENU — right side, resizable ══ */
-@media(min-width:1025px) and (min-height:700px){
+@media(min-width:1025px){
   .menu-ov{background:transparent;backdrop-filter:none;pointer-events:none;}
   .menu-ov.on{pointer-events:all;}
   .side-menu{
@@ -1008,7 +990,7 @@ body.ls-mode .mmeta{font-size:14px!important;}
       <div id="search-results-extra" style="max-height:120px;overflow-y:auto;scrollbar-width:thin;"></div>
 
       <!-- FRIEND LIST SECTION -->
-      <div id="friend-slbl" class="slbl" onclick="toggleFriendList()" style="margin-top:200px;color:rgba(0,255,136,.6);cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding-right:12px;">
+      <div class="slbl" onclick="toggleFriendList()" style="margin-top:200px;color:rgba(0,255,136,.6);cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding-right:12px;">
         <span>Friends</span><span id="friend-toggle-arrow" style="font-size:10px;transition:transform .2s;">▼</span>
       </div>
       <div id="friend-list" style="min-height:80px;max-height:280px;overflow-y:auto;scrollbar-width:thin;width:100%;box-sizing:border-box;">
@@ -1064,7 +1046,7 @@ body.ls-mode .mmeta{font-size:14px!important;}
             <span id="photo-preview" style="font-size:10px;color:rgba(0,255,200,.7);font-family:'Share Tech Mono',monospace;"></span>
           </div>
           <div class="inp-row">
-            <textarea class="minp" id="minp" rows="2" placeholder="Message the public channel..." style="font-size:20px;"></textarea>
+            <textarea class="minp" id="minp" rows="2" placeholder="Message the public channel..."></textarea>
             <button class="msend" onclick="sendMsg()">SEND</button>
           </div>
         </div>
@@ -1370,7 +1352,7 @@ body.ls-mode .mmeta{font-size:14px!important;}
       <div>▸ HEXA is strictly for users <strong style="color:var(--gold);">16+</strong></div>
     </div>
     <div class="menu-item" id="menu-contact" onclick="var d=document.getElementById('contact-drop');d.style.display=d.style.display==='block'?'none':'block'"><span class="menu-icon">💬</span> Contact / Support</div>
-    <div id="contact-drop" style="display:none;padding:10px 14px 14px;"><div style="background:rgba(0,255,238,.03);border:1px solid rgba(0,255,238,.15);border-left:3px solid #00ffee;border-radius:0 4px 4px 0;padding:10px 12px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.2em;color:#00ffee;margin-bottom:8px;">💬 CONTACT SUPPORT</div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.08em;margin-bottom:6px;">EMAIL US AT</div><div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.08em;color:#fff;margin-bottom:10px;"><a href="/cdn-cgi/l/email-protection#cba3aeb3aaa2a5ada4fbfbfba3aeb3aa8baca6aaa2a7e5a8a4a6" style="color:#00ffee;text-decoration:none;"><span class="__cf_email__" data-cfemail="83ebe6fbe2eaede5ecb3b3b3ebe6fbe2c3e4eee2eaefade0ecee">[email&#160;protected]</span></a></div><div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,238,.2),transparent);margin-bottom:10px;"></div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,.45);line-height:1.8;"><div style="margin-bottom:6px;">⏱ I only respond when available.</div><div style="color:rgba(255,204,0,.7);">⚠ No refunds unless proof of a system error on our side.</div></div></div></div>
+    <div id="contact-drop" style="display:none;padding:10px 14px 14px;"><div style="background:rgba(0,255,238,.03);border:1px solid rgba(0,255,238,.15);border-left:3px solid #00ffee;border-radius:0 4px 4px 0;padding:10px 12px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.2em;color:#00ffee;margin-bottom:8px;">💬 CONTACT SUPPORT</div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.08em;margin-bottom:6px;">EMAIL US AT</div><div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.08em;color:#fff;margin-bottom:10px;"><a href="/cdn-cgi/l/email-protection#a6d5d3d6d6c9d4d2e6cec3dec788c5c9cb" style="color:#00ffee;text-decoration:none;"><span class="__cf_email__" data-cfemail="0c7f797c7c637e784c6469746d226f6361">[email&#160;protected]</span></a></div><div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,238,.2),transparent);margin-bottom:10px;"></div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,.45);line-height:1.8;"><div style="margin-bottom:6px;">⏱ I only respond when available.</div><div style="color:rgba(255,204,0,.7);">⚠ No refunds unless proof of a system error on our side.</div></div></div></div>
     <div class="menu-item" id="menu-about" onclick="var d=document.getElementById('about-drop');d.style.display=d.style.display==='block'?'none':'block'"><span class="menu-icon">⬡</span> About HEXA</div>
     <div id="about-drop" style="display:none;padding:10px 14px 14px;"></div>
     <div class="menu-div"></div>
@@ -1384,7 +1366,7 @@ body.ls-mode .mmeta{font-size:14px!important;}
           <span id="country-display" style="font-size:12px;">Select Decoration</span>
           <span style="font-size:8px;opacity:.6;">▼</span>
         </div>
-        <div id="country-menu" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(0,8,20,.98);border:1px solid rgba(0,255,238,.2);border-radius:2px;max-height:250px;overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:2000;margin-top:2px;box-shadow:0 4px 12px rgba(0,0,0,.5);" ontouchmove="event.stopPropagation()">
+        <div id="country-menu" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(0,8,20,.98);border:1px solid rgba(0,255,238,.2);border-radius:2px;max-height:250px;overflow-y:auto;z-index:2000;margin-top:2px;box-shadow:0 4px 12px rgba(0,0,0,.5);">
           <div class="country-item" onclick="selectCountryOption('','⬡ None')">⬡ None</div>
           <!-- Celestial & Nature -->
           <div class="country-item" onclick="selectCountryOption('☀️','☀️')">☀️ Sunny</div>
@@ -1558,7 +1540,7 @@ body.ls-mode .mmeta{font-size:14px!important;}
           <span id="countries-display" style="font-size:12px;">My Location</span>
           <span style="font-size:8px;opacity:.6;">▼</span>
         </div>
-        <div id="countries-menu" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(0,8,20,.98);border:1px solid rgba(0,255,238,.2);border-radius:2px;max-height:250px;overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:2000;margin-top:2px;box-shadow:0 4px 12px rgba(0,0,0,.5);" ontouchmove="event.stopPropagation()">
+        <div id="countries-menu" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(0,8,20,.98);border:1px solid rgba(0,255,238,.2);border-radius:2px;max-height:250px;overflow-y:auto;z-index:2000;margin-top:2px;box-shadow:0 4px 12px rgba(0,0,0,.5);">
           <div class="country-item" style="background:rgba(0,255,136,.04);border-bottom:2px solid rgba(0,255,136,.2);color:rgba(0,255,136,.6);cursor:default;font-size:9px;letter-spacing:.1em;font-family:'Share Tech Mono',monospace;" id="countries-my-location">📍 YOUR LOCATION: detecting...</div>
           <div class="country-item" onclick="backToMyChannel()" style="background:rgba(0,255,136,.08);border-bottom:1px solid rgba(0,255,136,.2);color:rgba(0,255,136,.9);font-weight:bold;">🏠 Back to My Channel</div>
           <div class="country-item" onclick="selectCountries('','⬡ None')">⬡ None</div>
@@ -1793,7 +1775,7 @@ body.ls-mode .mmeta{font-size:14px!important;}
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 // ── SUPABASE CONFIG (must be first) ──────────────────────
 const SB_URL = 'https://nfxyxnmatuzmqctttqnk.supabase.co';
@@ -3989,7 +3971,7 @@ function openMenu(){
   menu.classList.add('on');
   ov.classList.add('on');
   // Desktop: push main content left to make room
-  if(window.innerWidth > 1024 && window.innerHeight > 700){
+  if(window.innerWidth > 1024){
     const w = parseInt(getComputedStyle(menu).width) || 300;
     document.querySelector('.wrap') && (document.querySelector('.wrap').style.marginRight = w + 'px');
     initMenuResize();
@@ -4267,21 +4249,13 @@ function menuPinchMove(e, el){
     const dist  = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
     const currentScale = parseFloat(el.dataset.scale||'1');
     const naturalH = el.scrollHeight / currentScale;
-    const maxScale = Math.min(1.5, window.innerHeight / naturalH);
+    const maxScale = window.innerHeight / naturalH;
     const scale = Math.min(maxScale, Math.max(0.5, el._pinchScale * (dist / el._pinchDist)));
     const ox = parseFloat(el.dataset.offsetX||'0');
     const oy = parseFloat(el.dataset.offsetY||'0');
-    const mw = el.offsetWidth * scale, mh = el.scrollHeight * scale;
-    const vw = window.innerWidth, vh = window.innerHeight;
-    const maxOx = Math.max(0,(vw - mw)/2 - 4), minOx = Math.min(0,-(vw - mw)/2 + 4);
-    const maxOy = Math.max(0,(vh - mh)/2 - 4), minOy = Math.min(0,-(vh - mh)/2 + 4);
-    const clampedOx = Math.min(maxOx, Math.max(minOx, ox));
-    const clampedOy = Math.min(maxOy, Math.max(minOy, oy));
-    el.dataset.offsetX = clampedOx;
-    el.dataset.offsetY = clampedOy;
     el.style.transition = 'none';
     el.style.transformOrigin = 'center center';
-    el.style.transform = `translate(calc(-50% + ${clampedOx}px), calc(-50% + ${clampedOy}px)) scale(${scale})`;
+    el.style.transform = `translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px)) scale(${scale})`;
     el.dataset.scale = scale;
   } else if(e.touches.length === 1){
     if(el._scrolling && el._scrollBody){
@@ -4391,42 +4365,6 @@ function tick(){
   if(sbclk) sbclk.textContent = t;
 }
 window.addEventListener('DOMContentLoaded', function(){ tick(); setInterval(tick, 1000); });
-
-// ── CENTER FRIENDS IN SIDEBAR GAP ──────────────────────────
-function centerFriends(){
-  var friendEl = document.getElementById('friend-slbl');
-  var friendList = document.getElementById('friend-list');
-  var sbar = document.querySelector('.sbar');
-  if(!friendEl || !friendList || !sbar) return;
-  // Reset margin so we can measure natural position
-  friendEl.style.marginTop = '0';
-  var sbarTop      = sbar.getBoundingClientRect().top;
-  var friendTop    = friendEl.getBoundingClientRect().top;
-  var friendH      = friendEl.offsetHeight + friendList.offsetHeight;
-  var gap          = sbarTop - friendTop;
-  var mt           = Math.max(8, Math.round((gap - friendH) / 2));
-  friendEl.style.marginTop = mt + 'px';
-}
-window.addEventListener('load', centerFriends);
-window.addEventListener('resize', centerFriends);
-window.addEventListener('orientationchange', function(){
-  // Reset message box inline styles so portrait/landscape don't bleed into each other
-  var wrap = document.getElementById('inp-wrap');
-  if(wrap){
-    wrap.style.width = '';
-    wrap.style.height = '';
-    wrap.style.top = '';
-    wrap.style.left = '';
-    wrap.style.right = '';
-    wrap.style.bottom = '';
-    wrap.style.transform = '';
-    wrap.style.maxHeight = '';
-  }
-  // Re-center Friends after orientation settles
-  setTimeout(centerFriends, 500);
-  setTimeout(centerFriends, 900);
-});
-setTimeout(centerFriends, 500);
 
 // ── TIMERS ────────────────────────────────────────────────
 const TIMERS = [300, 300, 3600, 604800, 1800];
@@ -4573,25 +4511,17 @@ setInterval(() => {
 window.addEventListener('load', function(){
   const wrap = document.getElementById('inp-wrap');
   if(!wrap) return;
-  // Reset position in portrait mobile and PC
+  // Only reset position in portrait mobile — landscape/tablet handled by their own logic
   var isMobPort = window.innerHeight > window.innerWidth;
-  var isPC = window.innerWidth >= 1025;
-  if(!isMobPort && !isPC) return;
-  var isTabletPort = window.innerWidth >= 600 && window.innerWidth <= 1024 && isMobPort;
+  if(!isMobPort) return;
   const defaultBottom = 'calc(var(--sbar-h, 32px) + env(safe-area-inset-bottom, 0px))';
+  wrap.style.width = '';
   wrap.style.height = '';
   wrap.style.top = '';
+  wrap.style.left = '50%';
   wrap.style.right = 'auto';
   wrap.style.bottom = defaultBottom;
-  wrap.style.left = '50%';
   wrap.style.transform = 'translateX(-50%)';
-  if(isTabletPort){
-    wrap.style.setProperty('width', Math.round(window.innerWidth * 0.55) + 'px', 'important');
-    var minp = document.getElementById('minp');
-    if(minp) minp.style.setProperty('font-size', '22px', 'important');
-  } else {
-    wrap.style.width = '';
-  }
 });
 
 // ── MESSAGE BOX: 4-SIDE RESIZE HANDLES ───────────────────
@@ -4627,7 +4557,6 @@ window.addEventListener('load', function(){
 
   function onStart(side, e){
     if(isLandscape() && side === 'bottom') return;
-    // In landscape, expand box before locking position so height is real px
     const r = lockPosition();
     startW = r.width;  startH = r.height;
     startL = r.left;   startT = r.top;
@@ -4643,10 +4572,15 @@ window.addEventListener('load', function(){
   const minFontSize = 11, maxFontSize = 32;
 
   function updateFontFromHeight(h){
+    // Allow font scaling in both portrait and landscape
+    if(window.innerWidth > window.innerHeight){
+      // landscape — only scale if not desktop
+      if(window.innerWidth > 1024) return;
+    }
     const fs = Math.round(Math.min(48, Math.max(11, h / 8)));
     const minp = document.getElementById('minp');
     if(minp){
-      minp.style.setProperty('font-size', fs + 'px', 'important');
+      minp.style.fontSize = fs + 'px';
       minp.style.lineHeight = '1.4';
     }
   }
@@ -4660,10 +4594,9 @@ window.addEventListener('load', function(){
     const vh = window.innerHeight;
     const isLS = vw > vh;
     const isMobilePortrait = vw < 600 && vh > vw;
-    const isTabletPortrait = vw >= 600 && vw <= 1024 && vh > vw;
-    const topLimit    = isLS ? 36 : (isTabletPortrait ? 72 : (isMobilePortrait ? 50 : 0));
+    const topLimit    = isLS ? 36 : (isMobilePortrait ? 50 : 0);
     const leftLimit   = isLS ? 90 : 0;
-    const bottomLimit = isLS ? (vh - 40) : (isTabletPortrait ? (vh - 56) : (isMobilePortrait ? (vh - 36) : (vh - 4)));
+    const bottomLimit = isLS ? (vh - 40) : (isMobilePortrait ? (vh - 36) : (vh - 4));
 
     const sidebarEl = document.querySelector('.sidebar');
     const sidebarRight = (sidebarEl ? sidebarEl.getBoundingClientRect().right : 90) + 8;
@@ -4675,10 +4608,10 @@ window.addEventListener('load', function(){
         const newRight = Math.max(16, Math.min(vw - sidebarRight - minW, startR - dx));
         wrap.style.right = newRight + 'px';
         wrap.style.left  = 'auto';
-        wrap.style.setProperty('width', (vw - newRight - startL) + 'px', 'important');
+        wrap.style.width = (vw - newRight - startL) + 'px';
       } else {
         const nw = Math.min(vw - startL - 4, Math.max(minW, startW + dx));
-        wrap.style.setProperty('width', nw + 'px', 'important');
+        wrap.style.width = nw + 'px';
       }
 
     } else if(activeSide === 'left'){
@@ -4688,14 +4621,14 @@ window.addEventListener('load', function(){
         const newL = Math.min(vw - startR - minW, Math.max(sidebarRight, startL + dx));
         wrap.style.left  = newL + 'px';
         wrap.style.right = startR + 'px';
-        wrap.style.setProperty('width', (vw - startR - newL) + 'px', 'important');
+        wrap.style.width = (vw - startR - newL) + 'px';
       } else {
         const rightEdge = startL + startW;
         const newL = Math.min(rightEdge - minW, Math.max(0, startL + dx));
         const newW = rightEdge - newL;
         wrap.style.left  = newL + 'px';
         wrap.style.right = 'auto';
-        wrap.style.setProperty('width', newW + 'px', 'important');
+        wrap.style.width = newW + 'px';
       }
 
     } else if(activeSide === 'bottom'){
@@ -8882,10 +8815,6 @@ window.addEventListener('beforeunload', () => {
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
     document.body.style.webkitUserSelect = '';
-    // Save sidebar width for current orientation
-    var isLS = window.innerWidth > window.innerHeight;
-    if(isLS) window._sidebarWidthLS = sidebar.style.width;
-    else window._sidebarWidthPT = sidebar.style.width;
   }
 
   // Mouse
@@ -9362,6 +9291,8 @@ document.addEventListener('touchstart', function(e){
 
   sm.addEventListener('touchstart', function(e){
     if(e.touches.length === 2){
+      // Disable page zoom so pinch goes to our handler
+      if(vp) vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
       e.preventDefault();
     }
     menuPinchStart(e, sm);
@@ -9373,6 +9304,8 @@ document.addEventListener('touchstart', function(e){
   }, {passive: false});
 
   sm.addEventListener('touchend', function(e){
+    // Restore page zoom
+    if(vp) vp.content = defaultVP;
     menuPinchEnd(e, sm);
   }, {passive: false});
 })();
@@ -9423,7 +9356,7 @@ window.addEventListener('load', function(){
   var _landscape = null;
 
   function isLsMobile(){
-    return window.innerWidth <= 1024 && window.innerWidth > window.innerHeight;
+    return window.innerWidth <= 900 && window.innerWidth > window.innerHeight;
   }
 
   function saveState(){
@@ -9478,43 +9411,6 @@ window.addEventListener('load', function(){
   function enterLandscape(){
     // Save portrait state before switching
     _portrait = saveState();
-    // Save portrait sidebar width, restore landscape sidebar width
-    var sb = document.querySelector('.sidebar');
-    if(sb){
-      window._sidebarWidthPT = sb.style.width;
-      sb.style.width = window._sidebarWidthLS || '';
-      sb.style.minWidth = window._sidebarWidthLS || '';
-    }
-    // Save portrait panel states, restore landscape panel states
-    if(window._savePanelsPT)  window._savePanelsPT();
-    if(window._restorePanelsLS) window._restorePanelsLS();
-    // Scale nav tabs for landscape
-    document.querySelectorAll('.nav-tabs .tab').forEach(function(el){ el.style.fontSize='20px'; el.style.padding='8px 10px'; });
-    // Scale topnav height for landscape
-    var tn = document.querySelector('.topnav');
-    if(tn){ tn.style.height='48px'; }
-    // Scale message bubbles for landscape
-    document.querySelectorAll('#marea .mb, #old-msgs-list .mb').forEach(function(el){ el.style.setProperty('font-size','22px','important'); el.style.setProperty('padding','10px 16px','important'); });
-    document.querySelectorAll('#marea .msg-text, #old-msgs-list .msg-text').forEach(function(el){ el.style.setProperty('font-size','22px','important'); });
-    // Scale scroll messages button for landscape
-    var smt = document.getElementById('old-msgs-tab');
-    if(smt){ smt.style.fontSize='20px'; smt.style.padding='10px 20px'; }
-    // Set message box starting font size for landscape
-    var minp = document.getElementById('minp');
-    if(minp){ minp.style.setProperty('font-size', '28px', 'important'); }
-    // Scale bottom tab icons and labels for landscape
-    document.querySelectorAll('.sbar .si span').forEach(function(el){ el.style.fontSize='16px'; });
-    document.querySelectorAll('.sbar .si > div[style*="width:16px"]').forEach(function(el){ el.style.width='22px'; el.style.height='22px'; el.style.fontSize='14px'; });
-    // Scale search input and button for landscape
-    var si = document.getElementById('user-search');
-    if(si){ si.style.fontSize='14px'; si.style.padding='7px 8px'; }
-    var sb = si && si.nextElementSibling;
-    if(sb){ sb.style.fontSize='18px'; sb.style.padding='6px 10px'; }
-    // Shrink ALL section labels in landscape
-    document.querySelectorAll('.slbl').forEach(function(el){
-      el.style.fontSize='11px'; el.style.letterSpacing='.1em'; el.style.padding='1px 8px'; el.style.display='block';
-      if(el.getAttribute('onclick')) el.style.marginTop='20px';
-    });
     wrap.classList.remove('ls-expanded');
     wrap.style.transition = 'none';
     // Always fully clear portrait inline styles first
@@ -9524,7 +9420,7 @@ window.addEventListener('load', function(){
     wrap.style.maxHeight = '';
     wrap.style.transform = '';
     wrap.style.width     = '';
-    if(minp){ minp.style.removeProperty('font-size'); }
+    if(minp) minp.style.fontSize = '';
     // Restore last landscape state or use default
     applyState(_landscape || defaultLandscape());
     if(handle) handle.style.display = 'none';
@@ -9535,41 +9431,6 @@ window.addEventListener('load', function(){
   function enterPortrait(){
     // Save landscape state before switching
     _landscape = saveState();
-    // Save landscape sidebar width, restore portrait sidebar width
-    var sb = document.querySelector('.sidebar');
-    if(sb){
-      window._sidebarWidthLS = sb.style.width;
-      sb.style.width = window._sidebarWidthPT || '';
-      sb.style.minWidth = window._sidebarWidthPT || '';
-    }
-    // Save landscape panel states, restore portrait panel states
-    if(window._savePanelsLS)  window._savePanelsLS();
-    if(window._restorePanelsPT) window._restorePanelsPT();
-    // Restore nav tabs for portrait
-    document.querySelectorAll('.nav-tabs .tab').forEach(function(el){ el.style.fontSize=''; el.style.padding=''; });
-    // Restore topnav height for portrait
-    var tn = document.querySelector('.topnav');
-    if(tn){ tn.style.height=''; }
-    // Restore message bubbles for portrait
-    document.querySelectorAll('#marea .mb, #old-msgs-list .mb').forEach(function(el){ el.style.removeProperty('font-size'); el.style.removeProperty('padding'); });
-    document.querySelectorAll('#marea .msg-text, #old-msgs-list .msg-text').forEach(function(el){ el.style.removeProperty('font-size'); });
-    // Restore portrait scroll messages button to original inline values
-    var smt = document.getElementById('old-msgs-tab');
-    if(smt){ smt.style.fontSize='11px'; smt.style.padding='4px 12px'; }
-    // Restore bottom tab icons and labels for portrait
-    document.querySelectorAll('.sbar .si span').forEach(function(el){ el.style.fontSize='10px'; });
-    document.querySelectorAll('.sbar .si > div[style*="width"]').forEach(function(el){ el.style.width='16px'; el.style.height='16px'; el.style.fontSize='10px'; });
-    // Restore search input and button for portrait
-    var si = document.getElementById('user-search');
-    if(si){ si.style.fontSize='9px'; si.style.padding='4px 5px'; }
-    var sb = si && si.nextElementSibling;
-    if(sb){ sb.style.fontSize='12px'; sb.style.padding='4px 6px'; }
-    // Restore ALL section labels in portrait
-    document.querySelectorAll('.slbl').forEach(function(el){
-      el.style.fontSize=''; el.style.letterSpacing=''; el.style.padding=''; el.style.display='';
-      if(el.getAttribute('onclick')) el.style.marginTop='200px';
-    });
-
     wrap.classList.remove('ls-expanded');
     wrap.style.transition = '';
     // Always fully clear landscape inline styles first
@@ -9578,7 +9439,7 @@ window.addEventListener('load', function(){
     wrap.style.height    = '';
     wrap.style.maxHeight = '';
     wrap.style.transform = '';
-    if(minp){ minp.style.removeProperty('font-size'); }
+    if(minp) minp.style.fontSize = '';
     // Restore last portrait state or use default
     applyState(_portrait || defaultPortrait());
     if(handle) handle.style.display = '';
@@ -9593,9 +9454,6 @@ window.addEventListener('load', function(){
     wrap.style.bottom    = 'calc(var(--sbar-h, 36px) + 4px)';
     wrap.style.width     = 'clamp(260px,70vw,540px)';
     wrap.classList.add('ls-expanded');
-    // Ensure minimum 14px font on expand
-    var _minp = document.getElementById('minp');
-    if(_minp){ var cur = parseInt(_minp.style.fontSize)||0; if(cur < 28) _minp.style.setProperty('font-size','28px','important'); }
   }
 
   // ── Collapse landscape box ──
@@ -9647,7 +9505,6 @@ window.addEventListener('load', function(){
 
   // Expose collapse for sendMsg
   window._lsCollapseMsgBox = lsCollapse;
-  window._lsExpandMsgBox = lsExpand;
 
   init();
 })();
@@ -9763,70 +9620,62 @@ document.addEventListener('touchmove', function(e) {
   var locked = false, savedY = 0;
   var defaultBottom = 'calc(var(--sbar-h, 32px) + env(safe-area-inset-bottom, 0px))';
 
-  function isLsMobile(){
-    return window.innerWidth <= 1024 && window.innerWidth > window.innerHeight;
+  function lock(){
+    if(locked) return;
+    locked = true;
+    savedY = window.scrollY || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top      = -savedY + 'px';
+    document.body.style.left     = '0';
+    document.body.style.right    = '0';
+    document.body.style.overflow = 'hidden';
   }
 
-  // Save the exact inline styles before keyboard moves the box
-  var _savedStyle = null;
-
-  function savePosition(){
-    _savedStyle = {
-      top:       wrap.style.top,
-      bottom:    wrap.style.bottom,
-      left:      wrap.style.left,
-      right:     wrap.style.right,
-      transform: wrap.style.transform,
-      width:     wrap.style.width,
-      height:    wrap.style.height,
-      maxHeight: wrap.style.maxHeight
-    };
-  }
-
-  function restorePosition(){
-    if(!_savedStyle) return;
+  function unlock(){
+    if(!locked) return;
+    locked = false;
+    document.body.style.position = '';
+    document.body.style.top      = '';
+    document.body.style.left     = '';
+    document.body.style.right    = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, savedY);
+    // Don't touch wrap position unless portrait mobile
+    var _vw = window.innerWidth, _vh = window.innerHeight;
+    var _isMobPort = _vh > _vw;
+    if(!_isMobPort) return;
     wrap.style.transition = '';
-    wrap.style.top        = _savedStyle.top;
-    wrap.style.bottom     = _savedStyle.bottom;
-    wrap.style.left       = _savedStyle.left;
-    wrap.style.right      = _savedStyle.right;
-    wrap.style.transform  = _savedStyle.transform;
-    wrap.style.width      = _savedStyle.width;
-    wrap.style.height     = _savedStyle.height;
-    wrap.style.maxHeight  = _savedStyle.maxHeight;
-    _savedStyle = null;
-  }
-
-  function pin(){
-    var vv = window.visualViewport;
-    // vv.height = visible area above keyboard
-    // Set bottom to place box just above keyboard top edge
-    wrap.style.transition = 'none';
-    wrap.style.width      = 'clamp(300px, 78vw, 640px)';
-    wrap.style.height     = '';
-    wrap.style.maxHeight  = '50vh';
-    wrap.style.right      = '';
-    wrap.style.top        = 'auto';
-    wrap.style.bottom     = (window.innerHeight - vv.height + 8) + 'px';
+    wrap.style.top        = '';
+    wrap.style.bottom     = 'calc(var(--sbar-h, 32px) + env(safe-area-inset-bottom, 0px))';
     wrap.style.left       = '50%';
     wrap.style.transform  = 'translateX(-50%)';
   }
 
-  ta.addEventListener('focus', function(){
-    if(isLsMobile()) return;
-    savePosition();
-    setTimeout(function(){ if(document.activeElement === ta) pin(); }, 350);
-  });
+  function pin(){
+    var vv = window.visualViewport;
+    wrap.style.transition = 'none';
+    wrap.style.transform  = 'none';
+    wrap.style.bottom     = 'auto';
+    wrap.style.left       = (vv.offsetLeft + vv.width / 2 - wrap.offsetWidth / 2) + 'px';
+    wrap.style.top        = (vv.offsetTop  + vv.height - wrap.offsetHeight - 8) + 'px';
+  }
 
-  ta.addEventListener('blur', function(){
-    if(isLsMobile()) return;
-    setTimeout(restorePosition, 250);
-  });
+  function isLsMobile(){
+    return window.innerWidth <= 900 && window.innerWidth > window.innerHeight;
+  }
+
+  ta.addEventListener('focus', function(){ if(!isLsMobile()) lock(); });
+  ta.addEventListener('blur',  function(){ if(!isLsMobile()) setTimeout(unlock, 250); });
 
   window.visualViewport.addEventListener('resize', function(){
-    if(isLsMobile()) return;
-    if(document.activeElement === ta) pin();
+    if(isLsMobile() || !locked) return;
+    pin();
   });
-
+  window.visualViewport.addEventListener('scroll', function(){
+    if(isLsMobile() || !locked) return;
+    pin();
+  });
 })();
 </script>
+</body>
+</html>
