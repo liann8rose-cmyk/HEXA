@@ -1873,6 +1873,24 @@ function getUsernameWithColors(username) {
   return `<span class="mn" style="background: linear-gradient(90deg, ${colorPair.colors[0]}, ${colorPair.colors[1]}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: ${colorPair.name} 2s ease-in-out infinite;">${username}</span>`;
 }
 
+// ── AUTH VERIFICATION ─────────────────────────────────────
+(function() {
+  var username = localStorage.getItem('username');
+  if (!username) {
+    window.location.replace('index.html');
+    return;
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    var initials = username.slice(0, 2).toUpperCase();
+    var profileUname = document.getElementById('profile-username');
+    if (profileUname) profileUname.textContent = username;
+    var menuUname = document.getElementById('menu-username');
+    if (menuUname) menuUname.textContent = username;
+    var menuAvatar = document.getElementById('menu-avatar');
+    if (menuAvatar) menuAvatar.textContent = initials;
+  });
+})();
+
 // ── INVITE / DM ──────────────────────────────────────────
 let inviteTarget = null;
 let currentDMUser = '';
@@ -4811,6 +4829,45 @@ window.addEventListener('load', function(){
   document.addEventListener('mouseup',()=>{ dragging=false; });
 })();
 
+// ── KEYBOARD-AWARE INPUT POSITIONING (mobile) ─────────────
+(function(){
+  if(!window.visualViewport) return;
+  const wrap = document.getElementById('inp-wrap');
+  if(!wrap) return;
+
+  // If the user has manually dragged the box, don't override their placement
+  let dragged = false;
+  document.addEventListener('mouseup', function(){
+    if(wrap.style.top && wrap.style.top !== 'auto') dragged = true;
+  });
+  document.addEventListener('touchend', function(){
+    if(wrap.style.top && wrap.style.top !== 'auto') dragged = true;
+  });
+
+  let kbOpen = false;
+
+  function onViewportChange(){
+    const vv = window.visualViewport;
+    const kbHeight = window.innerHeight - vv.offsetTop - vv.height;
+    if(kbHeight > 100){
+      // Keyboard is open — snap box just above it
+      kbOpen = true;
+      if(!dragged){
+        wrap.style.bottom = 'auto';
+        wrap.style.top = (vv.offsetTop + vv.height - wrap.offsetHeight - 8) + 'px';
+      }
+    } else if(kbOpen){
+      // Keyboard closed — restore default position
+      kbOpen = false;
+      dragged = false;
+      wrap.style.top = 'auto';
+      wrap.style.bottom = '28px';
+    }
+  }
+
+  window.visualViewport.addEventListener('resize', onViewportChange);
+  window.visualViewport.addEventListener('scroll', onViewportChange);
+})();
 
 // ── DM PANEL: DRAG + PINCH SCALE ─────────────────────────
 window.addEventListener('DOMContentLoaded',function(){
