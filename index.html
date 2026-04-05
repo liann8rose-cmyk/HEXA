@@ -8,7 +8,6 @@
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  @media(min-width:1025px){ .desktop-back{ display:block !important; } }
 
   body {
     background: #000;
@@ -369,7 +368,7 @@
     <button class="age-yes" onclick="enterSite()" onmousedown="event.preventDefault()">YES, I AM 16+</button>
     <button class="age-no" onclick="denyEntry()" onmousedown="event.preventDefault()">NO, I AM UNDER 16</button>
   </div>
-  <a href="javascript:void(0)" onclick="history.go(-3)" style="margin-top:18px;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:block;text-align:center;">← back</a>
+  <a href="javascript:void(0)" onclick="window.location.href='https://www.google.com'" style="margin-top:18px;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:block;text-align:center;">← back</a>
 </div>
 
 <!-- MAIN CONTENT -->
@@ -410,11 +409,10 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 })();
 
 function enterSite(){
-  sessionStorage.setItem('hexa_age_ok','1');
   document.body.style.overflow='';
   document.body.style.transition='opacity 0.3s ease';
   document.body.style.opacity='0';
-  setTimeout(function(){ location.replace('hexa-register.html'); }, 300);
+  setTimeout(function(){ location.href='hexa-register.html'; }, 300);
 }
 function denyEntry(){
   const gate = document.querySelector('.age-gate');
@@ -434,13 +432,16 @@ function denyEntry(){
       if(n <= 0){
         clearInterval(interval);
         document.body.style.overflow = '';
-        location.replace('https://www.google.com');
+        location.href = 'https://www.google.com';
       }
     }, 1000);
   }
 }
 
-// Navigation handled naturally by browser
+// Triangle on age gate exits to browser
+window.addEventListener('popstate', function(){
+  window.location.href='https://www.google.com';
+});
 
 // Fade in age gate — with Samsung Internet fallback (double rAF can silently fail)
 window.addEventListener('load', function(){
@@ -551,7 +552,7 @@ function goRegister(){
     document.getElementById('no-account-popup').style.display='none';
     document.body.style.transition='opacity 0.3s ease';
     document.body.style.opacity='0';
-    setTimeout(()=>{ location.replace('hexa-register.html'); },300);
+    setTimeout(()=>{ window.location.href='hexa-register.html'; },300);
   },300);
 }
 async function forgotPassword(){
@@ -587,7 +588,7 @@ async function submitLogin(){
       sessionStorage.setItem('hexa_username',realUsername);sessionStorage.setItem('hexa_fullname',realFullname);
       localStorage.setItem('hexa_username',realUsername);localStorage.setItem('hexa_fullname',realFullname);
     }catch(e){err.textContent='Could not load your profile.';err.style.display='block';return;}
-    setTimeout(()=>{ location.replace('dashboard.html'); }, 800);
+    setTimeout(()=>{ window.location.href='dashboard.html'; }, 800);
   }catch(e){err.textContent='Connection error.';err.style.display='block';}
 }
 </script>
