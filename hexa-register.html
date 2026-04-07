@@ -806,8 +806,10 @@ async function handleRegister(){
     const res=await fetch(BASE+'/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY},body:JSON.stringify({email,password,data:{username,full_name:name,country}})});
     const data=await res.json();
     if(data.error){alert('Error: '+data.error.message);btn.textContent='Create Account';return;}
+    // Must have a real access_token — if not, Auth signup failed, stop here
     const tok=data.access_token||null;
-    const authH='Bearer '+(tok||KEY);
+    if(!tok){alert('Registration failed. Please try again.');btn.textContent='Create Account';return;}
+    const authH='Bearer '+tok;
     const regRes=await fetch(BASE+'/rest/v1/registered_users',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':authH,'Prefer':'return=representation'},body:JSON.stringify({username,email,full_name:name,country})});
     if(!regRes.ok){const regErr=await regRes.text();if(!regErr.includes('23505')){alert('Could not save your account.');btn.textContent='Create Account';return;}}
     await fetch(BASE+'/rest/v1/online_users',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':authH},body:JSON.stringify({id:data.user?.id||('local_'+Date.now()),username,full_name:name,email,age,country})}).catch(()=>{});
@@ -867,6 +869,8 @@ async function submitLogin(){
       if(!un){err.textContent='Account not found. Please register first.';err.style.display='block';return;}
       sessionStorage.setItem('hexa_username',un);sessionStorage.setItem('hexa_fullname',fn);
       localStorage.setItem('hexa_username',un);localStorage.setItem('hexa_fullname',fn);
+      // Update last_login timestamp
+      fetch(BASE+'/rest/v1/registered_users?email=eq.'+encodeURIComponent(email),{method:'PATCH',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+data.access_token},body:JSON.stringify({last_login:new Date().toISOString()})}).catch(()=>{});
     }catch(e2){err.textContent='Could not load your profile.';err.style.display='block';return;}
     successEl.textContent='✔ Signed in! Redirecting...';successEl.style.display='block';
     setTimeout(()=>window.location.replace('dashboard.html'),1000);
