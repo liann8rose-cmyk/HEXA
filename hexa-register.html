@@ -394,7 +394,7 @@
 <div class="page">
   <div class="center-col">
 
-    <div class="logo-area" onclick="window.location.replace('hexa-age-gate.html')" style="cursor:pointer;">
+    <div class="logo-area" onclick="window.location.replace('index.html')" style="cursor:pointer;">
       <canvas id="logoCanvas"></canvas>
       <div class="logo-text">HEXA</div>
     </div>
@@ -922,10 +922,6 @@ async function submitPasswordReset(){
     setTimeout(()=>{closeResetModal();const loginErr=document.getElementById('loginError');loginErr.textContent='✓ Password updated — sign in with your new password.';loginErr.style.color='#00ff88';loginErr.style.display='block';document.getElementById('loginEmail').value=email;setTimeout(()=>{loginErr.style.display='none';loginErr.style.color='';},6000);},1500);
   }catch(e){emailErr.textContent='Connection error. Please try again.';emailErr.style.display='block';btn.disabled=false;btn.textContent='RESET PASSWORD';}
 }
-history.replaceState(null, '', window.location.href);
-window.addEventListener('popstate', function(){
-  window.location.replace('hexa-age-gate.html');
-});
 </script>
 </body>
 </html>
