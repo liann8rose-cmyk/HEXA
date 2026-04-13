@@ -887,7 +887,7 @@ async function submitLogin(){
       fetch(BASE+'/rest/v1/registered_users?email=eq.'+encodeURIComponent(email),{method:'PATCH',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+data.access_token},body:JSON.stringify({last_login:new Date().toISOString()})}).catch(()=>{});
     }catch(e2){err.textContent='Could not load your profile.';err.style.display='block';return;}
     successEl.textContent='✔ Signed in! Redirecting...';successEl.style.display='block';
-    setTimeout(()=>window.location.href='dashboard.html',500);
+    setTimeout(()=>window.location.href='dashboard.html',0);
   }catch(e){err.textContent='Connection error. Try again.';err.style.display='block';}
 }
 
