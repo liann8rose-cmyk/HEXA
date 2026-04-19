@@ -451,10 +451,9 @@ window.addEventListener('pageshow', function(e){
   // Scroll to age gate on bfcache restore (back navigation)
   setTimeout(function(){ if(ag) ag.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 80);
   // Re-push state ONLY on bfcache restore (e.persisted=true) for mobile/tablet
-  if(e.persisted && window.innerWidth <= 1024) history.pushState(null, '', window.location.href);
+  // Always push one state — covers both fresh load and bfcache restore
+  history.pushState(null, '', window.location.href);
 });
-// Fresh load push — one state for back gesture
-if(window.innerWidth <= 1024) history.pushState(null, '', window.location.href);
 // Back from age gate goes to the root URL
 window.addEventListener('popstate', function(){
   window.location.replace('https://liann8rose-cmyk.github.io/HEXA/');
