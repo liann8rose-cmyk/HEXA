@@ -332,33 +332,17 @@
   .reset-back{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(0,240,255,.6);cursor:pointer;margin-top:8px;text-align:center;}
   .reset-back:hover{color:#00f0ff;}
 
-  #no-account-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);z-index:2000;width:min(300px,85vw);background:rgba(0,6,18,.98);border:1px solid rgba(0,255,238,.3);border-top:3px solid #00ffee;border-radius:8px;padding:28px 24px;text-align:center;opacity:0;transition:all .3s ease;box-shadow:0 0 40px rgba(0,255,238,.1),0 20px 60px rgba(0,0,0,.8);}
+  #no-account-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);z-index:3000;width:min(300px,88vw);background:rgba(0,6,18,.98);border:1px solid rgba(0,255,238,.3);border-top:3px solid #00ffee;border-radius:8px;padding:28px 24px;text-align:center;opacity:0;transition:all .3s ease;box-shadow:0 0 40px rgba(0,255,238,.1),0 20px 60px rgba(0,0,0,.9);}
   #no-account-popup.show{display:block;opacity:1;transform:translate(-50%,-50%) scale(1);}
-  #no-account-popup .pop-icon{font-size:36px;margin-bottom:12px;}
-  #no-account-popup .pop-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.25em;color:#00ffee;margin-bottom:8px;}
-  #no-account-popup .pop-msg{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:12px;}
-  #no-account-popup .pop-bar{height:3px;background:rgba(0,255,238,.15);border-radius:2px;overflow:hidden;}
-  #no-account-popup .pop-bar-fill{height:100%;background:#00ffee;width:100%;transition:width 5s linear;}
 
-  #wrong-password-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);z-index:2000;width:min(300px,85vw);background:rgba(0,6,18,.98);border:1px solid rgba(255,68,102,.35);border-top:3px solid #ff4466;border-radius:8px;padding:28px 24px;text-align:center;opacity:0;transition:all .3s ease;box-shadow:0 0 40px rgba(255,68,102,.12),0 20px 60px rgba(0,0,0,.9);}
+  #wrong-password-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);z-index:3000;width:min(300px,88vw);background:rgba(0,6,18,.98);border:1px solid rgba(255,68,102,.35);border-top:3px solid #ff4466;border-radius:8px;padding:28px 24px;text-align:center;opacity:0;transition:all .3s ease;box-shadow:0 0 40px rgba(255,68,102,.15),0 20px 60px rgba(0,0,0,.9);}
   #wrong-password-popup.show{display:block;opacity:1;transform:translate(-50%,-50%) scale(1);}
-  #wrong-password-popup .wp-icon{font-size:36px;margin-bottom:12px;}
-  #wrong-password-popup .wp-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.25em;color:#ff4466;margin-bottom:8px;}
-  #wrong-password-popup .wp-msg{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:14px;}
-  #wrong-password-popup .wp-recover{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.15em;color:#00ffee;cursor:pointer;border:1px solid rgba(0,255,238,.3);padding:7px 18px;border-radius:3px;display:inline-block;margin-bottom:14px;transition:all .2s;}
-  #wrong-password-popup .wp-recover:hover{background:rgba(0,255,238,.08);}
-  #wrong-password-popup .wp-bar{height:3px;background:rgba(255,68,102,.15);border-radius:2px;overflow:hidden;}
-  #wrong-password-popup .wp-bar-fill{height:100%;background:#ff4466;width:100%;transition:width 5s linear;}
 
   .pw-wrap{position:relative;display:flex;align-items:center;}
   .pw-wrap input{flex:1;padding-right:40px;}
   .pw-eye{position:absolute;right:12px;cursor:pointer;font-size:18px;color:rgba(255,255,255,.9);user-select:none;-webkit-user-select:none;line-height:1;}
   .pw-eye:hover{color:rgba(255,255,255,.85);}
-  #wrong-password-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);z-index:3000;width:min(300px,88vw);background:rgba(0,6,18,.98);border:1px solid rgba(255,68,102,.35);border-top:3px solid #ff4466;border-radius:8px;padding:28px 24px;text-align:center;opacity:0;transition:all .3s ease;box-shadow:0 0 40px rgba(255,68,102,.15),0 20px 60px rgba(0,0,0,.9);}
-  #wrong-password-popup.show{display:block;opacity:1;transform:translate(-50%,-50%) scale(1);}
   .wp-icon{font-size:36px;margin-bottom:12px;} .wp-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.25em;color:#ff4466;margin-bottom:10px;} .wp-msg{font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:16px;} .wp-recover{display:inline-block;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.15em;color:#00ffee;border:1px solid rgba(0,255,238,.3);padding:9px 20px;border-radius:3px;cursor:pointer;margin-bottom:16px;} .wp-bar{height:3px;background:rgba(255,68,102,.15);border-radius:2px;overflow:hidden;} .wp-bar-fill{height:100%;background:#ff4466;width:100%;transition:width 5s linear;}
-  #no-account-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);z-index:3000;width:min(300px,88vw);background:rgba(0,6,18,.98);border:1px solid rgba(0,255,238,.3);border-top:3px solid #00ffee;border-radius:8px;padding:28px 24px;text-align:center;opacity:0;transition:all .3s ease;box-shadow:0 0 40px rgba(0,255,238,.1),0 20px 60px rgba(0,0,0,.9);}
-  #no-account-popup.show{display:block;opacity:1;transform:translate(-50%,-50%) scale(1);}
   .na-icon{font-size:36px;margin-bottom:12px;} .na-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.25em;color:#00ffee;margin-bottom:10px;} .na-msg{font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:16px;} .na-btn{display:inline-block;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.2em;color:#000;background:#00ffee;padding:10px 22px;border-radius:3px;cursor:pointer;font-weight:bold;margin-bottom:14px;} .na-bar{height:3px;background:rgba(0,255,238,.15);border-radius:2px;overflow:hidden;} .na-bar-fill{height:100%;background:#00ffee;width:100%;transition:width 5s linear;}
   #recovery-toast{display:none;position:fixed;top:20px;right:16px;z-index:3001;width:min(300px,88vw);background:rgba(0,6,18,.97);border:1px solid rgba(0,255,136,.25);border-left:4px solid #00ff88;border-radius:6px;padding:14px 16px;opacity:0;transform:translateX(30px);transition:all .3s ease;}
   #recovery-toast.show{display:flex;opacity:1;transform:translateX(0);gap:12px;align-items:flex-start;}
@@ -398,9 +382,10 @@
 </div>
 
 <script>
+// index.html is a dead end — no back, no forward
 history.replaceState(null,'',window.location.href);
 window.addEventListener('popstate',function(){
-  window.location.replace('https://liann8rose-cmyk.github.io/HEXA');
+  history.replaceState(null,'',window.location.href);
 });
 const SB_KEY='sb_publishable_rct6Z-GWVCAgj3oOmLDU6Q_eYX8qUXw';
 // ── CHECK FOR PASSWORD RESET SUCCESS ──
