@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HEXA ADMIN</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #00060f;
+    --cyan: #00ffee;
+    --mag: #ff4466;
+    --gold: #ffcc00;
+    --purple: #aa44ff;
+    --green: #00ff88;
+    --panel: rgba(0,255,238,.03);
+    --border: rgba(0,255,238,.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:#fff; font-family:'Barlow',sans-serif; min-height:100vh; overflow-x:hidden; }
+
+  /* ── SCANLINE OVERLAY ── */
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
+    background:repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+  }
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen {
+    position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:var(--bg); z-index:100;
+  }
+  .login-hex {
+    font-family:'Bebas Neue',sans-serif; font-size:clamp(48px,10vw,96px);
+    letter-spacing:.3em; color:var(--cyan);
+    text-shadow:0 0 40px rgba(0,255,238,.4), 0 0 80px rgba(0,255,238,.15);
+    margin-bottom:4px;
+  }
+  .login-sub {
+    font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:.4em;
+    color:rgba(0,255,238,.4); margin-bottom:48px;
+  }
+  .login-box {
+    background:rgba(0,255,238,.04); border:1px solid rgba(0,255,238,.2);
+    border-radius:4px; padding:32px 40px; width:min(380px,90vw);
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .login-box input {
+    background:rgba(0,0,0,.4); border:1px solid rgba(0,255,238,.2);
+    border-radius:2px; padding:12px 16px; color:#fff;
+    font-family:'Share Tech Mono',monospace; font-size:14px; outline:none;
+    letter-spacing:.1em; transition:border-color .2s;
+  }
+  .login-box input:focus { border-color:var(--cyan); }
+  .login-btn {
+    background:rgba(0,255,238,.08); border:1px solid rgba(0,255,238,.35);
+    color:var(--cyan); font-family:'Bebas Neue',sans-serif; font-size:16px;
+    letter-spacing:.25em; padding:12px; border-radius:2px; cursor:pointer;
+    transition:all .2s;
+  }
+  .login-btn:hover { background:rgba(0,255,238,.15); box-shadow:0 0 20px rgba(0,255,238,.2); }
+  .login-err { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--mag); text-align:center; display:none; }
+
+  /* ── MAIN ADMIN ── */
+  #admin-screen { display:none; min-height:100vh; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px; height:56px;
+    background:rgba(0,6,18,.95); border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:50;
+  }
+  .topbar-logo { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:.3em; color:var(--cyan); }
+  .topbar-tag { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:.3em; color:rgba(0,255,238,.4); }
+  .topbar-right { display:flex; align-items:center; gap:16px; }
+  .topbar-time { font-family:'Share Tech Mono',monospace; font-size:11px; color:rgba(255,255,255,.4); }
+  .logout-btn {
+    font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:.2em;
+    color:var(--mag); border:1px solid rgba(255,68,102,.3); padding:6px 14px;
+    border-radius:2px; cursor:pointer; background:rgba(255,68,102,.05);
+    transition:all .2s;
+  }
+  .logout-btn:hover { background:rgba(255,68,102,.12); }
+
+  /* ── TABS ── */
+  .tabs {
+    display:flex; gap:0; border-bottom:1px solid var(--border);
+    background:rgba(0,6,18,.8); padding:0 24px;
+  }
+  .tab {
+    font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:.2em;
+    color:rgba(255,255,255,.35); padding:14px 20px; cursor:pointer;
+    border-bottom:2px solid transparent; transition:all .2s;
+  }
+  .tab:hover { color:rgba(255,255,255,.7); }
+  .tab.active { color:var(--cyan); border-bottom-color:var(--cyan); }
+  .tab-badge {
+    display:inline-block; background:var(--mag); color:#fff;
+    font-family:'Share Tech Mono',monospace; font-size:9px;
+    padding:1px 5px; border-radius:10px; margin-left:6px; vertical-align:middle;
+  }
+
+  /* ── CONTENT ── */
+  .content { padding:24px; max-width:1200px; margin:0 auto; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  /* ── SECTION HEADER ── */
+  .sec-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .sec-title {
+    font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:.2em;
+    color:var(--cyan);
+  }
+  .sec-count { font-family:'Share Tech Mono',monospace; font-size:11px; color:rgba(255,255,255,.4); }
+
+  /* ── SEARCH BAR ── */
+  .search-bar {
+    background:rgba(0,0,0,.3); border:1px solid var(--border);
+    border-radius:2px; padding:8px 14px; color:#fff;
+    font-family:'Share Tech Mono',monospace; font-size:12px; outline:none;
+    width:240px; transition:border-color .2s;
+  }
+  .search-bar:focus { border-color:var(--cyan); }
+  .search-bar::placeholder { color:rgba(255,255,255,.25); }
+
+  /* ── USER LIST ── */
+  .user-list { display:flex; flex-direction:column; gap:4px; }
+  .user-row {
+    display:flex; align-items:center; gap:12px;
+    background:rgba(0,255,238,.02); border:1px solid rgba(0,255,238,.08);
+    border-radius:3px; padding:10px 16px; transition:all .2s; cursor:pointer;
+  }
+  .user-row:hover { background:rgba(0,255,238,.05); border-color:rgba(0,255,238,.2); }
+  .user-row.reported {
+    background:rgba(255,68,102,.04); border-color:rgba(255,68,102,.25);
+  }
+  .user-row.reported:hover { background:rgba(255,68,102,.08); }
+  .user-row.banned {
+    background:rgba(170,68,255,.04); border-color:rgba(170,68,255,.2);
+    opacity:.7;
+  }
+  .user-flag { font-size:16px; flex-shrink:0; }
+  .user-name {
+    font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:.1em;
+    flex:1; min-width:0;
+  }
+  .user-row.reported .user-name { color:var(--mag); }
+  .user-row.banned .user-name { color:var(--purple); }
+  .user-email { font-family:'Share Tech Mono',monospace; font-size:10px; color:rgba(255,255,255,.35); flex:1; }
+  .user-country { font-family:'Share Tech Mono',monospace; font-size:10px; color:rgba(255,255,255,.3); width:80px; }
+  .user-joined { font-family:'Share Tech Mono',monospace; font-size:10px; color:rgba(255,255,255,.3); width:90px; }
+  .user-status {
+    font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:.1em;
+    padding:3px 8px; border-radius:10px; flex-shrink:0;
+  }
+  .status-clean { background:rgba(0,255,136,.08); color:var(--green); border:1px solid rgba(0,255,136,.2); }
+  .status-reported { background:rgba(255,68,102,.1); color:var(--mag); border:1px solid rgba(255,68,102,.3); }
+  .status-banned { background:rgba(170,68,255,.1); color:var(--purple); border:1px solid rgba(170,68,255,.3); }
+  .user-actions { display:flex; gap:6px; flex-shrink:0; }
+  .act-btn {
+    font-family:'Bebas Neue',sans-serif; font-size:11px; letter-spacing:.1em;
+    padding:4px 10px; border-radius:2px; cursor:pointer; border:1px solid;
+    transition:all .2s;
+  }
+  .act-delete { color:var(--mag); border-color:rgba(255,68,102,.4); background:rgba(255,68,102,.06); }
+  .act-delete:hover { background:rgba(255,68,102,.2); }
+  .act-restore { color:var(--green); border-color:rgba(0,255,136,.4); background:rgba(0,255,136,.06); }
+  .act-restore:hover { background:rgba(0,255,136,.2); }
+  .act-ban { color:var(--purple); border-color:rgba(170,68,255,.4); background:rgba(170,68,255,.06); }
+  .act-ban:hover { background:rgba(170,68,255,.2); }
+
+  /* ── REPORT CARDS ── */
+  .report-list { display:flex; flex-direction:column; gap:12px; }
+  .report-card {
+    background:rgba(255,68,102,.03); border:1px solid rgba(255,68,102,.2);
+    border-left:3px solid var(--mag); border-radius:3px; padding:16px;
+    cursor:pointer; transition:all .2s;
+  }
+  .report-card:hover { background:rgba(255,68,102,.07); }
+  .report-card.resolved { border-left-color:var(--green); border-color:rgba(0,255,136,.15); background:rgba(0,255,136,.02); opacity:.6; }
+  .report-top { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .report-user { font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:.1em; color:var(--mag); }
+  .report-card.resolved .report-user { color:var(--green); }
+  .report-time { font-family:'Share Tech Mono',monospace; font-size:10px; color:rgba(255,255,255,.3); margin-left:auto; }
+  .report-detail { font-family:'Share Tech Mono',monospace; font-size:11px; color:rgba(255,255,255,.5); line-height:1.7; margin-bottom:10px; }
+  .report-actions { display:flex; gap:8px; }
+  .report-img { max-width:120px; max-height:80px; border-radius:3px; border:1px solid rgba(255,68,102,.3); margin-bottom:10px; object-fit:cover; }
+
+  /* ── DETAIL MODAL ── */
+  #detail-modal {
+    display:none; position:fixed; inset:0; z-index:200;
+    background:rgba(0,0,0,.85); backdrop-filter:blur(4px);
+    align-items:center; justify-content:center;
+  }
+  #detail-modal.open { display:flex; }
+  .modal-box {
+    background:#00080f; border:1px solid var(--border);
+    border-radius:4px; padding:28px; width:min(560px,92vw);
+    max-height:85vh; overflow-y:auto; position:relative;
+  }
+  .modal-close {
+    position:absolute; top:12px; right:16px; background:none; border:none;
+    color:rgba(255,255,255,.5); font-size:20px; cursor:pointer;
+  }
+  .modal-title { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:.2em; color:var(--cyan); margin-bottom:16px; }
+  .modal-field { margin-bottom:12px; }
+  .modal-label { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:.2em; color:rgba(255,255,255,.35); margin-bottom:4px; }
+  .modal-value { font-family:'Barlow',sans-serif; font-size:14px; color:rgba(255,255,255,.85); line-height:1.6; }
+  .modal-img { max-width:100%; border-radius:4px; border:1px solid var(--border); margin:12px 0; }
+  .modal-actions { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align:center; padding:60px 20px;
+    font-family:'Share Tech Mono',monospace; font-size:12px;
+    color:rgba(255,255,255,.2); letter-spacing:.1em;
+  }
+
+  /* ── LOADING ── */
+  .loading {
+    text-align:center; padding:40px;
+    font-family:'Share Tech Mono',monospace; font-size:11px;
+    color:rgba(0,255,238,.4); letter-spacing:.2em;
+    animation:pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+  /* ── TOAST ── */
+  #toast {
+    position:fixed; bottom:24px; right:24px; z-index:300;
+    background:rgba(0,8,20,.97); border:1px solid rgba(0,255,136,.3);
+    border-left:3px solid var(--green); border-radius:4px;
+    padding:12px 18px; font-family:'Share Tech Mono',monospace; font-size:12px;
+    color:var(--green); transform:translateX(120%); transition:transform .3s ease;
+    max-width:300px;
+  }
+  #toast.show { transform:translateX(0); }
+  #toast.error { border-color:rgba(255,68,102,.3); border-left-color:var(--mag); color:var(--mag); }
+
+  /* ── STATS ROW ── */
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px; }
+  .stat-card {
+    background:rgba(0,255,238,.03); border:1px solid var(--border);
+    border-radius:3px; padding:16px; text-align:center;
+  }
+  .stat-num { font-family:'Bebas Neue',sans-serif; font-size:32px; color:var(--cyan); line-height:1; }
+  .stat-num.red { color:var(--mag); }
+  .stat-num.gold { color:var(--gold); }
+  .stat-num.purple { color:var(--purple); }
+  .stat-lbl { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:.15em; color:rgba(255,255,255,.35); margin-top:4px; }
+
+  /* ── ALPHABET DIVIDER ── */
+  .alpha-divider {
+    font-family:'Bebas Neue',sans-serif; font-size:11px; letter-spacing:.3em;
+    color:rgba(0,255,238,.3); padding:8px 4px 4px; border-bottom:1px solid rgba(0,255,238,.06);
+    margin-bottom:4px; margin-top:8px;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:rgba(0,255,238,.2); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-hex">HEXA</div>
+  <div class="login-sub">ADMIN ACCESS ONLY</div>
+  <div class="login-box">
+    <input type="password" id="pw-input" placeholder="ENTER PASSWORD" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">ACCESS</button>
+    <div class="login-err" id="login-err">⚠ ACCESS DENIED</div>
+  </div>
+</div>
+
+<!-- ── ADMIN SCREEN ── -->
+<div id="admin-screen">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-logo">⬡ HEXA ADMIN</div>
+      <div class="topbar-tag">CONTROL CENTRE</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-time" id="live-time"></div>
+      <div class="logout-btn" onclick="doLogout()">LOGOUT</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('users')">👥 ALL USERS <span class="tab-badge" id="badge-users">0</span></div>
+    <div class="tab" onclick="switchTab('reports')">🚩 REPORTS <span class="tab-badge" id="badge-reports" style="background:var(--mag);">0</span></div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- USERS TAB -->
+    <div class="tab-panel active" id="panel-users">
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-total">–</div><div class="stat-lbl">TOTAL USERS</div></div>
+        <div class="stat-card"><div class="stat-num red" id="stat-reported">–</div><div class="stat-lbl">REPORTED</div></div>
+        <div class="stat-card"><div class="stat-num purple" id="stat-banned">–</div><div class="stat-lbl">BANNED</div></div>
+        <div class="stat-card"><div class="stat-num gold" id="stat-today">–</div><div class="stat-lbl">JOINED TODAY</div></div>
+      </div>
+      <div class="sec-header">
+        <div class="sec-title">REGISTERED USERS</div>
+        <input class="search-bar" id="user-search" placeholder="Search username or email..." oninput="filterUsers()"/>
+      </div>
+      <div class="user-list" id="user-list"><div class="loading">LOADING USERS...</div></div>
+    </div>
+
+    <!-- REPORTS TAB -->
+    <div class="tab-panel" id="panel-reports">
+      <div class="sec-header">
+        <div class="sec-title">FLAGGED CONTENT</div>
+        <div class="sec-count" id="reports-count"></div>
+      </div>
+      <div class="report-list" id="report-list"><div class="loading">LOADING REPORTS...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div id="detail-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modal-title"></div>
+    <div id="modal-body"></div>
+    <div class="modal-actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ──
+const PASSWORD = 'Claude+Liann';
+const SB_URL   = 'https://nfxyxnmatuzmqctttqnk.supabase.co';
+const SB_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meHl4bm1hdHV6bXFjdHR0cW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTI5ODgsImV4cCI6MjA4NzE2ODk4OH0.86r1EeHHYEIpye1UuJnnxrlGpL9DixSfk-l5xId8pwg';
+const SB_HEADERS = {
+  'apikey': SB_KEY,
+  'Authorization': 'Bearer ' + SB_KEY,
+  'Content-Type': 'application/json'
+};
+
+let allUsers    = [];
+let allReports  = [];
+let bannedSet   = new Set();
+let reportedSet = new Set();
+
+// ── LOGIN ──
+function doLogin(){
+  const val = document.getElementById('pw-input').value;
+  if(val === PASSWORD){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    startClock();
+    loadAll();
+  } else {
+    const err = document.getElementById('login-err');
+    err.style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    setTimeout(()=>{ err.style.display='none'; }, 3000);
+  }
+}
+
+function doLogout(){
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pw-input').value = '';
+}
+
+// ── CLOCK ──
+function startClock(){
+  function tick(){
+    const now = new Date();
+    document.getElementById('live-time').textContent =
+      now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' · ' +
+      now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+  tick(); setInterval(tick, 1000);
+}
+
+// ── TABS ──
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ── LOAD ALL ──
+async function loadAll(){
+  await Promise.all([loadUsers(), loadReports()]);
+}
+
+// ── LOAD USERS ──
+async function loadUsers(){
+  try {
+    const res = await fetch(SB_URL+'/rest/v1/registered_users?select=*&order=username.asc', { headers: SB_HEADERS });
+    allUsers = await res.json();
+
+    // load banned from flagged_content status=banned
+    const br = await fetch(SB_URL+'/rest/v1/flagged_content?select=username,status', { headers: SB_HEADERS });
+    const flags = await br.json();
+    bannedSet = new Set(flags.filter(f=>f.status==='banned').map(f=>f.username));
+    reportedSet = new Set(flags.filter(f=>f.status==='pending'||f.status==='flagged').map(f=>f.username));
+
+    updateStats();
+    renderUsers(allUsers);
+    document.getElementById('badge-users').textContent = allUsers.length;
+  } catch(e){ showToast('Failed to load users','error'); }
+}
+
+// ── LOAD REPORTS ──
+async function loadReports(){
+  try {
+    const res = await fetch(SB_URL+'/rest/v1/flagged_content?select=*&order=flagged_at.desc', { headers: SB_HEADERS });
+    allReports = await res.json();
+    const pending = allReports.filter(r=>r.status!=='resolved'&&r.status!=='dismissed');
+    document.getElementById('badge-reports').textContent = pending.length;
+    document.getElementById('reports-count').textContent = pending.length + ' pending · ' + allReports.length + ' total';
+    renderReports(allReports);
+  } catch(e){ showToast('Failed to load reports','error'); }
+}
+
+// ── STATS ──
+function updateStats(){
+  const today = new Date().toDateString();
+  const todayCount = allUsers.filter(u=> u.created_at && new Date(u.created_at).toDateString()===today).length;
+  document.getElementById('stat-total').textContent    = allUsers.length;
+  document.getElementById('stat-reported').textContent = reportedSet.size;
+  document.getElementById('stat-banned').textContent   = bannedSet.size;
+  document.getElementById('stat-today').textContent    = todayCount;
+}
+
+// ── RENDER USERS ──
+function renderUsers(users){
+  const container = document.getElementById('user-list');
+  if(!users.length){ container.innerHTML='<div class="empty-state">NO USERS FOUND</div>'; return; }
+
+  // group alphabetically
+  const groups = {};
+  users.forEach(u=>{
+    const letter = (u.username||'?')[0].toUpperCase();
+    if(!groups[letter]) groups[letter]=[];
+    groups[letter].push(u);
+  });
+
+  let html = '';
+  Object.keys(groups).sort().forEach(letter=>{
+    html += `<div class="alpha-divider">${letter}</div>`;
+    groups[letter].forEach(u=>{
+      const isReported = reportedSet.has(u.username);
+      const isBanned   = bannedSet.has(u.username);
+      const rowClass   = isBanned ? 'banned' : isReported ? 'reported' : '';
+      const statusHtml = isBanned
+        ? `<span class="user-status status-banned">BANNED</span>`
+        : isReported
+        ? `<span class="user-status status-reported">REPORTED</span>`
+        : `<span class="user-status status-clean">CLEAN</span>`;
+      const actHtml = (isReported || isBanned) ? `
+        <div class="user-actions">
+          <button class="act-btn act-delete" onclick="event.stopPropagation();deleteUser('${u.username}','${u.id}')">DELETE</button>
+          <button class="act-btn act-restore" onclick="event.stopPropagation();restoreUser('${u.username}')">RESTORE</button>
+          <button class="act-btn act-ban" onclick="event.stopPropagation();banUser('${u.username}')">BAN</button>
+        </div>` : '';
+      const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}) : '–';
+      html += `
+        <div class="user-row ${rowClass}" onclick="openUserDetail('${u.username}')">
+          <span class="user-flag">${u.flag||'🌐'}</span>
+          <span class="user-name">${u.username||'–'}</span>
+          <span class="user-email">${u.email||'–'}</span>
+          <span class="user-country">${u.country||'–'}</span>
+          <span class="user-joined">${joined}</span>
+          ${statusHtml}
+          ${actHtml}
+        </div>`;
+    });
+  });
+  container.innerHTML = html;
+}
+
+// ── FILTER USERS ──
+function filterUsers(){
+  const q = document.getElementById('user-search').value.toLowerCase();
+  if(!q){ renderUsers(allUsers); return; }
+  renderUsers(allUsers.filter(u=>
+    (u.username||'').toLowerCase().includes(q) ||
+    (u.email||'').toLowerCase().includes(q)
+  ));
+}
+
+// ── RENDER REPORTS ──
+function renderReports(reports){
+  const container = document.getElementById('report-list');
+  if(!reports.length){ container.innerHTML='<div class="empty-state">NO REPORTS YET</div>'; return; }
+  let html = '';
+  reports.forEach(r=>{
+    const isResolved = r.status==='resolved'||r.status==='dismissed';
+    const flaggedAt  = r.flagged_at ? new Date(r.flagged_at).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '–';
+    const imgHtml    = r.image_url ? `<img src="${r.image_url}" class="report-img" alt="flagged image"/>` : '';
+    const detail     = r.scan_detail || r.detections || 'No detail provided';
+    html += `
+      <div class="report-card ${isResolved?'resolved':''}" onclick="openReportDetail('${r.id}')">
+        <div class="report-top">
+          <span class="report-user">🚩 ${r.username||'Unknown'}</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);">
+            ${r.status ? r.status.toUpperCase() : 'PENDING'}
+          </span>
+          <span class="report-time">${flaggedAt}</span>
+        </div>
+        ${imgHtml}
+        <div class="report-detail">${typeof detail==='object'?JSON.stringify(detail):detail}</div>
+        ${!isResolved ? `
+        <div class="report-actions" onclick="event.stopPropagation()">
+          <button class="act-btn act-delete" onclick="deleteReportContent('${r.id}','${r.username}')">DELETE CONTENT</button>
+          <button class="act-btn act-ban" onclick="banUser('${r.username}');resolveReport('${r.id}')">BAN USER</button>
+          <button class="act-btn act-restore" onclick="resolveReport('${r.id}')">DISMISS</button>
+        </div>` : ''}
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ── USER ACTIONS ──
+async function deleteUser(username, userId){
+  if(!confirm(`Delete user "${username}" permanently?`)) return;
+  try {
+    await fetch(SB_URL+'/rest/v1/registered_users?id=eq.'+userId, { method:'DELETE', headers:SB_HEADERS });
+    showToast('User '+username+' deleted');
+    loadAll();
+  } catch(e){ showToast('Delete failed','error'); }
+}
+
+async function banUser(username){
+  try {
+    // Upsert into flagged_content with status=banned
+    await fetch(SB_URL+'/rest/v1/flagged_content', {
+      method:'POST',
+      headers:{...SB_HEADERS,'Prefer':'resolution=merge-duplicates'},
+      body: JSON.stringify({ username, status:'banned', reviewed_by:'Liann', reviewed_at: new Date().toISOString() })
+    });
+    showToast(username+' banned');
+    loadAll();
+  } catch(e){ showToast('Ban failed','error'); }
+}
+
+async function restoreUser(username){
+  try {
+    await fetch(SB_URL+'/rest/v1/flagged_content?username=eq.'+encodeURIComponent(username), {
+      method:'PATCH',
+      headers:SB_HEADERS,
+      body: JSON.stringify({ status:'dismissed', reviewed_by:'Liann', reviewed_at: new Date().toISOString() })
+    });
+    showToast(username+' restored');
+    loadAll();
+  } catch(e){ showToast('Restore failed','error'); }
+}
+
+// ── REPORT ACTIONS ──
+async function resolveReport(reportId){
+  try {
+    await fetch(SB_URL+'/rest/v1/flagged_content?id=eq.'+reportId, {
+      method:'PATCH',
+      headers:SB_HEADERS,
+      body: JSON.stringify({ status:'resolved', reviewed_by:'Liann', reviewed_at: new Date().toISOString() })
+    });
+    showToast('Report dismissed');
+    loadReports();
+  } catch(e){ showToast('Failed','error'); }
+}
+
+async function deleteReportContent(reportId, username){
+  if(!confirm('Delete this flagged content?')) return;
+  try {
+    // Delete the message from messages table
+    await fetch(SB_URL+'/rest/v1/messages?username=eq.'+encodeURIComponent(username), {
+      method:'DELETE', headers:SB_HEADERS
+    });
+    await resolveReport(reportId);
+    showToast('Content deleted');
+  } catch(e){ showToast('Failed','error'); }
+}
+
+// ── MODALS ──
+function openUserDetail(username){
+  const u = allUsers.find(x=>x.username===username);
+  if(!u) return;
+  const reports = allReports.filter(r=>r.username===username);
+  document.getElementById('modal-title').textContent = (u.flag||'') + ' ' + username;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-field"><div class="modal-label">FULL NAME</div><div class="modal-value">${u.full_name||'–'}</div></div>
+    <div class="modal-field"><div class="modal-label">EMAIL</div><div class="modal-value">${u.email||'–'}</div></div>
+    <div class="modal-field"><div class="modal-label">COUNTRY</div><div class="modal-value">${u.country||'–'}</div></div>
+    <div class="modal-field"><div class="modal-label">JOINED</div><div class="modal-value">${u.created_at ? new Date(u.created_at).toLocaleString('en-GB') : '–'}</div></div>
+    <div class="modal-field"><div class="modal-label">LAST LOGIN</div><div class="modal-value">${u.last_login ? new Date(u.last_login).toLocaleString('en-GB') : '–'}</div></div>
+    <div class="modal-field"><div class="modal-label">REPORTS (${reports.length})</div>
+      <div class="modal-value">${reports.length ? reports.map(r=>`<div style="color:var(--mag);font-size:12px;margin-top:4px;">🚩 ${r.scan_detail||r.status||'flagged'} — ${r.flagged_at?new Date(r.flagged_at).toLocaleDateString('en-GB'):'–'}</div>`).join('') : 'None'}</div>
+    </div>`;
+  document.getElementById('modal-actions').innerHTML = `
+    <button class="act-btn act-delete" onclick="deleteUser('${username}','${u.id}');closeModal()">DELETE USER</button>
+    <button class="act-btn act-ban" onclick="banUser('${username}');closeModal()">BAN USER</button>
+    <button class="act-btn act-restore" onclick="restoreUser('${username}');closeModal()">RESTORE</button>`;
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function openReportDetail(reportId){
+  const r = allReports.find(x=>x.id===reportId);
+  if(!r) return;
+  document.getElementById('modal-title').textContent = '🚩 Report — ' + (r.username||'Unknown');
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-field"><div class="modal-label">USERNAME</div><div class="modal-value" style="color:var(--mag);">${r.username||'–'}</div></div>
+    <div class="modal-field"><div class="modal-label">EMAIL</div><div class="modal-value">${r.email||'–'}</div></div>
+    <div class="modal-field"><div class="modal-label">STATUS</div><div class="modal-value">${r.status||'pending'}</div></div>
+    <div class="modal-field"><div class="modal-label">FLAGGED AT</div><div class="modal-value">${r.flagged_at?new Date(r.flagged_at).toLocaleString('en-GB'):'–'}</div></div>
+    <div class="modal-field"><div class="modal-label">DETAIL</div><div class="modal-value">${r.scan_detail||'–'}</div></div>
+    <div class="modal-field"><div class="modal-label">CONFIDENCE</div><div class="modal-value">${r.confidence||'–'}</div></div>
+    ${r.image_url ? `<div class="modal-field"><div class="modal-label">IMAGE</div><img src="${r.image_url}" class="modal-img"/></div>` : ''}`;
+  document.getElementById('modal-actions').innerHTML = `
+    <button class="act-btn act-delete" onclick="deleteReportContent('${r.id}','${r.username}');closeModal()">DELETE CONTENT</button>
+    <button class="act-btn act-ban" onclick="banUser('${r.username}');resolveReport('${r.id}');closeModal()">BAN USER</button>
+    <button class="act-btn act-restore" onclick="resolveReport('${r.id}');closeModal()">DISMISS</button>`;
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('detail-modal').classList.remove('open');
+}
+
+// close modal on backdrop click
+document.getElementById('detail-modal').addEventListener('click', function(e){
+  if(e.target===this) closeModal();
+});
+
+// ── TOAST ──
+function showToast(msg, type='success'){
+  const t = document.getElementById('toast');
+  t.textContent = type==='success' ? '✓ '+msg : '⚠ '+msg;
+  t.className = type==='error' ? 'error show' : 'show';
+  setTimeout(()=>{ t.className=t.className.replace(' show',''); }, 3000);
+}
+
+// ── ENTER KEY ON LOGIN ──
+document.getElementById('pw-input').addEventListener('keydown', e=>{
+  if(e.key==='Enter') doLogin();
+});
+</script>
+</body>
+</html>
