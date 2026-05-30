@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#000;">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script>
+(function(){
+  if(sessionStorage.getItem('hexa_back_from_dashboard')){
+    sessionStorage.removeItem('hexa_back_from_dashboard');
+  }
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.3, maximum-scale=3.0, user-scalable=yes, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>HEXA · Register</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+  *:focus-visible { outline: none; }
+
+  html {
+    background: #000;
+  }
+
+  html, body {
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: #000;
+    color: #fff;
+    font-family: 'Barlow', sans-serif;
+    scroll-behavior: auto;
+    scrollbar-gutter: stable;
+  }
+  body.not-ready {
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+  body.ready {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* ── STATIC BACKGROUND ── */
+  #hexCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    background: #000005;
+  }
+  #hexCanvas::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      /* deep purple nebula core left */
+      radial-gradient(ellipse 80% 60% at 15% 55%, rgba(110,0,220,0.55) 0%, rgba(60,0,140,0.3) 35%, transparent 70%),
+      /* cyan nebula bloom top-right */
+      radial-gradient(ellipse 70% 55% at 85% 18%, rgba(0,170,230,0.5) 0%, rgba(0,90,190,0.25) 40%, transparent 70%),
+      /* magenta/pink cloud bottom-center */
+      radial-gradient(ellipse 65% 50% at 55% 88%, rgba(220,0,130,0.45) 0%, rgba(150,0,100,0.2) 40%, transparent 68%),
+      /* orange/gold star-forming region */
+      radial-gradient(ellipse 45% 35% at 72% 60%, rgba(220,110,0,0.35) 0%, rgba(160,60,0,0.15) 45%, transparent 70%),
+      /* teal wisp center */
+      radial-gradient(ellipse 55% 40% at 42% 35%, rgba(0,210,170,0.3) 0%, rgba(0,150,130,0.15) 45%, transparent 70%),
+      /* very dark indigo base */
+      radial-gradient(ellipse 100% 100% at 50% 50%, rgba(8,0,28,0.98) 0%, rgba(0,0,5,1) 100%);
+  }
+  #hexCanvas::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background-image:
+      /* === WHITE === */
+      radial-gradient(2px 2px at 8%  12%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 18%  5%, #fff 0%, transparent 100%),
+      radial-gradient(3px 3px at 52% 15%, #fff 0%, transparent 100%),
+      radial-gradient(2px 2px at 75% 18%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 88%  9%, #fff 0%, transparent 100%),
+      radial-gradient(3px 3px at 14% 42%, #fff 0%, transparent 100%),
+      radial-gradient(2px 2px at 37% 48%, #fff 0%, transparent 100%),
+      radial-gradient(3px 3px at 82% 40%, #fff 0%, transparent 100%),
+      radial-gradient(2px 2px at  4% 58%, #fff 0%, transparent 100%),
+      radial-gradient(3px 3px at 47% 78%, #fff 0%, transparent 100%),
+      radial-gradient(2px 2px at 66% 82%, #fff 0%, transparent 100%),
+      radial-gradient(3px 3px at 10% 88%, #fff 0%, transparent 100%),
+      radial-gradient(2px 2px at 33% 85%, #fff 0%, transparent 100%),
+      radial-gradient(3px 3px at 77% 88%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 91% 33%, #fff 0%, transparent 100%),
+      radial-gradient(2px 2px at 43% 21%, #fff 0%, transparent 100%),
+      /* === CYAN / ICE BLUE === */
+      radial-gradient(2px 2px at 30% 22%, #00eeff 0%, transparent 100%),
+      radial-gradient(3px 3px at 95% 25%, #00ddff 0%, transparent 100%),
+      radial-gradient(2px 2px at 60% 44%, #00ccff 0%, transparent 100%),
+      radial-gradient(2px 2px at 24% 72%, #00eeff 0%, transparent 100%),
+      radial-gradient(3px 3px at 88% 75%, #00ccff 0%, transparent 100%),
+      radial-gradient(2px 2px at 56% 90%, #00ddff 0%, transparent 100%),
+      radial-gradient(3px 3px at 41% 55%, #00ffee 0%, transparent 100%),
+      radial-gradient(2px 2px at 69% 13%, #00ddff 0%, transparent 100%),
+      radial-gradient(2px 2px at  2% 47%, #00eeff 0%, transparent 100%),
+      radial-gradient(3px 3px at 54% 36%, #00ccff 0%, transparent 100%),
+      radial-gradient(2px 2px at 80% 60%, #00ffee 0%, transparent 100%),
+      radial-gradient(2px 2px at 17% 95%, #00ddff 0%, transparent 100%),
+      /* === MAGENTA / HOT PINK === */
+      radial-gradient(2px 2px at 63%  3%, #ff44cc 0%, transparent 100%),
+      radial-gradient(3px 3px at 26% 38%, #ff00aa 0%, transparent 100%),
+      radial-gradient(2px 2px at 58% 68%, #ff33bb 0%, transparent 100%),
+      radial-gradient(3px 3px at 90% 92%, #ff44cc 0%, transparent 100%),
+      radial-gradient(2px 2px at  7% 74%, #ff00aa 0%, transparent 100%),
+      radial-gradient(3px 3px at 83% 30%, #ff33bb 0%, transparent 100%),
+      radial-gradient(2px 2px at 35% 58%, #ff44cc 0%, transparent 100%),
+      radial-gradient(2px 2px at 72% 77%, #ff00aa 0%, transparent 100%),
+      radial-gradient(3px 3px at 48% 12%, #ff55dd 0%, transparent 100%),
+      /* === YELLOW / GOLD === */
+      radial-gradient(2px 2px at 93% 50%, #ffdd00 0%, transparent 100%),
+      radial-gradient(3px 3px at 21% 93%, #ffcc00 0%, transparent 100%),
+      radial-gradient(2px 2px at 35%  7%, #ffee44 0%, transparent 100%),
+      radial-gradient(3px 3px at 78% 53%, #ffdd00 0%, transparent 100%),
+      radial-gradient(2px 2px at 50% 62%, #ffcc44 0%, transparent 100%),
+      radial-gradient(2px 2px at  6% 22%, #ffe033 0%, transparent 100%),
+      radial-gradient(3px 3px at 65% 96%, #ffdd00 0%, transparent 100%),
+      radial-gradient(2px 2px at 39% 77%, #ffee55 0%, transparent 100%),
+      /* === PURPLE / VIOLET === */
+      radial-gradient(2px 2px at  1% 20%, #bb44ff 0%, transparent 100%),
+      radial-gradient(3px 3px at 44% 95%, #aa00ff 0%, transparent 100%),
+      radial-gradient(2px 2px at 71% 28%, #cc33ff 0%, transparent 100%),
+      radial-gradient(3px 3px at 16% 65%, #bb44ff 0%, transparent 100%),
+      radial-gradient(2px 2px at 97% 68%, #aa22ff 0%, transparent 100%),
+      radial-gradient(3px 3px at 28% 82%, #dd55ff 0%, transparent 100%),
+      radial-gradient(2px 2px at 86% 10%, #bb33ff 0%, transparent 100%),
+      radial-gradient(2px 2px at 57% 49%, #cc00ff 0%, transparent 100%),
+      radial-gradient(3px 3px at 11% 57%, #aa44ff 0%, transparent 100%),
+      /* === ORANGE / RED === */
+      radial-gradient(2px 2px at  5% 30%, #ff6600 0%, transparent 100%),
+      radial-gradient(3px 3px at 59% 45%, #ff4400 0%, transparent 100%),
+      radial-gradient(2px 2px at 79% 62%, #ff5500 0%, transparent 100%),
+      radial-gradient(3px 3px at 38% 60%, #ff6600 0%, transparent 100%),
+      radial-gradient(2px 2px at 92% 18%, #ff3300 0%, transparent 100%),
+      radial-gradient(3px 3px at 20% 40%, #ff5500 0%, transparent 100%),
+      radial-gradient(2px 2px at 74% 91%, #ff6600 0%, transparent 100%),
+      radial-gradient(2px 2px at 46% 28%, #ff4411 0%, transparent 100%),
+      /* === GREEN / LIME === */
+      radial-gradient(2px 2px at 42%  8%, #44ff88 0%, transparent 100%),
+      radial-gradient(3px 3px at 67% 97%, #00ff66 0%, transparent 100%),
+      radial-gradient(2px 2px at 23% 48%, #33ff77 0%, transparent 100%),
+      radial-gradient(3px 3px at 86% 85%, #44ff88 0%, transparent 100%),
+      radial-gradient(2px 2px at  9% 66%, #00ff88 0%, transparent 100%),
+      radial-gradient(3px 3px at 53% 74%, #33ff66 0%, transparent 100%),
+      radial-gradient(2px 2px at 76%  4%, #44ff88 0%, transparent 100%),
+      radial-gradient(2px 2px at 31% 16%, #00ff77 0%, transparent 100%),
+      /* === ROSE / SALMON === */
+      radial-gradient(2px 2px at 55% 28%, #ff8899 0%, transparent 100%),
+      radial-gradient(3px 3px at 12% 80%, #ff6677 0%, transparent 100%),
+      radial-gradient(2px 2px at 74% 44%, #ff8899 0%, transparent 100%),
+      radial-gradient(3px 3px at 29% 62%, #ff7788 0%, transparent 100%),
+      radial-gradient(2px 2px at 96% 78%, #ff8899 0%, transparent 100%),
+      radial-gradient(2px 2px at 61% 57%, #ff6688 0%, transparent 100%),
+      /* === ELECTRIC BLUE === */
+      radial-gradient(3px 3px at 19% 29%, #4488ff 0%, transparent 100%),
+      radial-gradient(2px 2px at 64% 83%, #3366ff 0%, transparent 100%),
+      radial-gradient(3px 3px at 87% 46%, #4477ff 0%, transparent 100%),
+      radial-gradient(2px 2px at 36% 32%, #5599ff 0%, transparent 100%),
+      radial-gradient(2px 2px at  3% 91%, #3366ff 0%, transparent 100%),
+      radial-gradient(3px 3px at 99%  5%, #4488ff 0%, transparent 100%),
+      /* === TEAL / AQUA === */
+      radial-gradient(2px 2px at 25% 54%, #00ffcc 0%, transparent 100%),
+      radial-gradient(3px 3px at 73% 37%, #00ffbb 0%, transparent 100%),
+      radial-gradient(2px 2px at 48% 86%, #00ffcc 0%, transparent 100%),
+      radial-gradient(2px 2px at 84% 22%, #00eebb 0%, transparent 100%),
+      radial-gradient(3px 3px at 13%  3%, #00ffcc 0%, transparent 100%),
+      /* === GOLD / AMBER === */
+      radial-gradient(3px 3px at 40% 70%, #ffaa00 0%, transparent 100%),
+      radial-gradient(2px 2px at 94% 60%, #ff9900 0%, transparent 100%),
+      radial-gradient(3px 3px at 22% 14%, #ffbb00 0%, transparent 100%),
+      radial-gradient(2px 2px at 68% 25%, #ffaa00 0%, transparent 100%),
+      /* === DEEP RED / CRIMSON === */
+      radial-gradient(2px 2px at 15% 75%, #ff2244 0%, transparent 100%),
+      radial-gradient(3px 3px at 62% 19%, #ff1133 0%, transparent 100%),
+      radial-gradient(2px 2px at 89% 55%, #ff2244 0%, transparent 100%),
+      radial-gradient(3px 3px at 32% 97%, #ff1133 0%, transparent 100%),
+      /* === EXTRA 5 === */
+      radial-gradient(2px 2px at 51%  2%, #aaff00 0%, transparent 100%),
+      radial-gradient(3px 3px at 19% 52%, #ff00ff 0%, transparent 100%),
+      radial-gradient(2px 2px at 76% 69%, #00ff44 0%, transparent 100%),
+      radial-gradient(3px 3px at  8% 36%, #ffaa55 0%, transparent 100%),
+      radial-gradient(2px 2px at 96% 42%, #55aaff 0%, transparent 100%);
+  }
+
+  /* ── GPU LAYER PINNING — keeps layers alive during rotation ── */
+  /* Do NOT use will-change or visibility:hidden on these — kills GPU layers */
+  .page,
+  .center-col {
+    transform: translate3d(0,0,0);
+    -webkit-transform: translate3d(0,0,0);
+  }
+  .center-col {
+    contain: layout paint;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* ── BLACK OVERLAY — hidden on load ── */
+  #blackOverlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 999999;
+    pointer-events: none;
+    opacity: 1;
+    transition: none;
+  }
+  /* Fade out once page settles */
+  html.page-settled #blackOverlay {
+    opacity: 0;
+    transition: opacity 0.15s linear;
+  }
+
+  /* ── PAGE — base structure ── */
+  html {
+    background: #000 !important;
+  }
+  html, body {
+    overflow: hidden !important;
+    height: 100svh !important;  /* svh = stable during rotation, dvh shifts */
+  }
+  .page {
+    position: relative;
+    z-index: 10;
+    height: 100svh;             /* svh not dvh */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .center-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 520px;
+    padding: 0 6px;
+    margin: 0 auto;
+    text-align: center;
+    transform-origin: center center;
+  }
+
+  /* ── LOGO ── */
+  .logo-area {
+    position: relative;
+    width: 70%;
+    max-width: 200px;
+    height: 70px;
+    margin: 12px 0 2px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  #logoCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: none;
+  }
+
+  .logo-text {
+    position: relative;
+    z-index: 2;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.04em;
+    background: linear-gradient(135deg, #fff 30%, #00f0ff 70%, #ff00ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 15px rgba(0,240,255,0.6));
+    animation: logoPulse 3s ease-in-out infinite;
+    white-space: nowrap;
+  }
+
+  @keyframes logoPulse {
+    0%, 100% { filter: drop-shadow(0 0 12px rgba(0,240,255,0.5)); }
+    50% { filter: drop-shadow(0 0 24px rgba(255,0,255,0.7)); }
+  }
+
+  .subtitle {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.55em;
+    color: #00f0ff;
+    margin-bottom: 4px;
+    margin-top: 2px;
+    opacity: 0.9;
+    text-transform: uppercase;
+  }
+
+  /* ── TAB ROW ── */
+  .tab-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 7px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    padding: 8px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .tab-btn.active {
+    background: linear-gradient(135deg, #00f0ff, #0077cc);
+    color: #000;
+    border: none;
+  }
+
+  .tab-btn.inactive {
+    background: transparent;
+    color: #ff00ff;
+    border: 1px solid rgba(255,0,255,0.5);
+  }
+
+  .tab-btn.inactive:hover { border-color: #7700ff; color: #7700ff; }
+
+  /* ── CARD ── */
+  .card {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(0,240,255,0.7);
+    box-shadow: 0 0 18px rgba(0,240,255,0.15), inset 0 0 12px rgba(0,240,255,0.04);
+    border-radius: 4px;
+    padding: 12px 16px;
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.25em;
+    color: #fff;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  /* ── FIELDS ── */
+  .fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px 10px;
+    margin-bottom: 8px;
+  }
+
+  .field-full { grid-column: 1 / -1; }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.95);
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(0,240,255,0.45);
+    border-radius: 2px;
+    padding: 8px 10px;
+    color: #fff;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+
+  .field select { cursor: pointer; }
+  .field input:focus, .field select:focus { border-color: #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.12); }
+  .field input::placeholder { color: rgba(255,255,255,0.65); }
+
+  .field-note { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+  .age-note { font-size: 11px; color: #ff4466; margin-top: 3px; display: none; }
+
+  .pw-wrap { position: relative; display: flex; align-items: center; }
+  .pw-wrap input { flex: 1; padding-right: 30px; }
+  .pw-eye { position: absolute; right: 8px; cursor: pointer; font-size: 13px; color: rgba(255,255,255,.85); user-select: none; -webkit-user-select: none; }
+
+  .strength-track { height: 2px; background: rgba(255,255,255,0.07); border-radius: 2px; margin-top: 5px; overflow: hidden; }
+  .strength-bar { height: 100%; width: 0%; border-radius: 2px; transition: width .3s, background-color .3s; }
+  .strength-label { font-size: 8px; letter-spacing: .1em; color: rgba(255,255,255,.6); margin-top: 2px; }
+
+  /* ── REGISTER BUTTON ── */
+  .btn-register {
+    width: 100%;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.25em;
+    padding: 10px;
+    background: linear-gradient(135deg, #00f0ff, #0077cc);
+    color: #000;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 8px;
+    margin-top: 2px;
+  }
+
+  .btn-register::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, #ff00ff, #7700ff); opacity: 0; transition: opacity 0.4s; }
+  .btn-register:hover::after { opacity: 1; }
+  .btn-register span { position: relative; z-index: 1; color: #000; }
+  .btn-register:hover span { color: #fff; }
+  .btn-register:hover { transform: translateY(-1px); box-shadow: 0 0 20px rgba(0,240,255,0.3); }
+
+  .signin-link { text-align: center; font-size: 13px; color: rgba(255,255,255,0.85); }
+  .signin-link a { color: #ff00ff; text-decoration: none; font-weight: 600; }
+  .signin-link a:hover { color: #00f0ff; }
+
+  /* ── SUCCESS ── */
+  .success { display: none; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 10px 0; }
+  .success-hex { font-size: 40px; animation: spin 4s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .success h3 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.2em; color: #00f0ff; }
+  .success p { font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.6; }
+
+  .back-link { margin-top: 6px; font-size: 12px; color: rgba(255,255,255,0.75); letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; text-decoration: none; display: block; text-align: center; }
+  .back-link:hover { color: #00f0ff; }
+
+  /* ── MODAL BASE — always centered, always fixed ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .modal-overlay.on { display: flex; }
+
+  .modal-box {
+    background: rgba(0,3,15,0.97);
+    border: 1px solid rgba(0,240,255,.7);
+    box-shadow: 0 0 18px rgba(0,240,255,0.15);
+    border-radius: 4px;
+    padding: 28px;
+    width: 100%;
+    max-width: 340px;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0,240,255,0.08);
+    margin: auto;
+  }
+
+  .modal-box h2 { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:.25em; color:#fff; margin-bottom:18px; text-align:center; }
+  .modal-close { position:absolute; top:10px; right:14px; background:none; border:none; color:rgba(255,255,255,.65); font-size:18px; cursor:pointer; }
+
+  .login-field { margin-bottom: 12px; }
+  .login-field label { display:block; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.75); margin-bottom:5px; }
+  .login-field input { width:100%; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.2); border-radius:2px; padding:9px 12px; color:#fff; font-family:'Barlow',sans-serif; font-size:13px; outline:none; }
+  .login-field input:focus { border-color:#00f0ff; }
+
+  .login-remember { padding: 4px 0 8px; }
+  .login-btn { width:100%; font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:.2em; padding:11px; background:linear-gradient(135deg,#00f0ff,#0077cc); color:#000; border:none; border-radius:2px; cursor:pointer; margin-top:6px; }
+  .login-pw-wrap { position:relative; display:flex; align-items:center; }
+  .login-pw-wrap input { flex:1; padding-right:38px; }
+  .login-pw-eye { position:absolute; right:10px; cursor:pointer; font-size:15px; color:rgba(255,255,255,.85); user-select:none; }
+  .forgot-link { display:block; text-align:right; font-size:10px; letter-spacing:.1em; color:rgba(0,240,255,.55); cursor:pointer; margin-top:4px; text-decoration:none; text-transform:uppercase; }
+  .forgot-link:hover { color:#00f0ff; }
+  .login-error { color:#ff4466; font-size:11px; margin-top:7px; text-align:center; display:none; }
+  .login-success { color:#00ff88; font-size:11px; margin-top:7px; text-align:center; display:none; }
+
+  /* ── RESET MODAL ── */
+  .reset-box h2 { font-size:18px; color:#00f0ff; margin-bottom:3px; }
+  .reset-subtitle { font-family:'Bebas Neue',sans-serif; font-size:9px; letter-spacing:.15em; color:rgba(255,255,255,.65); text-align:center; margin-bottom:16px; text-transform:uppercase; }
+  .reset-field { margin-bottom:11px; }
+  .reset-field label { display:block; font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.75); margin-bottom:5px; }
+  .reset-field input { width:100%; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.2); border-radius:2px; padding:9px 12px; color:#fff; font-family:'Barlow',sans-serif; font-size:13px; outline:none; transition:border-color .2s; }
+  .reset-field input:focus { border-color:#00f0ff; }
+  .reset-btn { width:100%; font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:.2em; padding:11px; background:linear-gradient(135deg,#00f0ff,#0077cc); color:#000; border:none; border-radius:2px; cursor:pointer; margin-top:4px; }
+  .reset-btn:disabled { opacity:.35; cursor:not-allowed; }
+  .reset-error { color:#ff4466; font-size:10px; margin-top:4px; display:none; }
+  .reset-back-link { display:block; text-align:center; font-size:10px; letter-spacing:.12em; color:rgba(0,240,255,.5); cursor:pointer; margin-top:12px; text-transform:uppercase; }
+  .reset-back-link:hover { color:#00f0ff; }
+  .reset-success { color:#00ff88; font-size:11px; text-align:center; margin-top:8px; display:none; }
+
+  /* ── ROTATION: kill transitions/animations but keep layers visible ── */
+  /* Never set opacity:0 or visibility:hidden during rotation — destroys GPU layers */
+  .reset-back-link:hover { color:#00f0ff; }
+  .reset-success { color:#00ff88; font-size:11px; text-align:center; margin-top:8px; display:none; }
+
+</style>
+</head>
+
+
+<body class="not-ready" style="background:#000;">
+
+<div id="hexCanvas"></div>
+<div id="blackOverlay"></div>
+
+<div class="page">
+  <div class="center-col">
+
+    <div class="logo-area" onclick="window.location.replace('index.html')" style="cursor:pointer;">
+      <canvas id="logoCanvas"></canvas>
+      <div class="logo-text">HEXA</div>
+    </div>
+
+    <div class="subtitle">Create Your Account</div>
+
+    <div class="tab-row">
+      <button class="tab-btn active">REGISTER</button>
+      <button class="tab-btn inactive" onclick="openLoginModal()">SIGN IN</button>
+    </div>
+
+    <div class="card" id="formCard">
+      <input type="text" style="display:none;" name="prevent_autofill" autocomplete="off"/>
+      <input type="password" style="display:none;" name="prevent_autofill_pw" autocomplete="new-password"/>
+      <div class="card-title">Join HEXA</div>
+
+      <div class="fields-grid">
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="fullname" placeholder="Your name" autocomplete="off" name="hexa_fullname" readonly onfocus="this.removeAttribute('readonly')" />
+        </div>
+
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="user_handle" autocomplete="off" name="hexa_handle" readonly onfocus="this.removeAttribute('readonly')" oninput="this.value=this.value.replace(/\s/g,'_');checkUsernameAvailability(this.value)" />
+          <div class="field-note" id="username-status">Public display name</div>
+        </div>
+
+        <div class="field">
+          <label>Age</label>
+          <input type="number" id="age" placeholder="Age" min="1" max="120" />
+          <div class="age-note" id="ageNote">⚠ Must be 18+</div>
+        </div>
+
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="your@email.com" autocomplete="email" name="email" />
+        </div>
+
+        <div class="field">
+          <label>Country</label>
+          <select id="country" required>
+            <option value="">Select Country</option>
+            <option value="🇦🇫">🇦🇫 Afghanistan</option><option value="🇦🇱">🇦🇱 Albania</option><option value="🇩🇿">🇩🇿 Algeria</option><option value="🇦🇩">🇦🇩 Andorra</option><option value="🇦🇴">🇦🇴 Angola</option><option value="🇦🇬">🇦🇬 Antigua & Barbuda</option><option value="🇦🇷">🇦🇷 Argentina</option><option value="🇦🇲">🇦🇲 Armenia</option><option value="🇦🇺">🇦🇺 Australia</option><option value="🇦🇹">🇦🇹 Austria</option><option value="🇦🇿">🇦🇿 Azerbaijan</option><option value="🇧🇸">🇧🇸 Bahamas</option><option value="🇧🇭">🇧🇭 Bahrain</option><option value="🇧🇩">🇧🇩 Bangladesh</option><option value="🇧🇧">🇧🇧 Barbados</option><option value="🇧🇾">🇧🇾 Belarus</option><option value="🇧🇪">🇧🇪 Belgium</option><option value="🇧🇿">🇧🇿 Belize</option><option value="🇧🇯">🇧🇯 Benin</option><option value="🇧🇹">🇧🇹 Bhutan</option><option value="🇧🇴">🇧🇴 Bolivia</option><option value="🇧🇦">🇧🇦 Bosnia & Herzegovina</option><option value="🇧🇼">🇧🇼 Botswana</option><option value="🇧🇷">🇧🇷 Brazil</option><option value="🇧🇳">🇧🇳 Brunei</option><option value="🇧🇬">🇧🇬 Bulgaria</option><option value="🇧🇫">🇧🇫 Burkina Faso</option><option value="🇧🇮">🇧🇮 Burundi</option><option value="🇨🇻">🇨🇻 Cabo Verde</option><option value="🇰🇭">🇰🇭 Cambodia</option><option value="🇨🇲">🇨🇲 Cameroon</option><option value="🇨🇦">🇨🇦 Canada</option><option value="🇨🇫">🇨🇫 Central African Republic</option><option value="🇹🇩">🇹🇩 Chad</option><option value="🇨🇱">🇨🇱 Chile</option><option value="🇨🇳">🇨🇳 China</option><option value="🇨🇴">🇨🇴 Colombia</option><option value="🇰🇲">🇰🇲 Comoros</option><option value="🇨🇬">🇨🇬 Congo</option><option value="🇨🇩">🇨🇩 Congo DR</option><option value="🇨🇷">🇨🇷 Costa Rica</option><option value="🇨🇮">🇨🇮 Côte d'Ivoire</option><option value="🇭🇷">🇭🇷 Croatia</option><option value="🇨🇺">🇨🇺 Cuba</option><option value="🇨🇾">🇨🇾 Cyprus</option><option value="🇨🇿">🇨🇿 Czech Republic</option><option value="🇩🇰">🇩🇰 Denmark</option><option value="🇩🇯">🇩🇯 Djibouti</option><option value="🇩🇲">🇩🇲 Dominica</option><option value="🇩🇴">🇩🇴 Dominican Republic</option><option value="🇪🇨">🇪🇨 Ecuador</option><option value="🇪🇬">🇪🇬 Egypt</option><option value="🇸🇻">🇸🇻 El Salvador</option><option value="🇬🇶">🇬🇶 Equatorial Guinea</option><option value="🇪🇷">🇪🇷 Eritrea</option><option value="🇪🇪">🇪🇪 Estonia</option><option value="🇪🇹">🇪🇹 Ethiopia</option><option value="🇫🇯">🇫🇯 Fiji</option><option value="🇫🇮">🇫🇮 Finland</option><option value="🇫🇷">🇫🇷 France</option><option value="🇬🇦">🇬🇦 Gabon</option><option value="🇬🇲">🇬🇲 Gambia</option><option value="🇬🇪">🇬🇪 Georgia</option><option value="🇩🇪">🇩🇪 Germany</option><option value="🇬🇭">🇬🇭 Ghana</option><option value="🇬🇮">🇬🇮 Gibraltar</option><option value="🇬🇷">🇬🇷 Greece</option><option value="🇬🇩">🇬🇩 Grenada</option><option value="🇬🇹">🇬🇹 Guatemala</option><option value="🇬🇳">🇬🇳 Guinea</option><option value="🇬🇼">🇬🇼 Guinea-Bissau</option><option value="🇬🇾">🇬🇾 Guyana</option><option value="🇭🇹">🇭🇹 Haiti</option><option value="🇭🇳">🇭🇳 Honduras</option><option value="🇭🇰">🇭🇰 Hong Kong</option><option value="🇭🇺">🇭🇺 Hungary</option><option value="🇮🇸">🇮🇸 Iceland</option><option value="🇮🇳">🇮🇳 India</option><option value="🇮🇩">🇮🇩 Indonesia</option><option value="🇮🇷">🇮🇷 Iran</option><option value="🇮🇶">🇮🇶 Iraq</option><option value="🇮🇪">🇮🇪 Ireland</option><option value="🇮🇱">🇮🇱 Israel</option><option value="🇮🇹">🇮🇹 Italy</option><option value="🇯🇲">🇯🇲 Jamaica</option><option value="🇯🇵">🇯🇵 Japan</option><option value="🇯🇴">🇯🇴 Jordan</option><option value="🇰🇿">🇰🇿 Kazakhstan</option><option value="🇰🇪">🇰🇪 Kenya</option><option value="🇰🇮">🇰🇮 Kiribati</option><option value="🇰🇵">🇰🇵 Korea North</option><option value="🇰🇷">🇰🇷 Korea South</option><option value="🇰🇼">🇰🇼 Kuwait</option><option value="🇰🇬">🇰🇬 Kyrgyzstan</option><option value="🇱🇦">🇱🇦 Laos</option><option value="🇱🇻">🇱🇻 Latvia</option><option value="🇱🇧">🇱🇧 Lebanon</option><option value="🇱🇸">🇱🇸 Lesotho</option><option value="🇱🇷">🇱🇷 Liberia</option><option value="🇱🇾">🇱🇾 Libya</option><option value="🇱🇮">🇱🇮 Liechtenstein</option><option value="🇱🇹">🇱🇹 Lithuania</option><option value="🇱🇺">🇱🇺 Luxembourg</option><option value="🇲🇴">🇲🇴 Macao</option><option value="🇲🇬">🇲🇬 Madagascar</option><option value="🇲🇼">🇲🇼 Malawi</option><option value="🇲🇾">🇲🇾 Malaysia</option><option value="🇲🇻">🇲🇻 Maldives</option><option value="🇲🇱">🇲🇱 Mali</option><option value="🇲🇹">🇲🇹 Malta</option><option value="🇲🇭">🇲🇭 Marshall Islands</option><option value="🇲🇷">🇲🇷 Mauritania</option><option value="🇲🇺">🇲🇺 Mauritius</option><option value="🇲🇽">🇲🇽 Mexico</option><option value="🇫🇲">🇫🇲 Micronesia</option><option value="🇲🇩">🇲🇩 Moldova</option><option value="🇲🇨">🇲🇨 Monaco</option><option value="🇲🇳">🇲🇳 Mongolia</option><option value="🇲🇪">🇲🇪 Montenegro</option><option value="🇲🇦">🇲🇦 Morocco</option><option value="🇲🇿">🇲🇿 Mozambique</option><option value="🇲🇲">🇲🇲 Myanmar</option><option value="🇳🇦">🇳🇦 Namibia</option><option value="🇳🇷">🇳🇷 Nauru</option><option value="🇳🇵">🇳🇵 Nepal</option><option value="🇳🇱">🇳🇱 Netherlands</option><option value="🇳🇿">🇳🇿 New Zealand</option><option value="🇳🇮">🇳🇮 Nicaragua</option><option value="🇳🇪">🇳🇪 Niger</option><option value="🇳🇬">🇳🇬 Nigeria</option><option value="🇳🇴">🇳🇴 Norway</option><option value="🇴🇲">🇴🇲 Oman</option><option value="🇵🇰">🇵🇰 Pakistan</option><option value="🇵🇼">🇵🇼 Palau</option><option value="🇵🇸">🇵🇸 Palestine</option><option value="🇵🇦">🇵🇦 Panama</option><option value="🇵🇬">🇵🇬 Papua New Guinea</option><option value="🇵🇾">🇵🇾 Paraguay</option><option value="🇵🇪">🇵🇪 Peru</option><option value="🇵🇭">🇵🇭 Philippines</option><option value="🇵🇱">🇵🇱 Poland</option><option value="🇵🇹">🇵🇹 Portugal</option><option value="🇶🇦">🇶🇦 Qatar</option><option value="🇷🇴">🇷🇴 Romania</option><option value="🇷🇺">🇷🇺 Russia</option><option value="🇷🇼">🇷🇼 Rwanda</option><option value="🇰🇳">🇰🇳 Saint Kitts & Nevis</option><option value="🇱🇨">🇱🇨 Saint Lucia</option><option value="🇻🇨">🇻🇨 Saint Vincent & Grenadines</option><option value="🇼🇸">🇼🇸 Samoa</option><option value="🇸🇲">🇸🇲 San Marino</option><option value="🇸🇹">🇸🇹 Sao Tome & Principe</option><option value="🇸🇦">🇸🇦 Saudi Arabia</option><option value="🇸🇳">🇸🇳 Senegal</option><option value="🇷🇸">🇷🇸 Serbia</option><option value="🇸🇨">🇸🇨 Seychelles</option><option value="🇸🇱">🇸🇱 Sierra Leone</option><option value="🇸🇬">🇸🇬 Singapore</option><option value="🇸🇰">🇸🇰 Slovakia</option><option value="🇸🇮">🇸🇮 Slovenia</option><option value="🇸🇧">🇸🇧 Solomon Islands</option><option value="🇸🇴">🇸🇴 Somalia</option><option value="🇿🇦">🇿🇦 South Africa</option><option value="🇸🇸">🇸🇸 South Sudan</option><option value="🇪🇸">🇪🇸 Spain</option><option value="🇱🇰">🇱🇰 Sri Lanka</option><option value="🇸🇩">🇸🇩 Sudan</option><option value="🇸🇷">🇸🇷 Suriname</option><option value="🇸🇪">🇸🇪 Sweden</option><option value="🇨🇭">🇨🇭 Switzerland</option><option value="🇸🇾">🇸🇾 Syria</option><option value="🇹🇼">🇹🇼 Taiwan</option><option value="🇹🇯">🇹🇯 Tajikistan</option><option value="🇹🇿">🇹🇿 Tanzania</option><option value="🇹🇭">🇹🇭 Thailand</option><option value="🇹🇱">🇹🇱 Timor Leste</option><option value="🇹🇬">🇹🇬 Togo</option><option value="🇹🇴">🇹🇴 Tonga</option><option value="🇹🇹">🇹🇹 Trinidad & Tobago</option><option value="🇹🇳">🇹🇳 Tunisia</option><option value="🇹🇷">🇹🇷 Turkey</option><option value="🇹🇲">🇹🇲 Turkmenistan</option><option value="🇹🇨">🇹🇨 Turks & Caicos</option><option value="🇹🇻">🇹🇻 Tuvalu</option><option value="🇺🇬">🇺🇬 Uganda</option><option value="🇺🇦">🇺🇦 Ukraine</option><option value="🇦🇪">🇦🇪 United Arab Emirates</option><option value="🇬🇧">🇬🇧 United Kingdom</option><option value="🇺🇸">🇺🇸 United States</option><option value="🇺🇾">🇺🇾 Uruguay</option><option value="🇺🇿">🇺🇿 Uzbekistan</option><option value="🇻🇺">🇻🇺 Vanuatu</option><option value="🇻🇦">🇻🇦 Vatican City</option><option value="🇻🇪">🇻🇪 Venezuela</option><option value="🇻🇳">🇻🇳 Vietnam</option><option value="🇾🇪">🇾🇪 Yemen</option><option value="🇿🇲">🇿🇲 Zambia</option><option value="🇿🇼">🇿🇼 Zimbabwe</option>
+          </select>
+        </div>
+
+        <div class="field field-full">
+          <label>Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password" name="password" oninput="checkStrength()" />
+            <span class="pw-eye" id="pw-eye" onclick="var i=document.getElementById('password'),e=document.getElementById('pw-eye');i.type=i.type==='password'?'text':'password';e.textContent=i.type==='password'?'👁':'🙈';">👁</span>
+          </div>
+          <div class="strength-track"><div class="strength-bar" id="strengthBar"></div></div>
+          <div class="strength-label" id="strengthLabel"></div>
+        </div>
+
+        <div class="field field-full">
+          <label>Security Question <span style="color:rgba(255,255,255,0.45);font-size:9px;letter-spacing:0.1em;">— used to recover your account if you forget your password</span></label>
+          <input type="text" id="securityQuestion" placeholder="e.g. What was the name of your first pet?" autocomplete="off" />
+        </div>
+
+        <div class="field field-full">
+          <label>Security Answer</label>
+          <input type="text" id="securityAnswer" placeholder="Your answer" autocomplete="off" />
+          <div class="field-note">Answer is case-insensitive</div>
+        </div>
+      </div>
+
+      <button class="btn-register" onclick="handleRegister()">
+        <span>Create Account</span>
+      </button>
+
+      <div class="signin-link">
+        Already a member? <a href="#" onclick="openLoginModal();return false;">Sign In</a>
+      </div>
+
+      <div class="success" id="successMsg">
+        <div class="success-hex">⬡</div>
+        <h3>Welcome to HEXA</h3>
+        <p>Your account has been created.<br>You're now part of the HEXA community.</p>
+      </div>
+    </div>
+
+    
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeLoginModal()">✕</button>
+    <h2>Sign In</h2>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email" name="email" />
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <div class="login-pw-wrap">
+        <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password" name="password" onkeydown="if(event.key==='Enter') submitLogin()" />
+        <span class="login-pw-eye" id="login-pw-eye" onclick="var i=document.getElementById('loginPassword'),e=document.getElementById('login-pw-eye');i.type=i.type==='password'?'text':'password';e.textContent=i.type==='password'?'👁':'🙈';">👁</span>
+      </div>
+      <a class="forgot-link" onclick="openResetModal()">Forgot password?</a>
+    </div>
+    <div class="login-remember">
+      <label style="display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,.5);cursor:pointer;letter-spacing:.08em;">
+        <input type="checkbox" id="rememberMe" style="accent-color:#00f0ff;width:14px;height:14px;cursor:pointer;" />
+        REMEMBER ME
+      </label>
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-success" id="loginSuccess"></div>
+    <button class="login-btn" onclick="submitLogin()">SIGN IN</button>
+  </div>
+</div>
+
+<!-- RESET MODAL -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal-box reset-box">
+    <button class="modal-close" onclick="closeResetModal()">✕</button>
+    <h2>🔑 RESET PASSWORD</h2>
+    <p class="reset-subtitle">Enter your email and new password</p>
+    <div class="reset-field">
+      <label>Email Address</label>
+      <input type="email" id="resetEmail" placeholder="your@email.com" />
+      <div class="reset-error" id="resetEmailError"></div>
+    </div>
+    <div class="reset-field">
+      <label>New Password</label>
+      <div class="login-pw-wrap">
+        <input type="password" id="resetNewPassword" placeholder="New password" oninput="checkResetStrength()" />
+        <span class="login-pw-eye" onclick="var i=document.getElementById('resetNewPassword');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈';">👁</span>
+      </div>
+      <div style="height:2px;background:rgba(255,255,255,0.07);border-radius:2px;margin-top:5px;overflow:hidden;">
+        <div id="resetStrengthBar" style="height:100%;width:0%;border-radius:2px;transition:width .3s,background-color .3s;"></div>
+      </div>
+      <div id="resetStrengthText" style="font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-top:2px;"></div>
+      <div class="reset-error" id="resetNewPasswordError"></div>
+    </div>
+    <div class="reset-field">
+      <label>Confirm Password</label>
+      <div class="login-pw-wrap">
+        <input type="password" id="resetConfirmPassword" placeholder="Confirm new password" onkeydown="if(event.key==='Enter') submitPasswordReset()" />
+        <span class="login-pw-eye" onclick="var i=document.getElementById('resetConfirmPassword');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈';">👁</span>
+      </div>
+      <div class="reset-error" id="resetConfirmPasswordError"></div>
+    </div>
+    <button class="reset-btn" id="resetSubmitBtn" onclick="submitPasswordReset()">RESET PASSWORD</button>
+    <div class="reset-success" id="resetSuccess"></div>
+    <a class="reset-back-link" onclick="closeResetModal()">← Back to Sign In</a>
+  </div>
+</div>
+
+<script>
+// Back button — close modals + handle bfcache restore (mobile back gesture)
+window.addEventListener('pageshow',function(e){
+  var m=document.getElementById('loginModal');if(m)m.classList.remove('on');
+  var r=document.getElementById('resetModal');if(r)r.classList.remove('on');
+});
+
+// ── VIEWPORT — static, CSS handles all layout fitting ──
+// (Dynamic scale injection removed — was causing flash on rotation)
+
+// ── BACKGROUND: static CSS — no canvas needed ──
+function buildBg(){
+  // Set CSS reference vars from screen size
+  const refR = Math.min(window.innerWidth, window.innerHeight) * 0.045;
+  document.documentElement.style.setProperty('--hr', (refR*1.52).toFixed(2)+'px');
+  document.documentElement.style.setProperty('--hc', (refR*1.75).toFixed(2)+'px');
+}
+function bgResize(){ buildBg(); }
+
+// ── ROTATION HANDLER — Chatty approach ──
+// Keep all layers alive. Never hide body or nuke DOM.
+// Only fade the #blackOverlay div over the top while browser repaints.
+let lastW = window.innerWidth;
+let lastH = window.innerHeight;
+
+window.addEventListener('orientationchange', function() {
+  buildBg();
+  applyScale();
+});
+
+if (window.screen && window.screen.orientation) {
+  window.screen.orientation.addEventListener('change', function() {
+    buildBg();
+    applyScale();
+  });
+}
+
+window.addEventListener('resize', function() {
+  var newW = window.innerWidth, newH = window.innerHeight;
+  if (newW !== lastW || newH !== lastH) {
+    lastW = newW; lastH = newH;
+    buildBg();
+    applyScale();
+  }
+});
+
+// ── ZOOM-OUT SCROLL RESET ──
+// When user pinches back to default zoom, scroll offset stays from zoomed state
+// causing content to appear off-center. Detect zoom-out and re-center.
+(function(){
+  var lastScale = 1;
+  function onVpResize(){
+    if(!window.visualViewport) return;
+    var scale = window.visualViewport.scale;
+    // Zoomed back to near-default (within 5%)
+    if(scale < 1.05 && lastScale >= 1.05){
+      window.scrollTo({left: 0, top: 0, behavior: 'instant'});
+    }
+    lastScale = scale;
+  }
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', onVpResize);
+    window.visualViewport.addEventListener('scroll', onVpResize);
+  }
+})();
+
+// Set grid CSS vars immediately before first paint
+bgResize();
+
+function applyScale(){
+  const col = document.querySelector('.center-col');
+  if(!col) return;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const isLandscape = vw > vh;
+  const isPhone = vw <= 768;
+  const margin = 20;
+
+  // Reset scale to measure natural content size
+  col.style.transform = 'none';
+
+  // Adaptive max-width: give tablets more breathing room in landscape
+  if (vw > 768 && isLandscape) {
+    col.style.maxWidth = '600px';
+  } else {
+    col.style.maxWidth = '520px';
+  }
+
+  // Use offsetHeight — more stable than scrollHeight before first paint
+  const naturalH = col.offsetHeight;
+  const naturalW = col.offsetWidth;
+
+  const availH = vh - (margin * 2);
+  const availW = vw - (margin * 2);
+
+  let scale = Math.min(availH / naturalH, availW / naturalW, 0.98);
+
+  // TABLET FIX: wide landscape screen — don't shrink into tiny box with side frames
+  if (vw > 768 && scale < 0.85) {
+    scale = Math.max(scale, 0.85);
+    document.documentElement.style.setProperty('overflow-y', 'auto', 'important');
+    document.body.style.setProperty('overflow-y', 'auto', 'important');
+    const pg = document.querySelector('.page');
+    if(pg) pg.style.overflowY = 'auto';
+  } else {
+    document.documentElement.style.setProperty('overflow-y', 'hidden', 'important');
+    document.body.style.setProperty('overflow-y', 'hidden', 'important');
+    const pg = document.querySelector('.page');
+    if(pg) pg.style.overflow = 'hidden';
+  }
+
+  col.style.transform = 'scale(' + scale.toFixed(4) + ')';
+}
+
+window.addEventListener('load', function(){
+  setTimeout(function(){
+    applyScale();
+    document.body.classList.remove('not-ready');
+    document.body.classList.add('ready');
+    // Overlay was opaque from birth — now settle and let it fade out
+    document.documentElement.classList.add('page-settled');
+  }, 150);
+});
+
+// applyScale on resize is handled inside finishRotation above
+
+// ── LOGO CANVAS ──
+const lc = document.getElementById('logoCanvas');
+const lctx = lc.getContext('2d');
+lc.width=100; lc.height=100;
+
+// Logo animation disabled
+
+// ── STRENGTH BAR ──
+function checkStrength(){
+  const pw=document.getElementById('password').value;
+  const bar=document.getElementById('strengthBar'), lbl=document.getElementById('strengthLabel');
+  let score=0;
+  if(pw.length>=8)score++; if(/[A-Z]/.test(pw))score++; if(/[0-9]/.test(pw))score++; if(/[^A-Za-z0-9]/.test(pw))score++;
+  const w=['0%','25%','50%','75%','100%'], c=['transparent','#ff4466','#ffcc00','#00aaff','#00ff88'], l=['','WEAK','FAIR','GOOD','STRONG'];
+  bar.style.width=w[score]; bar.style.backgroundColor=c[score];
+  lbl.textContent=pw.length?l[score]:''; lbl.style.color=c[score]||'rgba(255,255,255,0.25)';
+}
+
+// ── REGISTER ──
+async function handleRegister(){
+  const name=document.getElementById('fullname').value.trim();
+  const username=document.getElementById('username').value.trim();
+  const age=parseInt(document.getElementById('age').value);
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  const country=document.getElementById('country').value.trim();
+  const securityQuestion=document.getElementById('securityQuestion').value.trim();
+  const securityAnswer=document.getElementById('securityAnswer').value.trim().toLowerCase();
+  const ageNote=document.getElementById('ageNote');
+  const btn=document.querySelector('.btn-register span');
+  if(!username){alert('Please choose a username.');return;}
+  if(_usernameAvailable === false){alert('That username is already taken. Please choose another.');return;}
+  if(age<18){ageNote.style.display='block';return;} else{ageNote.style.display='none';}
+  if(!name||!age||!email||!password){alert('Please fill in all required fields.');return;}
+  if(!country){alert('Please select your country.');return;}
+  if(!securityQuestion){alert('Please enter a security question.');return;}
+  if(!securityAnswer){alert('Please enter your security answer.');return;}
+  btn.textContent='Creating Account...';
+  const KEY='sb_publishable_rct6Z-GWVCAgj3oOmLDU6Q_eYX8qUXw';
+  const BASE='https://nfxyxnmatuzmqctttqnk.supabase.co';
+  try{
+    // -- BAN CHECK -- email and full name
+    const banRes = await fetch(BASE+'/rest/v1/flagged_content?status=eq.banned&select=username,email,full_name', {
+      headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer anon'}
+    });
+    const banList = await banRes.json().catch(()=>[]);
+    if(Array.isArray(banList)){
+      const emailBanned = banList.some(b => b.email && b.email.toLowerCase() === email.toLowerCase());
+      const nameBanned  = banList.some(b => b.full_name && b.full_name.toLowerCase() === name.toLowerCase());
+      if(emailBanned || nameBanned){
+        showBanBlock();
+        btn.textContent='Create Account';
+        return;
+      }
+    }
+    const res=await fetch(BASE+'/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY},body:JSON.stringify({email,password,data:{username,full_name:name,country}})});
+    const data=await res.json();
+    if(data.error){alert('Error: '+data.error.message);btn.textContent='Create Account';return;}
+    // Must have a real access_token — if not, Auth signup failed, stop here
+    const tok=data.access_token||null;
+    if(!tok){alert('Registration failed. Please try again.');btn.textContent='Create Account';return;}
+    const authH='Bearer '+tok;
+    const regRes=await fetch(BASE+'/rest/v1/registered_users',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':authH,'Prefer':'return=representation'},body:JSON.stringify({username,email,full_name:name,country,security_question:securityQuestion,security_answer:securityAnswer})});
+    if(!regRes.ok){const regErr=await regRes.text();if(!regErr.includes('23505')){alert('Could not save your account.');btn.textContent='Create Account';return;}}
+    await fetch(BASE+'/rest/v1/online_users',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':authH},body:JSON.stringify({username,last_seen:new Date().toISOString(),status:'online'})}).catch(()=>{});
+    const localToken=tok||'pending_'+Date.now();
+    ['hexa_token','hexa_username','hexa_email','hexa_fullname','hexa_country'].forEach((k,i)=>{const v=[localToken,username,email,name,country][i];sessionStorage.setItem(k,v);localStorage.setItem(k,v);});
+    // hexa_home_country and hexa_viewing_country are set by dashboard on login from Supabase
+    document.querySelector('.card-title').style.display='none';
+    document.querySelectorAll('.field').forEach(f=>f.style.display='none');
+    document.querySelector('.btn-register').style.display='none';
+    document.querySelector('.signin-link').style.display='none';
+    document.getElementById('successMsg').style.display='flex';
+    setTimeout(()=>{localStorage.setItem('hexa_new_user','true');window.location.replace('dashboard.html');},2000);
+  }catch(e){alert('Connection error. Please try again.');btn.textContent='Create Account';}
+}
+
+// ── LOGIN MODAL ──
+// -- USERNAME AVAILABILITY CHECK --
+let _usernameCheckTimer = null;
+let _usernameAvailable = null;
+function checkUsernameAvailability(val){
+  const status = document.getElementById('username-status');
+  if(!val || val.length < 2){ status.textContent = 'Public display name'; status.style.color = 'rgba(255,255,255,.7)'; _usernameAvailable = null; return; }
+  status.textContent = 'Checking...'; status.style.color = 'rgba(255,255,255,.4)';
+  if(_usernameCheckTimer) clearTimeout(_usernameCheckTimer);
+  _usernameCheckTimer = setTimeout(async ()=>{
+    try {
+      const KEY='sb_publishable_rct6Z-GWVCAgj3oOmLDU6Q_eYX8qUXw';
+      const BASE='https://nfxyxnmatuzmqctttqnk.supabase.co';
+      const res = await fetch(BASE+'/rest/v1/registered_users?username=eq.'+encodeURIComponent(val)+'&select=username&limit=1',{headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});
+      const data = await res.json();
+      if(Array.isArray(data) && data.length > 0){
+        status.textContent = '✗ Already taken'; status.style.color = '#ff4466'; _usernameAvailable = false;
+      } else {
+        status.textContent = '✓ Available'; status.style.color = '#00ff88'; _usernameAvailable = true;
+      }
+    } catch(e){ status.textContent = 'Public display name'; status.style.color = 'rgba(255,255,255,.7)'; _usernameAvailable = null; }
+  }, 500);
+}
+
+// -- BAN BLOCK --
+function showBanBlock(){
+  // Remove any existing ban overlay
+  const existing = document.getElementById('hexa-ban-overlay');
+  if(existing) existing.remove();
+  const ov = document.createElement('div');
+  ov.id = 'hexa-ban-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Share Tech Mono",monospace;text-align:center;padding:20px;';
+  ov.innerHTML = `
+    <div style="font-size:64px;margin-bottom:24px;">🚫</div>
+    <div style="font-size:28px;font-family:'Bebas Neue',sans-serif;letter-spacing:.3em;color:#ff2244;margin-bottom:12px;text-shadow:0 0 30px rgba(255,34,68,.6);">YOU ARE BANNED</div>
+    <div style="font-size:11px;color:rgba(255,100,100,.6);letter-spacing:.15em;max-width:300px;line-height:1.8;">Your account has been banned from HEXA.<br>If you believe this is a mistake, contact support.</div>
+  `;
+  document.body.appendChild(ov);
+}
+
+function openLoginModal(){
+  const modal=document.getElementById('loginModal');
+  modal.classList.add('on');
+  const em=document.getElementById('loginEmail'), pw=document.getElementById('loginPassword'), rm=document.getElementById('rememberMe');
+  const savedEmail=localStorage.getItem('hexa_remember_email'), savedPw=localStorage.getItem('hexa_remember_pw');
+  if(em) em.value=savedEmail||'';
+  if(pw) pw.value=savedPw||'';
+  if(rm) rm.checked=!!(savedEmail&&savedPw);
+  if(!savedEmail&&em) setTimeout(()=>em.focus({preventScroll:true}),200);
+  const err=document.getElementById('loginError');
+  if(err){err.style.display='none';err.textContent='';}
+}
+function closeLoginModal(){
+  document.getElementById('loginModal').classList.remove('on');
+}
+async function submitLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  const err=document.getElementById('loginError'), successEl=document.getElementById('loginSuccess');
+  if(!email||!password){err.textContent='Please fill in all fields.';err.style.display='block';return;}
+  err.style.display='none'; successEl.style.display='none';
+  const KEY='sb_publishable_rct6Z-GWVCAgj3oOmLDU6Q_eYX8qUXw';
+  const BASE='https://nfxyxnmatuzmqctttqnk.supabase.co';
+  try{
+    const res=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY},body:JSON.stringify({email,password})});
+    const data=await res.json();
+    if(data.error){err.textContent='Invalid email or password.';err.style.display='block';return;}
+    sessionStorage.setItem('hexa_token',data.access_token);sessionStorage.setItem('hexa_email',email);
+    localStorage.setItem('hexa_token',data.access_token);localStorage.setItem('hexa_email',email);
+    const rm=document.getElementById('rememberMe');
+    if(rm&&rm.checked){localStorage.setItem('hexa_remember_email',email);localStorage.setItem('hexa_remember_pw',password);}
+    else{localStorage.removeItem('hexa_remember_email');localStorage.removeItem('hexa_remember_pw');}
+    try{
+      const uRes=await fetch(BASE+'/rest/v1/registered_users?email=eq.'+encodeURIComponent(email)+'&select=username,full_name&limit=1',{headers:{'apikey':KEY,'Authorization':'Bearer '+data.access_token}});
+      const ud=await uRes.json();
+      const un=ud[0]?.username, fn=ud[0]?.full_name||'';
+      if(!un){err.textContent='Account not found. Please register first.';err.style.display='block';return;}
+      // -- BAN CHECK --
+      const banChk = await fetch(BASE+'/rest/v1/flagged_content?username=eq.'+encodeURIComponent(un)+'&status=eq.banned&select=username&limit=1',{headers:{'apikey':KEY,'Authorization':'Bearer '+data.access_token}});
+      const banData = await banChk.json().catch(()=>[]);
+      if(Array.isArray(banData) && banData.length > 0){
+        showBanBlock();
+        return;
+      }
+      sessionStorage.setItem('hexa_username',un);sessionStorage.setItem('hexa_fullname',fn);
+      localStorage.setItem('hexa_username',un);localStorage.setItem('hexa_fullname',fn);
+      // Update last_login timestamp
+      fetch(BASE+'/rest/v1/registered_users?email=eq.'+encodeURIComponent(email),{method:'PATCH',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+data.access_token},body:JSON.stringify({last_login:new Date().toISOString()})}).catch(()=>{});
+    }catch(e2){err.textContent='Could not load your profile.';err.style.display='block';return;}
+    successEl.textContent='✔ Signed in! Redirecting...';successEl.style.display='block';
+    // Existing users have already agreed to rules — set flag so dashboard guard passes
+    localStorage.setItem('hexa_rules','agreed');
+    sessionStorage.setItem('hexa_rules','agreed');
+    setTimeout(()=>window.location.replace('dashboard.html'),1000);
+  }catch(e){err.textContent='Connection error. Try again.';err.style.display='block';}
+}
+
+// ── RESET MODAL ──
+function openResetModal(){
+  document.getElementById('loginModal').classList.remove('on');
+  document.getElementById('resetModal').classList.add('on');
+  setTimeout(()=>document.getElementById('resetEmail').focus({preventScroll:true}),100);
+}
+function closeResetModal(){
+  document.getElementById('resetModal').classList.remove('on');
+  document.getElementById('resetEmail').value='';
+  document.getElementById('resetNewPassword').value='';
+  document.getElementById('resetConfirmPassword').value='';
+  ['resetEmailError','resetNewPasswordError','resetConfirmPasswordError','resetSuccess'].forEach(id=>{const el=document.getElementById(id);el.textContent='';el.style.display='none';});
+  document.getElementById('resetStrengthBar').style.width='0%';
+  document.getElementById('resetStrengthText').textContent='';
+  document.getElementById('resetSubmitBtn').disabled=false;
+  document.getElementById('resetSubmitBtn').textContent='RESET PASSWORD';
+  document.getElementById('loginModal').classList.add('on');
+}
+function checkResetStrength(){
+  const pw=document.getElementById('resetNewPassword').value;
+  const bar=document.getElementById('resetStrengthBar'), text=document.getElementById('resetStrengthText');
+  let score=0;if(pw.length>=8)score++;if(/[A-Z]/.test(pw))score++;if(/[0-9]/.test(pw))score++;if(/[^A-Za-z0-9]/.test(pw))score++;
+  const w=['0%','25%','50%','75%','100%'],c=['transparent','#ff4466','#ffcc00','#00aaff','#00ff88'],l=['','WEAK','FAIR','GOOD','STRONG'];
+  bar.style.width=w[score];bar.style.backgroundColor=c[score];text.textContent=pw.length?l[score]:'';text.style.color=c[score]||'rgba(255,255,255,0.25)';
+}
+async function submitPasswordReset(){
+  const email=document.getElementById('resetEmail').value.trim();
+  const newPw=document.getElementById('resetNewPassword').value;
+  const confirmPw=document.getElementById('resetConfirmPassword').value;
+  const emailErr=document.getElementById('resetEmailError'),newErr=document.getElementById('resetNewPasswordError'),confirmErr=document.getElementById('resetConfirmPasswordError');
+  const successEl=document.getElementById('resetSuccess'),btn=document.getElementById('resetSubmitBtn');
+  [emailErr,newErr,confirmErr].forEach(e=>{e.textContent='';e.style.display='none';});successEl.style.display='none';
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){emailErr.textContent='Please enter a valid email.';emailErr.style.display='block';return;}
+  if(!newPw||newPw.length<6){newErr.textContent='Password must be at least 6 characters.';newErr.style.display='block';return;}
+  if(newPw!==confirmPw){confirmErr.textContent='Passwords do not match.';confirmErr.style.display='block';return;}
+  btn.disabled=true;btn.textContent='UPDATING...';
+  const KEY='sb_publishable_rct6Z-GWVCAgj3oOmLDU6Q_eYX8qUXw';
+  try{
+    const fnRes=await fetch('https://nfxyxnmatuzmqctttqnk.supabase.co/functions/v1/bright-endpoint',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+KEY},body:JSON.stringify({email,password:newPw})});
+    let fnData={};try{fnData=await fnRes.json();}catch(e){}
+    if(!fnRes.ok||fnData.error){emailErr.textContent=fnData.error||'Could not update password. Try again.';emailErr.style.display='block';btn.disabled=false;btn.textContent='RESET PASSWORD';return;}
+    successEl.textContent='✓ Password updated!';successEl.style.display='block';btn.textContent='DONE';
+    setTimeout(()=>{closeResetModal();const loginErr=document.getElementById('loginError');loginErr.textContent='✓ Password updated — sign in with your new password.';loginErr.style.color='#00ff88';loginErr.style.display='block';document.getElementById('loginEmail').value=email;setTimeout(()=>{loginErr.style.display='none';loginErr.style.color='';},6000);},1500);
+  }catch(e){emailErr.textContent='Connection error. Please try again.';emailErr.style.display='block';btn.disabled=false;btn.textContent='RESET PASSWORD';}
+}
+
+window.addEventListener('popstate', function(){
+  window.location.replace('index.html');
+});
+
+</script>
+</body>
+</html>
