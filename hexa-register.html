@@ -28,17 +28,11 @@
     scroll-behavior: auto;
   }
 
-  /* ── ROTATION FLASH FIX — hide briefly on orientation change ── */
-  @keyframes orientHide {
-    0%, 80% { opacity: 0; }
-    100%     { opacity: 1; }
-  }
-  body { opacity: 0; animation: orientHide 0.35s ease forwards; }
-  @media screen and (orientation: landscape) {
-    body { animation: orientHide 0.35s ease forwards; }
-  }
-  @media screen and (orientation: portrait) {
-    body { animation: orientHide 0.35s ease forwards; }
+  /* ── ROTATION: body locked during rotation, snapped in after ── */
+  body.rotation-lock {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: none !important;
   }
 
 
@@ -533,6 +527,38 @@ window.addEventListener('pageshow',function(e){
   var m=document.getElementById('loginModal');if(m)m.classList.remove('on');
   var r=document.getElementById('resetModal');if(r)r.classList.remove('on');
 });
+
+// ── ROTATION: freeze screen, wait for browser to settle, snap new layout in ──
+(function(){
+  var snapTimer = null;
+
+  function lockRotation(){
+    // Instantly freeze — nothing moves
+    document.body.classList.add('rotation-lock');
+    clearTimeout(snapTimer);
+    // Wait for browser to fully confirm new orientation + 2s buffer
+    snapTimer = setTimeout(function(){
+      fitLandscapeForm();
+      // Snap in — no transition, no fade
+      document.body.classList.remove('rotation-lock');
+    }, 2000);
+  }
+
+  window.addEventListener('orientationchange', lockRotation);
+  if(window.screen && window.screen.orientation){
+    window.screen.orientation.addEventListener('change', lockRotation);
+  }
+  window.addEventListener('resize', function(){
+    // Only trigger on actual orientation flip
+    var isLand = window.innerWidth > window.innerHeight;
+    if(typeof _lastOrientLand === 'undefined') _lastOrientLand = isLand;
+    if(isLand !== _lastOrientLand){
+      _lastOrientLand = isLand;
+      lockRotation();
+    }
+  });
+  var _lastOrientLand = window.innerWidth > window.innerHeight;
+})();
 
 // ── VIEWPORT — only adjust on actual orientation change, not zoom ──
 (function(){
