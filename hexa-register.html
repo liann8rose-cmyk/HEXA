@@ -776,11 +776,10 @@ function deactivateBlackout(){
     blackoutOverlay.classList.remove('active');
     lastOrientation = getOrientation();
     resizePaused = false;
-  }, 800);
+  }, 2000);
 }
 
-
-
+// orientationchange — fires on Redmi, iOS
 window.addEventListener('orientationchange', function(){
   activateBlackout();
 });
