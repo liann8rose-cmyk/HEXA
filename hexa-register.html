@@ -569,36 +569,20 @@ window.addEventListener('pageshow',function(e){
   var r=document.getElementById('resetModal');if(r)r.classList.remove('on');
 });
 
-// ── VIEWPORT — only adjust on actual orientation change, not zoom ──
-(function(){
-  var lastOrient = window.innerWidth > window.innerHeight ? 'L' : 'P';
-  function setVP(){
-    var vp = document.querySelector('meta[name=viewport]');
-    if(!vp) return;
-    var isLand = window.innerWidth > window.innerHeight;
-    var isMobileLand = isLand && Math.min(window.innerWidth,window.innerHeight) <= 500;
-    if(isMobileLand){
-      var scale = (window.innerHeight / 600).toFixed(2);
-      vp.content = 'width=device-width,initial-scale='+scale+',minimum-scale=0.3,maximum-scale=3.0,user-scalable=yes,viewport-fit=cover';
-    } else {
-      vp.content = 'width=device-width,initial-scale=1.0,minimum-scale=0.3,maximum-scale=3.0,user-scalable=yes,viewport-fit=cover';
-    }
-    lastOrient = isLand ? 'L' : 'P';
-  }
-  setVP();
-  function onOrient(){ setTimeout(setVP, 300); }
-  window.addEventListener('orientationchange', onOrient);
-  if(window.screen && window.screen.orientation) window.screen.orientation.addEventListener('change', onOrient);
-  window.addEventListener('resize', function(){
-    var o = window.innerWidth > window.innerHeight ? 'L' : 'P';
-    if(o !== lastOrient) setVP();
-  });
-})();
 
 // ── COLORS ──
 const COLORS = ['#00f0ff','#ff00ff','#7700ff','#0044ff','#00ffaa','#ff4466','#ffcc00'];
 
 // ── CANVAS SETUP ──
+let rotating = false;
+let lastOrientation = window.innerWidth > window.innerHeight ? "L" : "P";
+
+function getOrientation(){
+  if(window.innerWidth !== window.innerHeight) return window.innerWidth > window.innerHeight ? "L" : "P";
+  if(window.screen&&window.screen.orientation&&window.screen.orientation.type) return window.screen.orientation.type.includes("landscape") ? "L" : "P";
+  return "P";
+}
+
 const bgCanvas = document.getElementById('hexCanvas');
 const bgCtx = bgCanvas.getContext('2d');
 let BW, BH, bgHexs = [];
@@ -665,7 +649,6 @@ let rafId = null;
 let showRipples = true;
 
 function bgAnimate(){
-  if(rotationFired) return;
   bgCtx.clearRect(0,0,BW,BH);
       const grad=bgCtx.createRadialGradient(BW/2,BH/2,0,BW/2,BH/2,Math.max(BW,BH)*0.7);
       grad.addColorStop(0,'rgba(0,12,35,1)'); grad.addColorStop(0.5,'rgba(0,5,18,1)'); grad.addColorStop(1,'rgba(0,3,10,1)');
@@ -709,7 +692,6 @@ function bgAnimate(){
 // ── ROTATION HANDLER ── instant blackout → stop all → reload ──
 let animationStopped = false;
 let lastOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
-let rotationFired = false;
 
 function stopAllAnimations(){
   if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
@@ -718,65 +700,40 @@ function stopAllAnimations(){
   showRipples = false;
 }
 
-function triggerRotationReload(){
-  if(rotationFired) return;
-  rotationFired = true;
-  sessionStorage.setItem('hexa_reloading', '1');
+function handleRotation(){
+  if(rotating) return;
+  rotating = true;
 
-  // 1. Instant full blackout — CSS fires synchronously
-  document.body.classList.add('blackout');
-  document.documentElement.style.opacity = '0';
+  // Stop canvas instantly
+  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+  if(logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; }
 
-  // 2. Center content so no left-aligned ghost frame shows mid-rotation
-  const col = document.querySelector('.center-col');
-  if(col){
-    col.style.transition = 'none';
-    col.style.position = 'fixed';
-    col.style.top = '50%';
-    col.style.left = '50%';
-    col.style.transform = 'translate(-50%, -50%)';
-  }
-
-  // 3. Stop all animation frames immediately
-  stopAllAnimations();
-
-  // 4. Clear canvases to solid black — no stale frame leaks through
-  if(typeof bgCtx !== 'undefined' && bgCtx && typeof BW !== 'undefined'){
-    bgCtx.fillStyle = '#000';
-    bgCtx.fillRect(0, 0, BW, BH);
-  }
-  if(typeof lctx !== 'undefined' && lctx){ lctx.clearRect(0,0,100,100); }
-
-  // 5. Paint entire viewport black, then reload — no white flash
-  requestAnimationFrame(function(){
-    // Fill body with a solid black overlay so browser has nothing white to show
-    const blk = document.createElement('div');
-    blk.style.cssText = 'position:fixed;inset:0;background:#000;z-index:999999;';
-    document.body.appendChild(blk);
-    requestAnimationFrame(function(){ location.reload(); });
-  });
+  // 100ms — recalculate everything
+  setTimeout(function(){
+    BW = bgCanvas.width = window.innerWidth;
+    BH = bgCanvas.height = window.innerHeight;
+    buildBg();
+    fitLandscapeForm();
+    // Restart both together
+    rafId = requestAnimationFrame(bgAnimate);
+    logoRafId = requestAnimationFrame(logoAnimate);
+    lastOrientation = getOrientation();
+    rotating = false;
+  }, 100);
 }
 
-// orientationchange for phones
-let hasOrientationChange = false;
-window.addEventListener('orientationchange', function(){
-  hasOrientationChange = true;
-  triggerRotationReload();
+// Single clean orientation listener
+window.addEventListener('orientationchange', function(){ handleRotation(); });
+if(window.screen && window.screen.orientation)
+  window.screen.orientation.addEventListener('change', function(){ handleRotation(); });
+window.addEventListener('resize', function(){
+  if(rotating) return;
+  if(getOrientation() !== lastOrientation) handleRotation();
+  requestAnimationFrame(function(){
+    if(!rotating && getOrientation() !== lastOrientation) handleRotation();
+  });
 });
 
-// resize fallback for tablets — skipped if orientationchange already fired
-let resizeDebounce = null;
-window.addEventListener('resize', function(){
-  if(hasOrientationChange) return;
-  clearTimeout(resizeDebounce);
-  resizeDebounce = setTimeout(function(){
-    const current = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
-    if(current !== lastOrientation){
-      lastOrientation = current;
-      triggerRotationReload();
-    }
-  }, 300);
-});
 
 
 
@@ -811,7 +768,6 @@ function drawSmallHex(ctx,x,y,r,color,alpha){
 
 let logoRafId = null;
 function logoAnimate(){
-  if(rotationFired) return;
   lctx.clearRect(0,0,100,100);
   const g=lctx.createRadialGradient(lcx,lcy,10,lcx,lcy,45);
   g.addColorStop(0,'rgba(0,240,255,0.06)'); g.addColorStop(1,'rgba(0,0,0,0)');
@@ -1048,105 +1004,6 @@ window.addEventListener('popstate', function(){
   window.location.replace('index.html');
 });
 
-// ── VIEWPORT: locked everywhere, zoom handled via CSS transform ──
-let currentScale = 1.0;
-let fitScale = 1.0;
-let minScale = 1.0;
-let maxScale = 1.0;
-
-function fitLandscapeForm(){
-  const col = document.querySelector('.center-col');
-  if(!col) return;
-  col.style.transform = 'scale(1)';
-  const naturalH = col.scrollHeight;
-  const naturalW = col.scrollWidth;
-  const availableH = window.innerHeight - 40;
-  const availableW = window.innerWidth - 40;
-  fitScale = Math.min(1.0, availableH / naturalH);
-  minScale = fitScale;
-  maxScale = Math.min(3.0, availableW / naturalW);
-  maxScale = Math.max(maxScale, minScale);
-  currentScale = fitScale;
-  col.style.transform = 'scale(' + fitScale + ')';
-  col.style.transformOrigin = 'center top';
-  const page = document.querySelector('.page');
-  if(page) page.scrollTop = 0;
-}
-
-(function(){
-  const vp = document.getElementById('vpmeta');
-  let lastPinchDist = null;
-  let lastTouchY = null;
-
-
-  function applyScale(s){
-    const newS = Math.min(maxScale, Math.max(minScale, s));
-    currentScale = newS;
-    const col = getCol();
-    if(col){
-      col.style.transform = 'scale(' + newS + ')';
-      col.style.transformOrigin = 'center top';
-    }
-    // If back to minimum, reset scroll so form is locked in place
-    if(newS <= fitScale + 0.01){
-      const page = document.querySelector('.page');
-      const spacer = document.getElementById('scrollSpacer');
-      if(page){ page.scrollTop = 0; page.style.paddingBottom = '20px'; }
-      if(spacer) spacer.style.height = '20px';
-    }
-  }
-
-  function updateViewport(){
-    if(rotationFired) return;
-    vp.setAttribute('content','width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
-    fitLandscapeForm();
-  }
-  updateViewport();
-  window.addEventListener('resize', updateViewport);
-
-  function getCol(){ return document.querySelector('.center-col'); }
-
-  function pinchDist(e){
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-    return Math.sqrt(dx*dx + dy*dy);
-  }
-
-  document.addEventListener('touchstart', function(e){
-    if(e.touches.length === 2) lastPinchDist = pinchDist(e);
-    if(e.touches.length === 1) lastTouchY = e.touches[0].clientY;
-  }, { passive: true });
-
-  document.addEventListener('touchmove', function(e){
-    e.preventDefault();
-    if(e.touches.length === 2 && lastPinchDist !== null){
-      const newDist = pinchDist(e);
-      applyScale(currentScale * (newDist / lastPinchDist));
-      lastPinchDist = newDist;
-    } else if(e.touches.length === 1 && lastTouchY !== null){
-      const dy = lastTouchY - e.touches[0].clientY;
-      lastTouchY = e.touches[0].clientY;
-      if(currentScale > fitScale + 0.01){
-        const page = document.querySelector('.page');
-        const col = document.querySelector('.center-col');
-        const spacer = document.getElementById('scrollSpacer');
-        if(page && col && spacer){
-          // Set spacer height so there's always 20px below the scaled form
-          const scaledH = col.scrollHeight * currentScale;
-          const spaceNeeded = Math.max(20, window.innerHeight - 20 - scaledH + (page.scrollTop || 0));
-          spacer.style.height = Math.max(20, spaceNeeded) + 'px';
-          const maxScroll = page.scrollHeight - window.innerHeight;
-          page.scrollTop = Math.min(Math.max(0, page.scrollTop + dy), Math.max(0, maxScroll));
-        }
-      }
-    }
-  }, { passive: false });
-
-  document.addEventListener('touchend', function(e){
-    if(e.touches.length < 2) lastPinchDist = null;
-    if(e.touches.length === 0) lastTouchY = null;
-  }, { passive: true });
-})();
 
 </script>
 </body>
