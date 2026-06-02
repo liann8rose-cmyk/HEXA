@@ -33,14 +33,6 @@
     transition: none !important;
   }
 
-  /* ── Synchronous kill — body gets this class before first rAF fires ── */
-  body.rotation-start > *:not(#__fire_cover) {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transition: none !important;
-    pointer-events: none !important;
-  }
-
   html {
     background: #000;
   }
@@ -714,11 +706,10 @@ function bgAnimate(){
   rafId = requestAnimationFrame(bgAnimate);
 }
 
-// ── ROTATION HANDLER ── fire burst → blackout → reload ──
+// ── ROTATION HANDLER ── instant blackout → stop all → reload ──
 let animationStopped = false;
 let lastOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
 let rotationFired = false;
-let resizePaused = false;   // true while orientation change is in progress
 
 function stopAllAnimations(){
   if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
@@ -727,161 +718,58 @@ function stopAllAnimations(){
   showRipples = false;
 }
 
-// ── FIRE BURST from screen center ──
-function spawnFireBurst(onDone){
-  const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:9999998;pointer-events:none;';
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  document.body.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
-
-  const PARTICLE_COUNT = 72;
-  const particles = [];
-  for(let i = 0; i < PARTICLE_COUNT; i++){
-    const angle = (i / PARTICLE_COUNT) * Math.PI * 2;
-    const speed = 4 + Math.random() * 14;
-    const size  = 3 + Math.random() * 7;
-    // colour: hot white core → orange → red → deep magenta
-    const colours = ['#ffffff','#fff7aa','#ffdd00','#ff8800','#ff4400','#ff0044','#cc00cc','#00f0ff'];
-    particles.push({
-      x: cx, y: cy,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      size,
-      colour: colours[Math.floor(Math.random() * colours.length)],
-      life: 1.0,
-      decay: 0.028 + Math.random() * 0.032,
-      trail: []
-    });
-  }
-  // Extra tight cluster for the "explosion core"
-  for(let i = 0; i < 20; i++){
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 1 + Math.random() * 6;
-    particles.push({
-      x: cx, y: cy,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 2,
-      size: 6 + Math.random() * 10,
-      colour: '#ffffff',
-      life: 1.0,
-      decay: 0.045 + Math.random() * 0.03,
-      trail: []
-    });
-  }
-
-  let frame = 0;
-  const DURATION = 28; // frames until we call onDone (~0.47s @60fps)
-
-  function render(){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // radial glow at center
-    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 120);
-    glow.addColorStop(0, 'rgba(255,200,50,0.35)');
-    glow.addColorStop(0.4, 'rgba(255,80,0,0.15)');
-    glow.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    particles.forEach(p => {
-      if(p.life <= 0) return;
-      p.trail.push({x: p.x, y: p.y, life: p.life});
-      if(p.trail.length > 6) p.trail.shift();
-
-      // draw trail
-      p.trail.forEach((pt, i) => {
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, p.size * (i / p.trail.length) * 0.6, 0, Math.PI * 2);
-        ctx.fillStyle = p.colour;
-        ctx.globalAlpha = pt.life * (i / p.trail.length) * 0.4;
-        ctx.fill();
-      });
-      ctx.globalAlpha = 1;
-
-      // draw head with bloom
-      ctx.shadowColor = p.colour;
-      ctx.shadowBlur = 14;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-      ctx.fillStyle = p.colour;
-      ctx.globalAlpha = p.life;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.globalAlpha = 1;
-
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.18; // gravity
-      p.vx *= 0.97;
-      p.vy *= 0.97;
-      p.life -= p.decay;
-    });
-
-    frame++;
-    if(frame < DURATION){
-      requestAnimationFrame(render);
-    } else {
-      canvas.remove();
-      onDone();
-    }
-  }
-  requestAnimationFrame(render);
-}
-
 function triggerRotationReload(){
   if(rotationFired) return;
   rotationFired = true;
-  resizePaused = true;
   sessionStorage.setItem('hexa_reloading', '1');
 
-  // ── STEP 1: synchronous black cover + CSS class — before ANY paint ──
-  // body.rotation-start hides all children via CSS (faster than JS opacity loop).
-  // The cover div (id=__fire_cover) is excluded from that rule so it stays visible.
-  document.body.classList.add('rotation-start');
-  const cover = document.createElement('div');
-  cover.id = '__fire_cover';
-  cover.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999997;pointer-events:none;';
-  document.body.appendChild(cover);
+  // 1. Instant full blackout — CSS fires synchronously
+  document.body.classList.add('blackout');
+  document.documentElement.style.opacity = '0';
 
-  // ── STEP 2: kill all JS animation loops synchronously ──
+  // 2. Center content so no left-aligned ghost frame shows mid-rotation
+  const col = document.querySelector('.center-col');
+  if(col){
+    col.style.transition = 'none';
+    col.style.position = 'fixed';
+    col.style.top = '50%';
+    col.style.left = '50%';
+    col.style.transform = 'translate(-50%, -50%)';
+  }
+
+  // 3. Stop all animation frames immediately
   stopAllAnimations();
+
+  // 4. Clear canvases to solid black — no stale frame leaks through
   if(typeof bgCtx !== 'undefined' && bgCtx && typeof BW !== 'undefined'){
     bgCtx.fillStyle = '#000';
     bgCtx.fillRect(0, 0, BW, BH);
   }
-  if(typeof lctx !== 'undefined' && lctx){ lctx.clearRect(0, 0, 100, 100); }
+  if(typeof lctx !== 'undefined' && lctx){ lctx.clearRect(0,0,100,100); }
 
-  // ── STEP 3: one rAF so cover is committed to screen, then fire on top ──
+  // 5. Paint entire viewport black, then reload — no white flash
   requestAnimationFrame(function(){
-    spawnFireBurst(function(){
-      document.body.classList.add('blackout');
-      document.documentElement.style.opacity = '0';
-      const blk = document.createElement('div');
-      blk.style.cssText = 'position:fixed;inset:0;background:#000;z-index:999999;';
-      document.body.appendChild(blk);
-      requestAnimationFrame(function(){ location.reload(); });
-    });
+    // Fill body with a solid black overlay so browser has nothing white to show
+    const blk = document.createElement('div');
+    blk.style.cssText = 'position:fixed;inset:0;background:#000;z-index:999999;';
+    document.body.appendChild(blk);
+    requestAnimationFrame(function(){ location.reload(); });
   });
 }
 
-// ── orientationchange: fires on phone rotation — pause resize, trigger immediately ──
+// orientationchange for phones
 let hasOrientationChange = false;
 window.addEventListener('orientationchange', function(){
   hasOrientationChange = true;
-  resizePaused = true;   // stop resize handler the instant rotation starts
   triggerRotationReload();
 });
 
-// ── resize: tablet fallback — completely stopped while orientation change is happening ──
+// resize fallback for tablets — skipped if orientationchange already fired
 let resizeDebounce = null;
 window.addEventListener('resize', function(){
-  if(hasOrientationChange || resizePaused) return;   // hard stop during rotation
+  if(hasOrientationChange) return;
   clearTimeout(resizeDebounce);
   resizeDebounce = setTimeout(function(){
-    if(resizePaused) return;   // double-check after debounce
     const current = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
     if(current !== lastOrientation){
       lastOrientation = current;
@@ -1209,7 +1097,7 @@ function fitLandscapeForm(){
   }
 
   function updateViewport(){
-    if(rotationFired || resizePaused) return;
+    if(rotationFired) return;
     vp.setAttribute('content','width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
     fitLandscapeForm();
   }
