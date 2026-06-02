@@ -28,6 +28,18 @@
     scroll-behavior: auto;
   }
 
+  /* ── ROTATION FLASH FIX — hide briefly on orientation change ── */
+  @keyframes orientHide {
+    0%, 80% { opacity: 0; }
+    100%     { opacity: 1; }
+  }
+  @media screen and (orientation: landscape) {
+    body { animation: orientHide 0.35s ease forwards; }
+  }
+  @media screen and (orientation: portrait) {
+    body { animation: orientHide 0.35s ease forwards; }
+  }
+
 
 
 
