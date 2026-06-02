@@ -783,7 +783,7 @@ function deactivateBlackout(){
     blackoutOverlay.style.pointerEvents = 'none';
     blackoutOverlay.classList.remove('active');
     // Only now restore visibility — rotation fully settled
-    document.documentElement.style.removeProperty('opacity');
+    document.documentElement.style.setProperty('opacity', '1', 'important');
     lastOrientation = getOrientation();
     resizePaused = false;
   }, 2000);
@@ -830,7 +830,7 @@ window.addEventListener('resize', function(){
 window.addEventListener('load', function(){
   bgResize();
   rafId = requestAnimationFrame(bgAnimate);
-  document.documentElement.style.opacity = '1';
+  document.documentElement.style.setProperty('opacity', '1', 'important');
   setTimeout(function(){ fitLandscapeForm(); }, 100);
 });
 
