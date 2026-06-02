@@ -390,6 +390,67 @@
     .modal-overlay { padding: 8px; }
     .modal-box { max-width: 480px; }
   }
+
+  /* ── ROTATION ANIMATIONS — each element rotates independently, same duration ── */
+  
+  /* The hex canvas rotates from behind */
+  #hexCanvas {
+    transform-origin: center center;
+    transition: none;
+  }
+  #hexCanvas.rotating-out {
+    animation: canvasRotateOut 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+  #hexCanvas.rotating-in {
+    animation: canvasRotateIn 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+
+  /* The form/center-col rotates in from the side */
+  .center-col {
+    transition: none;
+  }
+  .center-col.rotating-out {
+    animation: formRotateOut 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+  .center-col.rotating-in {
+    animation: formRotateIn 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+
+  /* Logo spins */
+  #logoCanvas {
+    transition: none;
+  }
+  #logoCanvas.rotating-out {
+    animation: logoSpin 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+  #logoCanvas.rotating-in {
+    animation: logoSpinIn 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+
+  @keyframes canvasRotateOut {
+    0%   { opacity: 1; transform: scale(1) rotate(0deg); }
+    100% { opacity: 0; transform: scale(0.85) rotate(90deg); }
+  }
+  @keyframes canvasRotateIn {
+    0%   { opacity: 0; transform: scale(0.85) rotate(-90deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+  @keyframes formRotateOut {
+    0%   { opacity: 1; transform: scale(var(--fit-scale,1)) rotateY(0deg); }
+    100% { opacity: 0; transform: scale(var(--fit-scale,1)) rotateY(90deg); }
+  }
+  @keyframes formRotateIn {
+    0%   { opacity: 0; transform: scale(var(--fit-scale,1)) rotateY(-90deg); }
+    100% { opacity: 1; transform: scale(var(--fit-scale,1)) rotateY(0deg); }
+  }
+  @keyframes logoSpin {
+    0%   { opacity: 1; transform: rotate(0deg) scale(1); }
+    100% { opacity: 0; transform: rotate(180deg) scale(0.5); }
+  }
+  @keyframes logoSpinIn {
+    0%   { opacity: 0; transform: rotate(-180deg) scale(0.5); }
+    100% { opacity: 1; transform: rotate(0deg) scale(1); }
+  }
 </style>
 </head>
 
@@ -717,37 +778,49 @@ function getOrientation(){
 
 // Black cover reflow — cover goes on, reflow happens, cover comes off
 function blackCoverReflow(callback){
-  const cover = document.createElement('div');
-  cover.style.cssText = 'position:fixed;inset:0;background:#000;z-index:2147483647;pointer-events:all;';
-  document.body.appendChild(cover);
-  // getBoundingClientRect forces a synchronous layout+paint flush
-  // so cover is guaranteed painted before we continue
-  cover.getBoundingClientRect();
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      // Reflow under cover
-      BW = bgCanvas.width  = window.innerWidth;
-      BH = bgCanvas.height = window.innerHeight;
-      buildBg();
-      fitLandscapeForm();
-      if(!rafId) rafId = requestAnimationFrame(bgAnimate);
-      if(typeof logoRafId!=='undefined'&&!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
-      if(callback) callback();
-      // Wait for canvas to fully paint before removing cover
-      // Each rAF = one frame @ 60fps. We wait 6 frames (~100ms) to be safe.
-      let frames = 0;
-      function waitFrames(){
-        frames++;
-        if(frames < 6) requestAnimationFrame(waitFrames);
-        else {
-          cover.remove();
-          lastOrientation = getOrientation();
-          rotating = false;
-        }
-      }
-      requestAnimationFrame(waitFrames);
-    });
-  });
+  const hexCanvas = document.getElementById('hexCanvas');
+  const col = document.querySelector('.center-col');
+  const logo = document.getElementById('logoCanvas');
+  const DUR = 350; // ms — must match CSS animation duration
+
+  // Phase 1: animate OUT (all three simultaneously)
+  if(hexCanvas) hexCanvas.classList.add('rotating-out');
+  if(logo) logo.classList.add('rotating-out');
+  if(col){
+    // Pass current fitScale as CSS variable so formRotateOut uses it
+    col.style.setProperty('--fit-scale', (typeof fitScale!=='undefined'?fitScale:1));
+    col.classList.add('rotating-out');
+  }
+
+  setTimeout(function(){
+    // Phase 2: reflow while everything is invisible
+    BW = bgCanvas.width  = window.innerWidth;
+    BH = bgCanvas.height = window.innerHeight;
+    buildBg();
+    fitLandscapeForm();
+    if(!rafId) rafId = requestAnimationFrame(bgAnimate);
+    if(typeof logoRafId!=='undefined'&&!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
+    if(callback) callback();
+
+    // Reset classes, apply new scale, then animate IN
+    if(hexCanvas){ hexCanvas.classList.remove('rotating-out'); hexCanvas.classList.add('rotating-in'); }
+    if(logo){ logo.classList.remove('rotating-out'); logo.classList.add('rotating-in'); }
+    if(col){
+      col.style.setProperty('--fit-scale', (typeof fitScale!=='undefined'?fitScale:1));
+      col.classList.remove('rotating-out');
+      col.classList.add('rotating-in');
+    }
+
+    // Phase 3: cleanup after animate-in completes
+    setTimeout(function(){
+      if(hexCanvas) hexCanvas.classList.remove('rotating-in');
+      if(logo) logo.classList.remove('rotating-in');
+      if(col) col.classList.remove('rotating-in');
+      lastOrientation = getOrientation();
+      rotating = false;
+    }, DUR);
+
+  }, DUR);
 }
 
 function doRotation(){
