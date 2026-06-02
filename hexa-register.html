@@ -758,7 +758,8 @@ function activateBlackout(){
   blackoutOverlay.style.opacity = '1';
   blackoutOverlay.style.pointerEvents = 'auto';
   blackoutOverlay.classList.add('active');
-  // Keep canvas animating — Samsung One UI kills content if we stop it
+  // Paint canvas black but keep it running — Samsung One UI needs it alive
+  if(bgCtx && typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.globalAlpha=1; bgCtx.fillRect(0,0,BW,BH); }
 }
 
 function deactivateBlackout(){
