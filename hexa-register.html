@@ -404,29 +404,27 @@
     .modal-box { max-width: 480px; }
   }
 
-  /* ── BLACKOUT OVERLAY — instant ON, smooth fade OFF ── */
-  #blackout-overlay {
+  /* ── ROTATION FLASH PREVENTION ──
+     The browser evaluates @media queries synchronously before paint.
+     We use a permanent black overlay div that is ALWAYS visible via CSS
+     and only hidden when JS confirms the page is ready.
+     This means on first paint after rotation = black. Always. ── */
+  #rot-shield {
     position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
+    inset: 0;
     background: #000;
-    z-index: 99999;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease; /* only used when removing .active */
+    z-index: 2147483647; /* max z-index */
+    display: block;
   }
-  #blackout-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-    transition: none; /* INSTANT on — no transition when activating */
+  #rot-shield.ready {
+    display: none;
   }
 </style>
 </head>
 
 
 <body style="background:#000;">
-<canvas id="blackRotateCanvas" style="position:fixed;inset:0;width:100%;height:100%;z-index:99999;background:#000;display:block;transform:translateZ(0);will-change:transform;visibility:hidden;"></canvas>
-<div id="blackout-overlay"></div>
+<div id="rot-shield"></div>
 
 <canvas id="hexCanvas"></canvas>
 <div id="hexVignette"></div>
@@ -733,71 +731,24 @@ function bgAnimate(){
   rafId = requestAnimationFrame(bgAnimate);
 }
 
-// ── ROTATION HANDLER — Black Canvas Trick ──
-// A solid black canvas sits permanently behind everything at z-index:0.
-// On rotation: all animations stop instantly, everything hides, black canvas
-// comes to the front (z-index:99999) — browser rotates a pure black screen.
-// After 1s (position stable): canvas goes back behind, everything restarts.
+// ── ROTATION HANDLER — CSS shield approach ──
+// #rot-shield covers EVERYTHING at max z-index from the moment the page loads.
+// JS removes .ready class to show it, adds .ready to hide it.
+// On reload after rotation: shield is visible until JS confirms page is painted.
 
-const blackCanvas = document.getElementById('blackRotateCanvas');
+const rotShield = document.getElementById('rot-shield');
 let rotationFired = false;
 let resizePaused = false;
-let rotationRestartTimer = null;
 let lastOrientation = window.innerWidth > window.innerHeight ? 'L' : 'P';
 
-// Size the black canvas to always fill screen
-function sizeBlackCanvas(){
-  blackCanvas.width = window.innerWidth;
-  blackCanvas.height = window.innerHeight;
-  const bctx = blackCanvas.getContext('2d');
-  bctx.fillStyle = '#000';
-  bctx.fillRect(0, 0, blackCanvas.width, blackCanvas.height);
-  // Keep GPU layer warm — touch transform to ensure layer is promoted
-  blackCanvas.style.transform = 'translateZ(0)';
-}
-sizeBlackCanvas();
-
-function activateBlackCanvas(){
-  if(resizePaused) return;
-  resizePaused = true;
-
-  // STEP 1: visibility:visible on a GPU-promoted layer (translateZ(0))
-  // visibility is resolved before the compositor reads the layer — no paint cycle
-  blackCanvas.style.visibility = 'visible';
-
-  // STEP 2: stop ALL animations immediately
-  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
-  if(typeof logoRafId !== 'undefined' && logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; }
-  if(bgCtx && typeof BW !== 'undefined'){ bgCtx.fillStyle='#000'; bgCtx.fillRect(0,0,BW,BH); }
-  if(typeof lctx !== 'undefined' && lctx) lctx.clearRect(0,0,100,100);
-
-  // STEP 4: after 1 second, position is stable — restart everything
-  clearTimeout(rotationRestartTimer);
-  rotationRestartTimer = setTimeout(function(){
-    // Resize hex canvas + refit layout for new orientation
-    BW = bgCanvas.width = window.innerWidth;
-    BH = bgCanvas.height = window.innerHeight;
-    sizeBlackCanvas();
-    buildBg();
-    fitLandscapeForm();
-
-    // Restart animations — both start on same rAF tick
+// Hide shield once page is fully painted on load/reload
+function pageReady(){
+  // Wait for 2 rAFs — ensures canvas has drawn first frame
+  requestAnimationFrame(function(){
     requestAnimationFrame(function(){
-      if(!rafId) rafId = requestAnimationFrame(bgAnimate);
-      if(!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
-
-      // Hide black canvas only after 3 rAFs — ensures new frame fully painted
-      requestAnimationFrame(function(){
-        requestAnimationFrame(function(){
-          requestAnimationFrame(function(){
-            blackCanvas.style.visibility = 'hidden';
-          });
-        });
-      });
-      lastOrientation = window.innerWidth > window.innerHeight ? 'L' : 'P';
-      resizePaused = false;
+      rotShield.classList.add('ready');
     });
-  }, 1000);
+  });
 }
 
 function getOrientation(){
@@ -810,34 +761,65 @@ function getOrientation(){
   return 'P';
 }
 
-// All three APIs — first one fires wins, rest are blocked by resizePaused
+function triggerRotationReload(){
+  if(rotationFired) return;
+  rotationFired = true;
+  resizePaused = true;
+  sessionStorage.setItem('hexa_reloading','1');
+
+  // Shield is already covering everything (display:block by default)
+  // Just make sure it's showing
+  rotShield.classList.remove('ready');
+
+  // Stop all animations
+  if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+  if(typeof logoRafId!=='undefined'&&logoRafId){ cancelAnimationFrame(logoRafId); logoRafId=null; }
+  if(bgCtx&&typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.fillRect(0,0,BW,BH); }
+  if(typeof lctx!=='undefined'&&lctx) lctx.clearRect(0,0,100,100);
+
+  // Reload — shield stays black the whole time
+  requestAnimationFrame(function(){
+    location.reload();
+  });
+}
+
+function onOrientationFlip(){
+  if(rotationFired||resizePaused) return;
+  const current = getOrientation();
+  if(current !== lastOrientation){
+    resizePaused = true;
+    lastOrientation = current;
+    triggerRotationReload();
+  }
+}
+
 window.addEventListener('orientationchange', function(){
-  activateBlackCanvas();
+  resizePaused = true;
+  triggerRotationReload();
 });
 
 if(window.screen && window.screen.orientation){
   window.screen.orientation.addEventListener('change', function(){
-    activateBlackCanvas();
+    resizePaused = true;
+    triggerRotationReload();
   });
 }
 
 window.addEventListener('resize', function(){
-  if(resizePaused) return;
-  const current = getOrientation();
-  if(current !== lastOrientation) activateBlackCanvas();
-  // Samsung A14: check next frame too
+  if(rotationFired||resizePaused) return;
+  onOrientationFlip();
   requestAnimationFrame(function(){
-    if(resizePaused) return;
-    if(getOrientation() !== lastOrientation) activateBlackCanvas();
+    if(rotationFired||resizePaused) return;
+    onOrientationFlip();
   });
 });
 
-window.addEventListener('load', function(){
+window.addEventListener('load', function(){window.addEventListener('load', function(){
   bgResize();
   rafId = requestAnimationFrame(bgAnimate);
-
-
   setTimeout(function(){ fitLandscapeForm(); }, 100);
+  // Remove shield after canvas draws first frame
+  pageReady();
 });
 
 // ── LOGO CANVAS ──
