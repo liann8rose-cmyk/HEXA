@@ -406,31 +406,31 @@
 
   /* ── ROTATION ANIMATIONS ── */
   .center-col.rot-out {
-    animation: formOut 0.3s ease forwards;
+    animation: fadeOut 0.3s ease forwards;
   }
   .center-col.rot-in {
-    animation: formIn 0.3s ease forwards;
+    animation: fadeIn 0.3s ease forwards;
   }
   #logoCanvas.rot-out {
-    animation: logoOut 0.3s ease forwards;
+    animation: logoSpin 0.3s ease forwards;
   }
   #logoCanvas.rot-in {
-    animation: logoIn 0.3s ease forwards;
+    animation: logoSpinIn 0.3s ease forwards;
   }
-  @keyframes formOut {
-    from { opacity:1; transform: scale(var(--fs,1)) rotateY(0deg); }
-    to   { opacity:0; transform: scale(var(--fs,1)) rotateY(90deg); }
+  @keyframes fadeOut {
+    from { opacity:1; }
+    to   { opacity:0; }
   }
-  @keyframes formIn {
-    from { opacity:0; transform: scale(var(--fs,1)) rotateY(-90deg); }
-    to   { opacity:1; transform: scale(var(--fs,1)) rotateY(0deg); }
+  @keyframes fadeIn {
+    from { opacity:0; }
+    to   { opacity:1; }
   }
-  @keyframes logoOut {
+  @keyframes logoSpin {
     from { opacity:1; transform: rotate(0deg) scale(1); }
-    to   { opacity:0; transform: rotate(180deg) scale(0.4); }
+    to   { opacity:0; transform: rotate(180deg) scale(0); }
   }
-  @keyframes logoIn {
-    from { opacity:0; transform: rotate(-180deg) scale(0.4); }
+  @keyframes logoSpinIn {
+    from { opacity:0; transform: rotate(-180deg) scale(0); }
     to   { opacity:1; transform: rotate(0deg) scale(1); }
   }
 </style>
