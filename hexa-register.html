@@ -782,8 +782,12 @@ function deactivateBlackout(){
     blackoutOverlay.style.opacity = '0';
     blackoutOverlay.style.pointerEvents = 'none';
     blackoutOverlay.classList.remove('active');
-    // Only now restore visibility — rotation fully settled
-    document.documentElement.style.setProperty('opacity', '1', 'important');
+    // Wait for browser to paint the new layout first, then reveal
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        document.documentElement.style.setProperty('opacity', '1', 'important');
+      });
+    });
     lastOrientation = getOrientation();
     resizePaused = false;
   }, 2000);
