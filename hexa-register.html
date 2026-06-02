@@ -767,7 +767,6 @@ function activateBlackout(){
 
 function deactivateBlackout(){
   clearTimeout(overlayTimer);
-  // Wait 2s for browser to fully confirm new orientation, then snap new layout in
   overlayTimer = setTimeout(function(){
     // Resize canvas + refit layout while under the overlay
     BW = bgCanvas.width = window.innerWidth;
@@ -782,15 +781,29 @@ function deactivateBlackout(){
     blackoutOverlay.style.opacity = '0';
     blackoutOverlay.style.pointerEvents = 'none';
     blackoutOverlay.classList.remove('active');
-    // Wait for browser to paint the new layout first, then reveal
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){
-        document.documentElement.style.setProperty('opacity', '1', 'important');
-      });
-    });
     lastOrientation = getOrientation();
     resizePaused = false;
+    // Wait for orientation to be fully confirmed and stable, then reveal
+    waitForOrientationConfirmed(function(){
+      document.documentElement.style.setProperty('opacity', '1', 'important');
+    });
   }, 2000);
+}
+
+function waitForOrientationConfirmed(cb){
+  var expected = getOrientation();
+  var checks = 0;
+  function check(){
+    checks++;
+    if(getOrientation() === expected){
+      // Confirmed stable — reveal
+      cb();
+    } else if(checks < 10){
+      // Still changing — keep waiting
+      setTimeout(check, 100);
+    }
+  }
+  check();
 }
 
 // orientationchange — fires on Redmi, iOS
