@@ -751,7 +751,8 @@ function getOrientation(){
 function activateBlackout(){
   if(resizePaused) return;
   resizePaused = true;
-  document.documentElement.style.opacity = '0';
+  // Lock opacity at 0 — nothing visible at any point during rotation
+  document.documentElement.style.setProperty('opacity', '0', 'important');
   // Force inline style first — overrides any transition Samsung might apply
   blackoutOverlay.style.transition = 'none';
   blackoutOverlay.style.opacity = '1';
@@ -781,7 +782,8 @@ function deactivateBlackout(){
     blackoutOverlay.style.opacity = '0';
     blackoutOverlay.style.pointerEvents = 'none';
     blackoutOverlay.classList.remove('active');
-    document.documentElement.style.opacity = '1';
+    // Only now restore visibility — rotation fully settled
+    document.documentElement.style.removeProperty('opacity');
     lastOrientation = getOrientation();
     resizePaused = false;
   }, 2000);
