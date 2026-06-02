@@ -416,11 +416,11 @@
     to   { transform: rotate(0deg) scale(1);    opacity: 1; }
   }
   body.spin-out {
-    animation: spinOut 0.35s ease forwards;
+    animation: spinOut 0.2s ease forwards;
     transform-origin: center center;
   }
   body.spin-in {
-    animation: spinIn 0.35s ease forwards;
+    animation: spinIn 0.2s ease forwards;
     transform-origin: center center;
   }
 </style>
@@ -767,7 +767,7 @@ function triggerRotationReload(){
   document.body.classList.add('spin-out');
   sessionStorage.setItem('hexa_spin_in','1');
 
-  setTimeout(function(){ location.reload(); }, 360);
+  setTimeout(function(){ location.reload(); }, 210);
 }
 
 // ── ORIENTATION DETECTION — works on Redmi, Samsung, tablets ──
@@ -846,13 +846,13 @@ window.addEventListener('load', function(){
     // Now transition to normal
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
-        document.documentElement.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+        document.documentElement.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
         document.documentElement.style.transform = 'rotate(0deg) scale(1)';
         document.documentElement.style.opacity = '1';
         setTimeout(function(){
           document.documentElement.style.transition = '';
           document.documentElement.style.transform = '';
-        }, 380);
+        }, 220);
       });
     });
   }
