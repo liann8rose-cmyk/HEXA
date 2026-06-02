@@ -404,34 +404,22 @@
     .modal-box { max-width: 480px; }
   }
 
-  /* ── ROTATION ANIMATIONS ── */
-  .center-col.rot-out {
-    animation: fadeOut 0.3s ease forwards;
+  /* ── ROTATION SPIN ── */
+  @keyframes spinOut {
+    from { transform: rotate(0deg) scale(1);   opacity: 1; }
+    to   { transform: rotate(90deg) scale(0.6); opacity: 0; }
   }
-  .center-col.rot-in {
-    animation: fadeIn 0.3s ease forwards;
+  @keyframes spinIn {
+    from { transform: rotate(-90deg) scale(0.6); opacity: 0; }
+    to   { transform: rotate(0deg) scale(1);    opacity: 1; }
   }
-  #logoCanvas.rot-out {
-    animation: logoSpin 0.3s ease forwards;
+  body.spin-out {
+    animation: spinOut 0.35s ease forwards;
+    transform-origin: center center;
   }
-  #logoCanvas.rot-in {
-    animation: logoSpinIn 0.3s ease forwards;
-  }
-  @keyframes fadeOut {
-    from { opacity:1; }
-    to   { opacity:0; }
-  }
-  @keyframes fadeIn {
-    from { opacity:0; }
-    to   { opacity:1; }
-  }
-  @keyframes logoSpin {
-    from { opacity:1; transform: rotate(0deg) scale(1); }
-    to   { opacity:0; transform: rotate(180deg) scale(0); }
-  }
-  @keyframes logoSpinIn {
-    from { opacity:0; transform: rotate(-180deg) scale(0); }
-    to   { opacity:1; transform: rotate(0deg) scale(1); }
+  body.spin-in {
+    animation: spinIn 0.35s ease forwards;
+    transform-origin: center center;
   }
 </style>
 </head>
@@ -607,7 +595,31 @@ window.addEventListener('pageshow',function(e){
   var r=document.getElementById('resetModal');if(r)r.classList.remove('on');
 });
 
-// viewport managed by rotation handler
+// ── VIEWPORT — only adjust on actual orientation change, not zoom ──
+(function(){
+  var lastOrient = window.innerWidth > window.innerHeight ? 'L' : 'P';
+  function setVP(){
+    var vp = document.querySelector('meta[name=viewport]');
+    if(!vp) return;
+    var isLand = window.innerWidth > window.innerHeight;
+    var isMobileLand = isLand && Math.min(window.innerWidth,window.innerHeight) <= 500;
+    if(isMobileLand){
+      var scale = (window.innerHeight / 600).toFixed(2);
+      vp.content = 'width=device-width,initial-scale='+scale+',minimum-scale=0.3,maximum-scale=3.0,user-scalable=yes,viewport-fit=cover';
+    } else {
+      vp.content = 'width=device-width,initial-scale=1.0,minimum-scale=0.3,maximum-scale=3.0,user-scalable=yes,viewport-fit=cover';
+    }
+    lastOrient = isLand ? 'L' : 'P';
+  }
+  setVP();
+  function onOrient(){ setTimeout(setVP, 300); }
+  window.addEventListener('orientationchange', onOrient);
+  if(window.screen && window.screen.orientation) window.screen.orientation.addEventListener('change', onOrient);
+  window.addEventListener('resize', function(){
+    var o = window.innerWidth > window.innerHeight ? 'L' : 'P';
+    if(o !== lastOrient) setVP();
+  });
+})();
 
 // ── COLORS ──
 const COLORS = ['#00f0ff','#ff00ff','#7700ff','#0044ff','#00ffaa','#ff4466','#ffcc00'];
@@ -620,9 +632,6 @@ let BW, BH, bgHexs = [];
 
 
 const ripples = Array.from({length:3},(_,i)=>({ phase:(i/3)*Math.PI*2, speed:0.008+i*0.003 }));
-
-let rotationFired = false;
-let resizePaused = false;
 
 function bgResize(){
   if(rotationFired) return;
@@ -726,7 +735,8 @@ function bgAnimate(){
 // ── ROTATION HANDLER ── fire burst → blackout → reload ──
 let animationStopped = false;
 let lastOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
-// rotationFired declared above
+let rotationFired = false;
+let resizePaused = false;   // true while orientation change is in progress
 
 function stopAllAnimations(){
   if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
@@ -742,32 +752,19 @@ function triggerRotationReload(){
   resizePaused = true;
   sessionStorage.setItem('hexa_reloading', '1');
 
-  // Animate form and logo OUT simultaneously
-  const col = document.querySelector('.center-col');
-  const logo = document.getElementById('logoCanvas');
-  if(col){
-    col.style.setProperty('--fs', typeof fitScale!=='undefined' ? fitScale : 1);
-    col.classList.add('rot-out');
-  }
-  if(logo) logo.classList.add('rot-out');
+  // Spin everything out, then reload
+  document.body.classList.add('spin-out');
 
-  // After animation completes — black cover + stop + reload
   setTimeout(function(){
     stopAllAnimations();
-    if(bgCtx && typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.fillRect(0,0,BW,BH); }
-    if(typeof lctx!=='undefined'&&lctx) lctx.clearRect(0,0,100,100);
-
-    document.body.classList.add('rotation-start');
-    const cover = document.createElement('div');
-    cover.id = '__fire_cover';
-    cover.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999997;pointer-events:none;';
-    document.body.appendChild(cover);
-
-    sessionStorage.setItem('hexa_post_rotation','1');
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){ location.reload(); });
-    });
-  }, 300);
+    if(typeof bgCtx !== 'undefined' && bgCtx && typeof BW !== 'undefined'){
+      bgCtx.fillStyle = '#000';
+      bgCtx.fillRect(0, 0, BW, BH);
+    }
+    if(typeof lctx !== 'undefined' && lctx){ lctx.clearRect(0, 0, 100, 100); }
+    sessionStorage.setItem('hexa_spin_in','1');
+    location.reload();
+  }, 350);
 }
 
 // ── ORIENTATION DETECTION — works on Redmi, Samsung, tablets ──
@@ -831,27 +828,20 @@ window.addEventListener('resize', function(){
 
 
 window.addEventListener('load', function(){
-  setTimeout(function(){
-    fitLandscapeForm();
-    bgResize();
-    rafId = requestAnimationFrame(bgAnimate);
-    if(!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
-    // If this is a post-rotation reload — animate elements back in
-    if(sessionStorage.getItem('hexa_post_rotation')){
-      sessionStorage.removeItem('hexa_post_rotation');
-      const col = document.querySelector('.center-col');
-      const logo = document.getElementById('logoCanvas');
-      if(col){
-        col.style.setProperty('--fs', typeof fitScale!=='undefined' ? fitScale : 1);
-        col.classList.add('rot-in');
-        setTimeout(function(){ col.classList.remove('rot-in'); }, 350);
-      }
-      if(logo){
-        logo.classList.add('rot-in');
-        setTimeout(function(){ logo.classList.remove('rot-in'); }, 350);
-      }
-    }
-  }, 100);
+  bgResize();
+  rafId = requestAnimationFrame(bgAnimate);
+  setTimeout(function(){ fitLandscapeForm(); }, 100);
+  // Spin in after rotation reload
+  if(sessionStorage.getItem('hexa_reloading') === null){
+    // normal load — no spin
+  } else {
+    // already cleared by top script — but set by us means post-rotation
+  }
+  if(sessionStorage.getItem('hexa_spin_in')){
+    sessionStorage.removeItem('hexa_spin_in');
+    document.body.classList.add('spin-in');
+    setTimeout(function(){ document.body.classList.remove('spin-in'); }, 380);
+  }
 });
 
 // ── LOGO CANVAS ──
@@ -1122,20 +1112,6 @@ let maxScale = 1.0;
 function fitLandscapeForm(){
   const col = document.querySelector('.center-col');
   if(!col) return;
-
-  // Set viewport scale for mobile landscape (restores what old IIFE was doing)
-  const vp = document.getElementById('vpmeta');
-  if(vp){
-    const isLand = window.innerWidth > window.innerHeight;
-    const isMobileLand = isLand && Math.min(window.innerWidth, window.innerHeight) <= 500;
-    if(isMobileLand){
-      const scale = (window.innerHeight / 600).toFixed(2);
-      vp.content = 'width=device-width,initial-scale='+scale+',minimum-scale=0.3,maximum-scale=3.0,user-scalable=yes,viewport-fit=cover';
-    } else {
-      vp.content = 'width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover';
-    }
-  }
-
   col.style.transform = 'scale(1)';
   const naturalH = col.scrollHeight;
   const naturalW = col.scrollWidth;
