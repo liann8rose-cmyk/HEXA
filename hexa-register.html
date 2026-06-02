@@ -393,15 +393,16 @@
 
   /* ── ROTATION ANIMATIONS — each element rotates independently, same duration ── */
   
-  /* The hex canvas rotates from behind */
+  /* Canvas itself never gets animation classes — use vignette overlay instead */
   #hexCanvas {
     transform-origin: center center;
     transition: none;
   }
-  #hexCanvas.rotating-out {
+  /* Animate the vignette overlay on top of canvas instead */
+  #hexVignette.rotating-out {
     animation: canvasRotateOut 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
   }
-  #hexCanvas.rotating-in {
+  #hexVignette.rotating-in {
     animation: canvasRotateIn 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
   }
 
@@ -779,12 +780,13 @@ function getOrientation(){
 // Black cover reflow — cover goes on, reflow happens, cover comes off
 function blackCoverReflow(callback){
   const hexCanvas = document.getElementById('hexCanvas');
+  const hexVignette = document.getElementById('hexVignette');
   const col = document.querySelector('.center-col');
   const logo = document.getElementById('logoCanvas');
   const DUR = 350; // ms — must match CSS animation duration
 
   // Phase 1: animate OUT (all three simultaneously)
-  if(hexCanvas) hexCanvas.classList.add('rotating-out');
+  if(hexVignette) hexVignette.classList.add('rotating-out');
   if(logo) logo.classList.add('rotating-out');
   if(col){
     // Pass current fitScale as CSS variable so formRotateOut uses it
@@ -803,7 +805,7 @@ function blackCoverReflow(callback){
     if(callback) callback();
 
     // Reset classes, apply new scale, then animate IN
-    if(hexCanvas){ hexCanvas.classList.remove('rotating-out'); hexCanvas.classList.add('rotating-in'); }
+    if(hexVignette){ hexVignette.classList.remove('rotating-out'); hexVignette.classList.add('rotating-in'); }
     if(logo){ logo.classList.remove('rotating-out'); logo.classList.add('rotating-in'); }
     if(col){
       col.style.setProperty('--fit-scale', (typeof fitScale!=='undefined'?fitScale:1));
@@ -813,7 +815,7 @@ function blackCoverReflow(callback){
 
     // Phase 3: cleanup after animate-in completes
     setTimeout(function(){
-      if(hexCanvas) hexCanvas.classList.remove('rotating-in');
+      if(hexVignette) hexVignette.classList.remove('rotating-in');
       if(logo) logo.classList.remove('rotating-in');
       if(col) col.classList.remove('rotating-in');
       lastOrientation = getOrientation();
