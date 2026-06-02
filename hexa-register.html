@@ -751,14 +751,10 @@ function getOrientation(){
 function activateBlackout(){
   if(resizePaused) return;
   resizePaused = true;
-  // Lock opacity at 0 — nothing visible at any point during rotation
-  document.documentElement.style.setProperty('opacity', '0', 'important');
-  // Force inline style first — overrides any transition Samsung might apply
   blackoutOverlay.style.transition = 'none';
   blackoutOverlay.style.opacity = '1';
   blackoutOverlay.style.pointerEvents = 'auto';
   blackoutOverlay.classList.add('active');
-  // Stop all canvas animation immediately
   if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
   if(typeof logoRafId!=='undefined' && logoRafId){ cancelAnimationFrame(logoRafId); logoRafId=null; }
   if(bgCtx && typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.fillRect(0,0,BW,BH); }
@@ -768,42 +764,19 @@ function activateBlackout(){
 function deactivateBlackout(){
   clearTimeout(overlayTimer);
   overlayTimer = setTimeout(function(){
-    // Resize canvas + refit layout while under the overlay
     BW = bgCanvas.width = window.innerWidth;
     BH = bgCanvas.height = window.innerHeight;
     buildBg();
     fitLandscapeForm();
-    // Restart animations
     if(!rafId) rafId = requestAnimationFrame(bgAnimate);
     if(!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
-    // Snap in instantly — no fade, no transition
     blackoutOverlay.style.transition = 'none';
     blackoutOverlay.style.opacity = '0';
     blackoutOverlay.style.pointerEvents = 'none';
     blackoutOverlay.classList.remove('active');
     lastOrientation = getOrientation();
     resizePaused = false;
-    // Wait for orientation to be fully confirmed and stable, then reveal
-    waitForOrientationConfirmed(function(){
-      document.documentElement.style.setProperty('opacity', '1', 'important');
-    });
   }, 2000);
-}
-
-function waitForOrientationConfirmed(cb){
-  var expected = getOrientation();
-  var checks = 0;
-  function check(){
-    checks++;
-    if(getOrientation() === expected){
-      // Confirmed stable — reveal
-      cb();
-    } else if(checks < 10){
-      // Still changing — keep waiting
-      setTimeout(check, 100);
-    }
-  }
-  check();
 }
 
 // orientationchange — fires on Redmi, iOS
