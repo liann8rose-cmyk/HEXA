@@ -425,7 +425,7 @@
 
 
 <body style="background:#000;">
-<canvas id="blackRotateCanvas" style="position:fixed;inset:0;width:100%;height:100%;z-index:99999;background:#000;display:block;opacity:0;will-change:opacity;"></canvas>
+<canvas id="blackRotateCanvas" style="position:fixed;inset:0;width:100%;height:100%;z-index:99999;background:#000;display:block;transform:translateZ(0);will-change:transform;visibility:hidden;"></canvas>
 <div id="blackout-overlay"></div>
 
 <canvas id="hexCanvas"></canvas>
@@ -752,6 +752,8 @@ function sizeBlackCanvas(){
   const bctx = blackCanvas.getContext('2d');
   bctx.fillStyle = '#000';
   bctx.fillRect(0, 0, blackCanvas.width, blackCanvas.height);
+  // Keep GPU layer warm — touch transform to ensure layer is promoted
+  blackCanvas.style.transform = 'translateZ(0)';
 }
 sizeBlackCanvas();
 
@@ -759,9 +761,9 @@ function activateBlackCanvas(){
   if(resizePaused) return;
   resizePaused = true;
 
-  // STEP 1: opacity:1 on a will-change:opacity layer = GPU composited instantly
-  // No repaint cycle needed — this is the only property that bypasses paint
-  blackCanvas.style.opacity = '1';
+  // STEP 1: visibility:visible on a GPU-promoted layer (translateZ(0))
+  // visibility is resolved before the compositor reads the layer — no paint cycle
+  blackCanvas.style.visibility = 'visible';
 
   // STEP 2: stop ALL animations immediately
   if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
@@ -784,8 +786,14 @@ function activateBlackCanvas(){
       if(!rafId) rafId = requestAnimationFrame(bgAnimate);
       if(!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
 
-      // Fade black canvas back out — content is ready underneath
-      blackCanvas.style.opacity = '0';
+      // Hide black canvas only after 3 rAFs — ensures new frame fully painted
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){
+            blackCanvas.style.visibility = 'hidden';
+          });
+        });
+      });
       lastOrientation = window.innerWidth > window.innerHeight ? 'L' : 'P';
       resizePaused = false;
     });
