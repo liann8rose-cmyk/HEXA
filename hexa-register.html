@@ -59,6 +59,7 @@
     top: 0; left: 0;
     width: 100%; height: 100%;
     z-index: 0;
+    will-change: transform;
   }
 
   /* ── EDGE FADE TO BLACK ── */
@@ -730,7 +731,7 @@ function bgAnimate(){
   rafId = requestAnimationFrame(bgAnimate);
 }
 
-// ── ROTATION HANDLER ──
+// ── ROTATION HANDLER — YouTube/Copilot freeze pattern ──
 const blackoutOverlay = document.getElementById('blackout-overlay');
 let rotationFired = false;
 let resizePaused = false;
@@ -747,51 +748,55 @@ function getOrientation(){
   return 'P';
 }
 
+// Web equivalent of setLayerType(LAYER_TYPE_HARDWARE)
+function freezeCanvas(){
+  bgCanvas.style.willChange = 'transform';
+  bgCanvas.style.transform = 'translateZ(0)';
+  blackoutOverlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99999;opacity:1;pointer-events:auto;transition:none;';
+}
+
+// Web equivalent of setLayerType(LAYER_TYPE_NONE)
+function unfreezeCanvas(){
+  bgCanvas.style.willChange = 'auto';
+  bgCanvas.style.transform = '';
+  blackoutOverlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99999;opacity:0;pointer-events:none;transition:none;';
+}
+
 function activateBlackout(){
   if(resizePaused) return;
   resizePaused = true;
-  document.documentElement.style.background = '#000';
-  document.body.style.background = '#000';
-  blackoutOverlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99999;opacity:1;pointer-events:auto;transition:none;';
-  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
-  if(typeof logoRafId!=='undefined' && logoRafId){ cancelAnimationFrame(logoRafId); logoRafId=null; }
-  if(bgCtx && typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.fillRect(0,0,BW,BH); }
-  if(typeof lctx!=='undefined' && lctx) lctx.clearRect(0,0,100,100);
+  // Step 1: freeze canvas to GPU layer instantly
+  freezeCanvas();
+  // Step 2: wait one rAF so freeze commits, then stop animation
+  requestAnimationFrame(function(){
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    if(typeof logoRafId!=='undefined' && logoRafId){ cancelAnimationFrame(logoRafId); logoRafId=null; }
+    if(bgCtx && typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.globalAlpha=1; bgCtx.fillRect(0,0,BW,BH); }
+  });
 }
 
 function deactivateBlackout(){
   clearTimeout(overlayTimer);
+  // Step 3: wait 250ms for Samsung/Redmi OEM pipeline to settle
   overlayTimer = setTimeout(function(){
+    // Step 4: resize + refit under the overlay
     BW = bgCanvas.width = window.innerWidth;
     BH = bgCanvas.height = window.innerHeight;
     buildBg();
     fitLandscapeForm();
+    // Step 5: restart animations
     if(!rafId) rafId = requestAnimationFrame(bgAnimate);
     if(!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
-    blackoutOverlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99999;opacity:0;pointer-events:none;transition:none;';
     lastOrientation = getOrientation();
     resizePaused = false;
-  }, 800);
+    // Step 6: unfreeze after two rAF ticks so new frame is ready first
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        unfreezeCanvas();
+      });
+    });
+  }, 250);
 }
-
-// ── GYROSCOPE — fires before browser repaints on fast rotation ──
-(function(){
-  var prevGamma = null;
-  var crossing = false;
-  window.addEventListener('deviceorientation', function(e){
-    if(resizePaused) return;
-    var g = e.gamma || 0;
-    if(prevGamma === null){ prevGamma = g; return; }
-    var wasLand = Math.abs(prevGamma) > 45;
-    var isLand  = Math.abs(g) > 45;
-    if(wasLand !== isLand && !crossing){
-      crossing = true;
-      activateBlackout();
-      setTimeout(function(){ crossing = false; }, 1000);
-    }
-    prevGamma = g;
-  }, { passive: true });
-})();
 
 // orientationchange — Redmi, iOS
 window.addEventListener('orientationchange', function(){ activateBlackout(); });
@@ -801,7 +806,7 @@ if(window.screen && window.screen.orientation){
   window.screen.orientation.addEventListener('change', function(){ activateBlackout(); });
 }
 
-// visualViewport — fires early on Samsung
+// visualViewport — fires earliest on Samsung, before browser repaints
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize', function(){
     if(getOrientation() !== lastOrientation) activateBlackout();
@@ -816,7 +821,6 @@ window.addEventListener('resize', function(){
     if(resizePaused) deactivateBlackout();
   });
 });
-
 
 window.addEventListener('load', function(){
   bgResize();
