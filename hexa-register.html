@@ -769,10 +769,12 @@ function deactivateBlackout(){
     BH = bgCanvas.height = window.innerHeight;
     buildBg();
     fitLandscapeForm();
-    // Restart animations
-    if(!rafId) rafId = requestAnimationFrame(bgAnimate);
-    if(!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
-    // Restore transition then fade out
+    // Always restart animations fresh with new dimensions
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    if(logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; }
+    rafId = requestAnimationFrame(bgAnimate);
+    logoRafId = requestAnimationFrame(logoAnimate);
+    // Fade out overlay
     blackoutOverlay.style.transition = '';
     blackoutOverlay.style.opacity = '';
     blackoutOverlay.style.pointerEvents = '';
