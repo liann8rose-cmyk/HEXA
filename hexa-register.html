@@ -645,6 +645,9 @@ let BW, BH, bgHexs = [];
 
 const ripples = Array.from({length:3},(_,i)=>({ phase:(i/3)*Math.PI*2, speed:0.008+i*0.003 }));
 
+let rotationFired = false;
+let resizePaused = false;
+
 function bgResize(){
   if(rotationFired) return;
   BW = bgCanvas.width = window.innerWidth;
@@ -747,8 +750,7 @@ function bgAnimate(){
 // ── ROTATION HANDLER ── fire burst → blackout → reload ──
 let animationStopped = false;
 let lastOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
-let rotationFired = false;
-let resizePaused = false;   // true while orientation change is in progress
+// rotationFired declared above
 
 function stopAllAnimations(){
   if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
