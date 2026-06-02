@@ -767,18 +767,6 @@ function bgAnimate(){
 }
 
 
-// ── RESIZE: keep canvas sized, refit layout ──
-window.addEventListener('resize', function(){
-  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
-  try{ if(logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; } }catch(e){}
-  BW = bgCanvas.width = window.innerWidth;
-  BH = bgCanvas.height = window.innerHeight;
-  buildBg();
-  fitLandscapeForm();
-  rafId = requestAnimationFrame(bgAnimate);
-  try{ logoRafId = requestAnimationFrame(logoAnimate); }catch(e){}
-});
-
 window.addEventListener('load', function(){
   bgResize();
   rafId = requestAnimationFrame(bgAnimate);
@@ -807,6 +795,18 @@ function drawSmallHex(ctx,x,y,r,color,alpha){
 }
 
 let logoRafId = null;
+
+// ── RESIZE: keep canvas sized, restart animations ──
+window.addEventListener('resize', function(){
+  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+  if(logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; }
+  BW = bgCanvas.width = window.innerWidth;
+  BH = bgCanvas.height = window.innerHeight;
+  buildBg();
+  fitLandscapeForm();
+  rafId = requestAnimationFrame(bgAnimate);
+  logoRafId = requestAnimationFrame(logoAnimate);
+});
 function logoAnimate(){
 
   lctx.clearRect(0,0,100,100);
