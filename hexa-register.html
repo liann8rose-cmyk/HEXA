@@ -799,6 +799,16 @@ if(window.screen && window.screen.orientation){
   });
 }
 
+// visualViewport — fires earliest on Samsung, before the browser repaints
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', function(){
+    const current = getOrientation();
+    if(current !== lastOrientation){
+      activateBlackout();
+    }
+  });
+}
+
 // resize — Samsung A14, tablets; immediate flip check + next-frame check
 window.addEventListener('resize', function(){
   const current = getOrientation();
