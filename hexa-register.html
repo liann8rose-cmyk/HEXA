@@ -26,7 +26,20 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  /* ── INSTANT HIDE ON ORIENTATION CHANGE - CSS fires before JS ── */
+  body.blackout, body.blackout * {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: none !important;
+  }
 
+  /* ── Synchronous kill — body gets this class before first rAF fires ── */
+  body.rotation-start > *:not(#__fire_cover) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: none !important;
+    pointer-events: none !important;
+  }
 
   html {
     background: #000;
@@ -391,66 +404,34 @@
     .modal-box { max-width: 480px; }
   }
 
-  /* ── ROTATION ANIMATIONS — each element rotates independently, same duration ── */
-  
-  /* Canvas itself never gets animation classes — use vignette overlay instead */
-  #hexCanvas {
-    transform-origin: center center;
-    transition: none;
+  /* ── ROTATION ANIMATIONS ── */
+  .center-col.rot-out {
+    animation: formOut 0.3s ease forwards;
   }
-  /* Animate the vignette overlay on top of canvas instead */
-  #hexVignette.rotating-out {
-    animation: canvasRotateOut 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+  .center-col.rot-in {
+    animation: formIn 0.3s ease forwards;
   }
-  #hexVignette.rotating-in {
-    animation: canvasRotateIn 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+  #logoCanvas.rot-out {
+    animation: logoOut 0.3s ease forwards;
   }
-
-  /* The form/center-col rotates in from the side */
-  .center-col {
-    transition: none;
+  #logoCanvas.rot-in {
+    animation: logoIn 0.3s ease forwards;
   }
-  .center-col.rotating-out {
-    animation: formRotateOut 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+  @keyframes formOut {
+    from { opacity:1; transform: scale(var(--fs,1)) rotateY(0deg); }
+    to   { opacity:0; transform: scale(var(--fs,1)) rotateY(90deg); }
   }
-  .center-col.rotating-in {
-    animation: formRotateIn 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+  @keyframes formIn {
+    from { opacity:0; transform: scale(var(--fs,1)) rotateY(-90deg); }
+    to   { opacity:1; transform: scale(var(--fs,1)) rotateY(0deg); }
   }
-
-  /* Logo spins */
-  #logoCanvas {
-    transition: none;
+  @keyframes logoOut {
+    from { opacity:1; transform: rotate(0deg) scale(1); }
+    to   { opacity:0; transform: rotate(180deg) scale(0.4); }
   }
-  #logoCanvas.rotating-out {
-    animation: logoSpin 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
-  }
-  #logoCanvas.rotating-in {
-    animation: logoSpinIn 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
-  }
-
-  @keyframes canvasRotateOut {
-    0%   { opacity: 1; transform: scale(1) rotate(0deg); }
-    100% { opacity: 0; transform: scale(0.85) rotate(90deg); }
-  }
-  @keyframes canvasRotateIn {
-    0%   { opacity: 0; transform: scale(0.85) rotate(-90deg); }
-    100% { opacity: 1; transform: scale(1) rotate(0deg); }
-  }
-  @keyframes formRotateOut {
-    0%   { opacity: 1; transform: scale(var(--fit-scale,1)) rotateY(0deg); }
-    100% { opacity: 0; transform: scale(var(--fit-scale,1)) rotateY(90deg); }
-  }
-  @keyframes formRotateIn {
-    0%   { opacity: 0; transform: scale(var(--fit-scale,1)) rotateY(-90deg); }
-    100% { opacity: 1; transform: scale(var(--fit-scale,1)) rotateY(0deg); }
-  }
-  @keyframes logoSpin {
-    0%   { opacity: 1; transform: rotate(0deg) scale(1); }
-    100% { opacity: 0; transform: rotate(180deg) scale(0.5); }
-  }
-  @keyframes logoSpinIn {
-    0%   { opacity: 0; transform: rotate(-180deg) scale(0.5); }
-    100% { opacity: 1; transform: rotate(0deg) scale(1); }
+  @keyframes logoIn {
+    from { opacity:0; transform: rotate(-180deg) scale(0.4); }
+    to   { opacity:1; transform: rotate(0deg) scale(1); }
   }
 </style>
 </head>
@@ -763,111 +744,135 @@ function bgAnimate(){
   rafId = requestAnimationFrame(bgAnimate);
 }
 
-// ── ROTATION HANDLER — no reload, lock+reflow ──
-let rotating = false;
-let lastOrientation = window.innerWidth > window.innerHeight ? 'L' : 'P';
+// ── ROTATION HANDLER ── fire burst → blackout → reload ──
+let animationStopped = false;
+let lastOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+let rotationFired = false;
+let resizePaused = false;   // true while orientation change is in progress
 
-function getOrientation(){
-  if(window.innerWidth !== window.innerHeight)
-    return window.innerWidth > window.innerHeight ? 'L' : 'P';
-  if(window.screen && window.screen.orientation && window.screen.orientation.type)
-    return window.screen.orientation.type.includes('landscape') ? 'L' : 'P';
-  if(typeof window.orientation === 'number')
-    return (window.orientation===90||window.orientation===-90) ? 'L' : 'P';
-  return 'P';
+function stopAllAnimations(){
+  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+  if(typeof logoRafId !== 'undefined' && logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; }
+  animationStopped = true;
+  showRipples = false;
 }
 
-// Black cover reflow — cover goes on, reflow happens, cover comes off
-function blackCoverReflow(callback){
-  const hexCanvas = document.getElementById('hexCanvas');
-  const hexVignette = document.getElementById('hexVignette');
+
+function triggerRotationReload(){
+  if(rotationFired) return;
+  rotationFired = true;
+  resizePaused = true;
+  sessionStorage.setItem('hexa_reloading', '1');
+
+  // Animate form and logo OUT simultaneously
   const col = document.querySelector('.center-col');
   const logo = document.getElementById('logoCanvas');
-  const DUR = 350; // ms — must match CSS animation duration
-
-  // Phase 1: animate OUT (all three simultaneously)
-  if(hexVignette) hexVignette.classList.add('rotating-out');
-  if(logo) logo.classList.add('rotating-out');
   if(col){
-    // Pass current fitScale as CSS variable so formRotateOut uses it
-    col.style.setProperty('--fit-scale', (typeof fitScale!=='undefined'?fitScale:1));
-    col.classList.add('rotating-out');
+    col.style.setProperty('--fs', typeof fitScale!=='undefined' ? fitScale : 1);
+    col.classList.add('rot-out');
   }
+  if(logo) logo.classList.add('rot-out');
 
+  // After animation completes — black cover + stop + reload
   setTimeout(function(){
-    // Phase 2: reflow while everything is invisible
-    BW = bgCanvas.width  = window.innerWidth;
-    BH = bgCanvas.height = window.innerHeight;
-    buildBg();
-    fitLandscapeForm();
-    if(!rafId) rafId = requestAnimationFrame(bgAnimate);
-    if(typeof logoRafId!=='undefined'&&!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
-    if(callback) callback();
+    stopAllAnimations();
+    if(bgCtx && typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.fillRect(0,0,BW,BH); }
+    if(typeof lctx!=='undefined'&&lctx) lctx.clearRect(0,0,100,100);
 
-    // Reset classes, apply new scale, then animate IN
-    if(hexVignette){ hexVignette.classList.remove('rotating-out'); hexVignette.classList.add('rotating-in'); }
-    if(logo){ logo.classList.remove('rotating-out'); logo.classList.add('rotating-in'); }
-    if(col){
-      col.style.setProperty('--fit-scale', (typeof fitScale!=='undefined'?fitScale:1));
-      col.classList.remove('rotating-out');
-      col.classList.add('rotating-in');
-    }
+    document.body.classList.add('rotation-start');
+    const cover = document.createElement('div');
+    cover.id = '__fire_cover';
+    cover.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999997;pointer-events:none;';
+    document.body.appendChild(cover);
 
-    // Phase 3: cleanup after animate-in completes
-    setTimeout(function(){
-      if(hexVignette) hexVignette.classList.remove('rotating-in');
-      if(logo) logo.classList.remove('rotating-in');
-      if(col) col.classList.remove('rotating-in');
-      lastOrientation = getOrientation();
-      rotating = false;
-    }, DUR);
-
-  }, DUR);
+    sessionStorage.setItem('hexa_post_rotation','1');
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){ location.reload(); });
+    });
+  }, 300);
 }
 
-function doRotation(){
-  if(rotating) return;
-  rotating = true;
-  // Stop animations immediately
-  if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
-  if(typeof logoRafId!=='undefined'&&logoRafId){ cancelAnimationFrame(logoRafId); logoRafId=null; }
-  if(bgCtx&&typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.fillRect(0,0,BW,BH); }
-  if(typeof lctx!=='undefined'&&lctx) lctx.clearRect(0,0,100,100);
+// ── ORIENTATION DETECTION — works on Redmi, Samsung, tablets ──
+// Samsung Internet often skips/delays orientationchange and only fires resize.
+// Strategy: listen to everything, trigger on the FIRST signal that shows a real flip.
 
-  // Try orientation lock (Redmi Chrome supports this)
-  if(window.screen && window.screen.orientation && window.screen.orientation.lock){
-    const currentLock = getOrientation()==='L' ? 'landscape' : 'portrait';
-    window.screen.orientation.lock(currentLock)
-      .then(function(){
-        blackCoverReflow(function(){
-          if(window.screen.orientation.unlock) window.screen.orientation.unlock();
-        });
-      })
-      .catch(function(){ blackCoverReflow(); });
-  } else {
-    blackCoverReflow();
+function getOrientation(){
+  // innerWidth/innerHeight is the ground truth — always reflects the current
+  // rendered state after a resize, works on every device including tablets
+  // that have stale or wrong screen.orientation values.
+  if(window.innerWidth !== window.innerHeight){
+    return window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+  }
+  // Square screen edge case — fall back to APIs
+  if(window.screen && window.screen.orientation && window.screen.orientation.type){
+    return window.screen.orientation.type.includes('landscape') ? 'landscape' : 'portrait';
+  }
+  if(typeof window.orientation === 'number'){
+    return (window.orientation === 90 || window.orientation === -90) ? 'landscape' : 'portrait';
+  }
+  return 'portrait';
+}
+
+// Re-sample lastOrientation using the best available API
+lastOrientation = getOrientation();
+
+function onOrientationFlip(){
+  if(rotationFired || resizePaused) return;
+  const current = getOrientation();
+  if(current !== lastOrientation){
+    resizePaused = true;
+    lastOrientation = current;
+    triggerRotationReload();
   }
 }
 
-function checkFlip(){
-  if(rotating) return;
-  if(getOrientation() !== lastOrientation) doRotation();
+// 1. Standard orientationchange (Redmi, iOS, most Android)
+window.addEventListener('orientationchange', function(){
+  resizePaused = true;
+  triggerRotationReload();
+});
+
+// 2. screen.orientation API (Samsung Internet, Chrome on Android)
+if(window.screen && window.screen.orientation){
+  window.screen.orientation.addEventListener('change', function(){
+    resizePaused = true;
+    triggerRotationReload();
+  });
 }
 
-window.addEventListener('orientationchange', function(){ doRotation(); });
-if(window.screen && window.screen.orientation)
-  window.screen.orientation.addEventListener('change', function(){ doRotation(); });
+// 3. resize — Samsung phones + ALL tablets (orientationchange often silent on tablets)
+// Fires immediately — no debounce. onOrientationFlip() only triggers if the
+// portrait/landscape axis actually flipped, so keyboard/browser-chrome resizes
+// (which don't change the axis) are silently ignored.
 window.addEventListener('resize', function(){
-  if(rotating) return;
-  checkFlip();
-  requestAnimationFrame(function(){ if(!rotating) checkFlip(); });
+  if(rotationFired || resizePaused) return;
+  onOrientationFlip();
 });
+
+
+
 
 window.addEventListener('load', function(){
   bgResize();
   rafId = requestAnimationFrame(bgAnimate);
-  if(!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
-  setTimeout(function(){ fitLandscapeForm(); }, 100);
+  setTimeout(function(){
+    fitLandscapeForm();
+    // If this is a post-rotation reload — animate elements back in
+    if(sessionStorage.getItem('hexa_post_rotation')){
+      sessionStorage.removeItem('hexa_post_rotation');
+      const col = document.querySelector('.center-col');
+      const logo = document.getElementById('logoCanvas');
+      if(col){
+        col.style.setProperty('--fs', typeof fitScale!=='undefined' ? fitScale : 1);
+        col.classList.add('rot-in');
+        setTimeout(function(){ col.classList.remove('rot-in'); }, 350);
+      }
+      if(logo){
+        logo.classList.add('rot-in');
+        setTimeout(function(){ logo.classList.remove('rot-in'); }, 350);
+      }
+    }
+  }, 100);
 });
 
 // ── LOGO CANVAS ──
