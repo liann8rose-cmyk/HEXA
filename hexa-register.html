@@ -389,6 +389,62 @@
   /* ── ALL DEVICES: universal center-col setup for JS scaling ── */
   .center-col {
     transform-origin: center top;
+    will-change: transform;
+    contain: layout style;
+  }
+
+  /* ── PRE-BUILT PORTRAIT STATE ── */
+  body.is-portrait .center-col {
+    max-width: 400px;
+  }
+
+  /* ── PRE-BUILT LANDSCAPE STATE ── */
+  body.is-landscape .center-col {
+    max-width: 680px;
+    padding: 0 32px;
+  }
+  body.is-landscape .logo-area {
+    height: 50px;
+    margin: 6px 0 2px;
+  }
+  body.is-landscape .logo-text {
+    font-size: 28px;
+  }
+  body.is-landscape .subtitle {
+    font-size: 8px;
+    margin-bottom: 2px;
+  }
+  body.is-landscape .tab-btn {
+    font-size: 12px;
+    padding: 6px;
+  }
+  body.is-landscape .card {
+    padding: 8px 14px;
+  }
+  body.is-landscape .card-title {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  body.is-landscape .fields-grid {
+    gap: 5px 10px;
+    margin-bottom: 6px;
+  }
+  body.is-landscape .field label {
+    font-size: 9px;
+    margin-bottom: 3px;
+  }
+  body.is-landscape .field input,
+  body.is-landscape .field select {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+  body.is-landscape .btn-register {
+    padding: 7px;
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+  body.is-landscape .signin-link {
+    font-size: 11px;
   }
 
   /* ── MOBILE LANDSCAPE: Sign In button fix ── */
@@ -762,6 +818,10 @@ function activateBlackout(){
 function deactivateBlackout(){
   clearTimeout(overlayTimer);
   overlayTimer = setTimeout(function(){
+    // Swap orientation class — pre-built layout snaps in instantly
+    var isLand = window.innerWidth > window.innerHeight;
+    document.body.classList.toggle('is-portrait', !isLand);
+    document.body.classList.toggle('is-landscape', isLand);
     BW = bgCanvas.width = window.innerWidth;
     BH = bgCanvas.height = window.innerHeight;
     buildBg();
@@ -819,6 +879,8 @@ window.addEventListener('resize', function(){
 
 
 window.addEventListener('load', function(){
+  var isLand = window.innerWidth > window.innerHeight;
+  document.body.classList.add(isLand ? 'is-landscape' : 'is-portrait');
   bgResize();
   rafId = requestAnimationFrame(bgAnimate);
   document.documentElement.style.setProperty('opacity', '1', 'important');
