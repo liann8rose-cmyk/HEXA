@@ -758,11 +758,7 @@ function activateBlackout(){
   blackoutOverlay.style.opacity = '1';
   blackoutOverlay.style.pointerEvents = 'auto';
   blackoutOverlay.classList.add('active');
-  // Stop all canvas animation immediately
-  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
-  if(typeof logoRafId!=='undefined' && logoRafId){ cancelAnimationFrame(logoRafId); logoRafId=null; }
-  if(bgCtx && typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.fillRect(0,0,BW,BH); }
-  if(typeof lctx!=='undefined' && lctx) lctx.clearRect(0,0,100,100);
+  // Keep canvas animating — Samsung One UI kills content if we stop it
 }
 
 function deactivateBlackout(){
