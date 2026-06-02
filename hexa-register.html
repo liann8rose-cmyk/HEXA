@@ -831,10 +831,11 @@ window.addEventListener('resize', function(){
 
 
 window.addEventListener('load', function(){
-  bgResize();
   rafId = requestAnimationFrame(bgAnimate);
   setTimeout(function(){
     fitLandscapeForm();
+    // Resize canvas AFTER viewport+layout settled — fixes squeezed hexagons
+    bgResize();
     // If this is a post-rotation reload — animate elements back in
     if(sessionStorage.getItem('hexa_post_rotation')){
       sessionStorage.removeItem('hexa_post_rotation');
@@ -1121,6 +1122,20 @@ let maxScale = 1.0;
 function fitLandscapeForm(){
   const col = document.querySelector('.center-col');
   if(!col) return;
+
+  // Set viewport scale for mobile landscape (restores what old IIFE was doing)
+  const vp = document.getElementById('vpmeta');
+  if(vp){
+    const isLand = window.innerWidth > window.innerHeight;
+    const isMobileLand = isLand && Math.min(window.innerWidth, window.innerHeight) <= 500;
+    if(isMobileLand){
+      const scale = (window.innerHeight / 600).toFixed(2);
+      vp.content = 'width=device-width,initial-scale='+scale+',minimum-scale=0.3,maximum-scale=3.0,user-scalable=yes,viewport-fit=cover';
+    } else {
+      vp.content = 'width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover';
+    }
+  }
+
   col.style.transform = 'scale(1)';
   const naturalH = col.scrollHeight;
   const naturalW = col.scrollWidth;
