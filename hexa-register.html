@@ -831,11 +831,11 @@ window.addEventListener('resize', function(){
 
 
 window.addEventListener('load', function(){
-  rafId = requestAnimationFrame(bgAnimate);
   setTimeout(function(){
     fitLandscapeForm();
-    // Resize canvas AFTER viewport+layout settled — fixes squeezed hexagons
     bgResize();
+    rafId = requestAnimationFrame(bgAnimate);
+    if(!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
     // If this is a post-rotation reload — animate elements back in
     if(sessionStorage.getItem('hexa_post_rotation')){
       sessionStorage.removeItem('hexa_post_rotation');
