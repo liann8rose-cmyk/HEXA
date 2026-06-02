@@ -779,7 +779,30 @@ function deactivateBlackout(){
   }, 800);
 }
 
-// orientationchange — fires on Redmi, iOS
+// deviceorientation — catches physical tilt BEFORE browser knows rotation is coming
+(function(){
+  var tiltTimer = null;
+  var lastGamma = null;
+  var lastBeta = null;
+  window.addEventListener('deviceorientation', function(e){
+    if(resizePaused) return;
+    var gamma = e.gamma; // left-right tilt
+    var beta = e.beta;   // front-back tilt
+    if(lastGamma === null){ lastGamma = gamma; lastBeta = beta; return; }
+    var deltaGamma = Math.abs(gamma - lastGamma);
+    // Fast tilt toward landscape (gamma crossing ±45°)
+    if(deltaGamma > 8){
+      clearTimeout(tiltTimer);
+      tiltTimer = setTimeout(function(){ lastGamma = gamma; lastBeta = beta; }, 500);
+      activateBlackout();
+    } else {
+      lastGamma = gamma;
+      lastBeta = beta;
+    }
+  }, { passive: true });
+})();
+
+
 window.addEventListener('orientationchange', function(){
   activateBlackout();
 });
