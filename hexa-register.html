@@ -823,28 +823,28 @@ window.addEventListener('resize', function(){
 
 
 window.addEventListener('load', function(){
-  bgResize();
-  rafId = requestAnimationFrame(bgAnimate);
-  setTimeout(function(){ fitLandscapeForm(); }, 100);
-  // Spin in after rotation reload
-  if(sessionStorage.getItem('hexa_reloading') === null){
-    // normal load — no spin
-  } else {
-    // already cleared by top script — but set by us means post-rotation
-  }
-  if(sessionStorage.getItem('hexa_zoom_in')){
-    sessionStorage.removeItem('hexa_zoom_in');
-    // Page starts at scale(0.3) opacity:0 — zoom in to full size
-    requestAnimationFrame(function(){
+  const isPostRotation = sessionStorage.getItem('hexa_zoom_in');
+  if(isPostRotation) sessionStorage.removeItem('hexa_zoom_in');
+
+  // Wait for browser to fully settle new orientation layout before sizing canvas
+  setTimeout(function(){
+    fitLandscapeForm();
+    bgResize();
+    rafId = requestAnimationFrame(bgAnimate);
+
+    // Fade in after everything is ready
+    if(isPostRotation){
       requestAnimationFrame(function(){
-        document.documentElement.style.transition = 'opacity 0.3s ease';
-        document.documentElement.style.opacity = '1';
-        setTimeout(function(){
-          document.documentElement.style.transition = '';
-        }, 320);
+        requestAnimationFrame(function(){
+          document.documentElement.style.transition = 'opacity 0.3s ease';
+          document.documentElement.style.opacity = '1';
+          setTimeout(function(){
+            document.documentElement.style.transition = '';
+          }, 320);
+        });
       });
-    });
-  }
+    }
+  }, 150);
 });
 
 // ── LOGO CANVAS ──
