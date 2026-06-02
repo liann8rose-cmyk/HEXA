@@ -633,7 +633,6 @@ let BW, BH, bgHexs = [];
 const ripples = Array.from({length:3},(_,i)=>({ phase:(i/3)*Math.PI*2, speed:0.008+i*0.003 }));
 
 function bgResize(){
-  if(rotationFired) return;
   BW = bgCanvas.width = window.innerWidth;
   BH = bgCanvas.height = window.innerHeight;
   buildBg();
@@ -690,7 +689,7 @@ let rafId = null;
 let showRipples = true;
 
 function bgAnimate(){
-  if(rotationFired) return;
+
   bgCtx.clearRect(0,0,BW,BH);
       const grad=bgCtx.createRadialGradient(BW/2,BH/2,0,BW/2,BH/2,Math.max(BW,BH)*0.7);
       grad.addColorStop(0,'rgba(0,12,35,1)'); grad.addColorStop(0.5,'rgba(0,5,18,1)'); grad.addColorStop(1,'rgba(0,3,10,1)');
@@ -851,7 +850,7 @@ function drawSmallHex(ctx,x,y,r,color,alpha){
 
 let logoRafId = null;
 function logoAnimate(){
-  if(rotationFired) return;
+
   lctx.clearRect(0,0,100,100);
   const g=lctx.createRadialGradient(lcx,lcy,10,lcx,lcy,45);
   g.addColorStop(0,'rgba(0,240,255,0.06)'); g.addColorStop(1,'rgba(0,0,0,0)');
@@ -1137,7 +1136,6 @@ function fitLandscapeForm(){
   }
 
   function updateViewport(){
-    if(rotationFired || resizePaused) return;
     vp.setAttribute('content','width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
     fitLandscapeForm();
   }
