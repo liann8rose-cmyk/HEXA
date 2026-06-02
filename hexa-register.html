@@ -769,12 +769,14 @@ function bgAnimate(){
 
 // ── RESIZE: keep canvas sized, refit layout ──
 window.addEventListener('resize', function(){
+  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+  if(typeof logoRafId !== 'undefined' && logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; }
   BW = bgCanvas.width = window.innerWidth;
   BH = bgCanvas.height = window.innerHeight;
   buildBg();
   fitLandscapeForm();
-  if(!rafId) rafId = requestAnimationFrame(bgAnimate);
-  if(typeof logoRafId !== 'undefined' && !logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
+  rafId = requestAnimationFrame(bgAnimate);
+  if(typeof logoRafId !== 'undefined') logoRafId = requestAnimationFrame(logoAnimate);
 });
 
 window.addEventListener('load', function(){
