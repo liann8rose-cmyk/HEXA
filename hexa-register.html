@@ -770,13 +770,13 @@ function bgAnimate(){
 // ── RESIZE: keep canvas sized, refit layout ──
 window.addEventListener('resize', function(){
   if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
-  if(typeof logoRafId !== 'undefined' && logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; }
+  try{ if(logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; } }catch(e){}
   BW = bgCanvas.width = window.innerWidth;
   BH = bgCanvas.height = window.innerHeight;
   buildBg();
   fitLandscapeForm();
   rafId = requestAnimationFrame(bgAnimate);
-  if(typeof logoRafId !== 'undefined') logoRafId = requestAnimationFrame(logoAnimate);
+  try{ logoRafId = requestAnimationFrame(logoAnimate); }catch(e){}
 });
 
 window.addEventListener('load', function(){
