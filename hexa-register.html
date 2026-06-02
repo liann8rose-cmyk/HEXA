@@ -583,33 +583,59 @@ window.addEventListener('pageshow',function(e){
   var r=document.getElementById('resetModal');if(r)r.classList.remove('on');
 });
 
-// ── VIEWPORT — only adjust on actual orientation change, not zoom ──
-(function(){
-  var lastOrient = window.innerWidth > window.innerHeight ? 'L' : 'P';
-  function setVP(){
-    var vp = document.querySelector('meta[name=viewport]');
-    if(!vp) return;
-    var isLand = window.innerWidth > window.innerHeight;
-    var isMobileLand = isLand && Math.min(window.innerWidth,window.innerHeight) <= 500;
-    if(isMobileLand){
-      var scale = (window.innerHeight / 600).toFixed(2);
-      vp.content = 'width=device-width,initial-scale='+scale+',minimum-scale=0.3,maximum-scale=3.0,user-scalable=yes,viewport-fit=cover';
-    } else {
-      vp.content = 'width=device-width,initial-scale=1.0,minimum-scale=0.3,maximum-scale=3.0,user-scalable=yes,viewport-fit=cover';
-    }
-    lastOrient = isLand ? 'L' : 'P';
-  }
-  setVP();
-  function onOrient(){ setTimeout(setVP, 300); }
-  window.addEventListener('orientationchange', onOrient);
-  if(window.screen && window.screen.orientation) window.screen.orientation.addEventListener('change', onOrient);
-  window.addEventListener('resize', function(){
-    var o = window.innerWidth > window.innerHeight ? 'L' : 'P';
-    if(o !== lastOrient) setVP();
-  });
-})();
 
-window.addEventListener('load'window.addEventListener('load', function(){
+
+// ── ROTATION HANDLER ──
+let rotationFired = false;
+let resizePaused = false;
+let lastOrientation = window.innerWidth > window.innerHeight ? 'L' : 'P';
+
+function getOrientation(){
+  if(window.innerWidth !== window.innerHeight)
+    return window.innerWidth > window.innerHeight ? 'L' : 'P';
+  if(window.screen && window.screen.orientation && window.screen.orientation.type)
+    return window.screen.orientation.type.includes('landscape') ? 'L' : 'P';
+  if(typeof window.orientation === 'number')
+    return (window.orientation===90||window.orientation===-90) ? 'L' : 'P';
+  return 'P';
+}
+
+function triggerRotationReload(){
+  if(rotationFired) return;
+  rotationFired = true;
+  resizePaused = true;
+  sessionStorage.setItem('hexa_reloading','1');
+  const cover = document.createElement('div');
+  cover.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999999;';
+  document.body.appendChild(cover);
+  cover.getBoundingClientRect();
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ location.reload(); });
+  });
+}
+
+function checkFlip(){
+  if(rotationFired || resizePaused) return;
+  const current = getOrientation();
+  if(current !== lastOrientation){
+    resizePaused = true;
+    lastOrientation = current;
+    triggerRotationReload();
+  }
+}
+
+window.addEventListener('orientationchange', function(){ triggerRotationReload(); });
+
+if(window.screen && window.screen.orientation)
+  window.screen.orientation.addEventListener('change', function(){ triggerRotationReload(); });
+
+window.addEventListener('resize', function(){
+  if(rotationFired || resizePaused) return;
+  checkFlip();
+  requestAnimationFrame(function(){ if(!rotationFired && !resizePaused) checkFlip(); });
+});
+
+window.addEventListener('load', function(){
   setTimeout(function(){ fitLandscapeForm(); }, 100);
 });
 
@@ -926,7 +952,7 @@ function fitLandscapeForm(){
     fitLandscapeForm();
   }
   updateViewport();
-  window.addEventListener('resize', updateViewport);
+  // resize handled by rotation handler above
 
   function getCol(){ return document.querySelector('.center-col'); }
 
