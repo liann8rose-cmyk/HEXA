@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="background:#000;opacity:0;">
+<html lang="en" style="background:#000!important;opacity:0;">
 <head>
 <meta charset="UTF-8">
 <script>
@@ -7,10 +7,12 @@
   if(sessionStorage.getItem('hexa_back_from_dashboard')){
     sessionStorage.removeItem('hexa_back_from_dashboard');
   }
+  // After rotation reload — show immediately, fully opaque, no flash
   if(sessionStorage.getItem('hexa_reloading')){
     sessionStorage.removeItem('hexa_reloading');
   }
-  // Keep hidden — load event will reveal it
+  // Always start visible — background is black so no unstyled flash
+  document.documentElement.style.opacity = '1';
   document.documentElement.style.background = '#000';
 })();
 </script>
@@ -386,60 +388,23 @@
     .reset-btn { font-size: 18px; padding: 15px; }
   }
 
-  /* ── ALL DEVICES: universal center-col ── */
+  /* ── ALL DEVICES: universal center-col setup for JS scaling ── */
   .center-col {
     transform-origin: center top;
-    will-change: contents;
-    contain: layout style;
   }
 
-  /* ── MOBILE LANDSCAPE ── */
+  /* ── MOBILE LANDSCAPE: Sign In button fix ── */
   @media (max-width: 767px) and (orientation: landscape) {
-    .page {
-      padding: 8px 0;
-      justify-content: center;
-    }
-    .center-col {
-      max-width: 100%;
-      padding: 0 16px;
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      gap: 0 16px;
-    }
-    .logo-area {
-      width: 80px;
-      height: 40px;
-      max-width: 80px;
-      margin: 0;
-      flex-shrink: 0;
-    }
-    .logo-text { font-size: 22px; }
-    .subtitle { font-size: 7px; letter-spacing: 0.3em; margin: 0 0 4px; }
-    .tab-row { width: 80px; flex-direction: column; gap: 4px; margin-bottom: 0; }
-    .tab-btn { font-size: 10px; padding: 5px 4px; }
     .tab-btn.inactive {
       background: linear-gradient(135deg, #cc00cc, #4400bb) !important;
       color: #fff !important;
       border: none !important;
     }
-    .card {
-      flex: 1;
-      min-width: 0;
-      padding: 8px 10px;
-    }
-    .card-title { font-size: 13px; margin-bottom: 5px; }
-    .fields-grid { gap: 4px 8px; margin-bottom: 5px; }
-    .field label { font-size: 8px; margin-bottom: 2px; }
-    .field input, .field select { padding: 4px 7px; font-size: 11px; }
-    .btn-register { padding: 6px; font-size: 12px; margin-bottom: 4px; margin-top: 2px; }
-    .signin-link { font-size: 10px; }
     .modal-overlay { padding: 8px; }
     .modal-box { max-width: 480px; }
-    #scrollSpacer { display: none; }
   }
 
-  /* ── BLACKOUT OVERLAY ── */
+  /* ── BLACKOUT OVERLAY — instant ON, smooth fade OFF ── */
   #blackout-overlay {
     position: fixed;
     top: 0; left: 0;
@@ -448,11 +413,12 @@
     z-index: 99999;
     opacity: 0;
     pointer-events: none;
-    transition: none;
+    transition: opacity 0.25s ease; /* only used when removing .active */
   }
   #blackout-overlay.active {
     opacity: 1;
     pointer-events: auto;
+    transition: none; /* INSTANT on — no transition when activating */
   }
 </style>
 </head>
@@ -668,7 +634,7 @@ let BW, BH, bgHexs = [];
 const ripples = Array.from({length:3},(_,i)=>({ phase:(i/3)*Math.PI*2, speed:0.008+i*0.003 }));
 
 function bgResize(){
-
+  if(rotationFired) return;
   BW = bgCanvas.width = window.innerWidth;
   BH = bgCanvas.height = window.innerHeight;
   buildBg();
@@ -725,7 +691,7 @@ let rafId = null;
 let showRipples = true;
 
 function bgAnimate(){
-
+  if(rotationFired) return;
   bgCtx.clearRect(0,0,BW,BH);
       const grad=bgCtx.createRadialGradient(BW/2,BH/2,0,BW/2,BH/2,Math.max(BW,BH)*0.7);
       grad.addColorStop(0,'rgba(0,12,35,1)'); grad.addColorStop(0.5,'rgba(0,5,18,1)'); grad.addColorStop(1,'rgba(0,3,10,1)');
@@ -766,11 +732,93 @@ function bgAnimate(){
   rafId = requestAnimationFrame(bgAnimate);
 }
 
+// ── ROTATION HANDLER — Gemini/Claude combined approach ──
+// Overlay is pre-built in DOM (no creation delay), activated instantly on rotation.
+const blackoutOverlay = document.getElementById('blackout-overlay');
+let rotationFired = false;
+let resizePaused = false;
+let lastOrientation = window.innerWidth > window.innerHeight ? 'L' : 'P';
+let overlayTimer = null;
+
+function getOrientation(){
+  if(window.innerWidth !== window.innerHeight)
+    return window.innerWidth > window.innerHeight ? 'L' : 'P';
+  if(window.screen && window.screen.orientation && window.screen.orientation.type)
+    return window.screen.orientation.type.includes('landscape') ? 'L' : 'P';
+  if(typeof window.orientation === 'number')
+    return (window.orientation===90||window.orientation===-90) ? 'L' : 'P';
+  return 'P';
+}
+
+function activateBlackout(){
+  if(resizePaused) return;
+  resizePaused = true;
+  // Force inline style first — overrides any transition Samsung might apply
+  blackoutOverlay.style.transition = 'none';
+  blackoutOverlay.style.opacity = '1';
+  blackoutOverlay.style.pointerEvents = 'auto';
+  blackoutOverlay.classList.add('active');
+  // Stop all canvas animation immediately
+  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+  if(typeof logoRafId!=='undefined' && logoRafId){ cancelAnimationFrame(logoRafId); logoRafId=null; }
+  if(bgCtx && typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.fillRect(0,0,BW,BH); }
+  if(typeof lctx!=='undefined' && lctx) lctx.clearRect(0,0,100,100);
+}
+
+function deactivateBlackout(){
+  clearTimeout(overlayTimer);
+  overlayTimer = setTimeout(function(){
+    // Resize canvas + refit layout while under the overlay
+    BW = bgCanvas.width = window.innerWidth;
+    BH = bgCanvas.height = window.innerHeight;
+    buildBg();
+    fitLandscapeForm();
+    // Restart animations
+    if(!rafId) rafId = requestAnimationFrame(bgAnimate);
+    if(!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
+    // Restore transition then fade out
+    blackoutOverlay.style.transition = '';
+    blackoutOverlay.style.opacity = '';
+    blackoutOverlay.style.pointerEvents = '';
+    blackoutOverlay.classList.remove('active');
+    lastOrientation = getOrientation();
+    resizePaused = false;
+  }, 200);
+}
+
+// orientationchange — fires on Redmi, iOS
+window.addEventListener('orientationchange', function(){
+  activateBlackout();
+});
+
+// screen.orientation.change — Samsung Internet
+if(window.screen && window.screen.orientation){
+  window.screen.orientation.addEventListener('change', function(){
+    activateBlackout();
+  });
+}
+
+// resize — Samsung A14, tablets; immediate flip check + next-frame check
+window.addEventListener('resize', function(){
+  const current = getOrientation();
+  if(current !== lastOrientation){
+    activateBlackout();
+  }
+  // Samsung A14: dimensions update one frame late — check again
+  requestAnimationFrame(function(){
+    const current2 = getOrientation();
+    if(current2 !== lastOrientation && !resizePaused){
+      activateBlackout();
+    }
+    if(resizePaused) deactivateBlackout();
+  });
+});
 
 window.addEventListener('load', function(){
   bgResize();
   rafId = requestAnimationFrame(bgAnimate);
-  document.documentElement.style.setProperty('opacity', '1', 'important');
+
+
   setTimeout(function(){ fitLandscapeForm(); }, 100);
 });
 
@@ -795,24 +843,8 @@ function drawSmallHex(ctx,x,y,r,color,alpha){
 }
 
 let logoRafId = null;
-
-// ── RESIZE: debounced — keep canvas sized, restart animations ──
-var _resizeTimer = null;
-window.addEventListener('resize', function(){
-  clearTimeout(_resizeTimer);
-  _resizeTimer = setTimeout(function(){
-    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
-    if(logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; }
-    BW = bgCanvas.width = window.innerWidth;
-    BH = bgCanvas.height = window.innerHeight;
-    buildBg();
-    fitLandscapeForm();
-    rafId = requestAnimationFrame(bgAnimate);
-    logoRafId = requestAnimationFrame(logoAnimate);
-  }, 150);
-});
 function logoAnimate(){
-
+  if(rotationFired) return;
   lctx.clearRect(0,0,100,100);
   const g=lctx.createRadialGradient(lcx,lcy,10,lcx,lcy,45);
   g.addColorStop(0,'rgba(0,240,255,0.06)'); g.addColorStop(1,'rgba(0,0,0,0)');
@@ -1098,7 +1130,7 @@ function fitLandscapeForm(){
   }
 
   function updateViewport(){
-    
+    if(rotationFired || resizePaused) return;
     vp.setAttribute('content','width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
     fitLandscapeForm();
   }
