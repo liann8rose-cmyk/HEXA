@@ -390,12 +390,7 @@
 
   /* ── ALL DEVICES: universal center-col setup for JS scaling ── */
   .center-col {
-    transform-origin: center center;
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 400px;
+    transform-origin: center top;
   }
 
   /* ── MOBILE LANDSCAPE: Sign In button fix ── */
@@ -1094,7 +1089,7 @@ let maxScale = 1.0;
 function fitLandscapeForm(){
   const col = document.querySelector('.center-col');
   if(!col) return;
-  col.style.transform = 'translateX(-50%) scale(1)';
+  col.style.transform = 'scale(1)';
   const naturalH = col.scrollHeight;
   const naturalW = col.scrollWidth;
   const availableH = window.innerHeight - 40;
@@ -1104,8 +1099,8 @@ function fitLandscapeForm(){
   maxScale = Math.min(3.0, availableW / naturalW);
   maxScale = Math.max(maxScale, minScale);
   currentScale = fitScale;
-  col.style.transform = 'translateX(-50%) scale(' + fitScale + ')';
-  col.style.transformOrigin = 'center center';
+  col.style.transform = 'scale(' + fitScale + ')';
+  col.style.transformOrigin = 'center top';
   const page = document.querySelector('.page');
   if(page) page.scrollTop = 0;
 }
@@ -1121,8 +1116,8 @@ function fitLandscapeForm(){
     currentScale = newS;
     const col = getCol();
     if(col){
-      col.style.transform = 'translateX(-50%) scale(' + newS + ')';
-      col.style.transformOrigin = 'center center';
+      col.style.transform = 'scale(' + newS + ')';
+      col.style.transformOrigin = 'center top';
     }
     // If back to minimum, reset scroll so form is locked in place
     if(newS <= fitScale + 0.01){
