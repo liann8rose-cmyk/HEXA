@@ -26,20 +26,7 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  /* ── INSTANT HIDE ON ORIENTATION CHANGE - CSS fires before JS ── */
-  body.blackout, body.blackout * {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transition: none !important;
-  }
 
-  /* ── Synchronous kill — body gets this class before first rAF fires ── */
-  body.rotation-start > *:not(#__fire_cover) {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transition: none !important;
-    pointer-events: none !important;
-  }
 
   html {
     background: #000;
@@ -403,28 +390,11 @@
     .modal-overlay { padding: 8px; }
     .modal-box { max-width: 480px; }
   }
-
-  /* ── ROTATION FLASH PREVENTION ──
-     The browser evaluates @media queries synchronously before paint.
-     We use a permanent black overlay div that is ALWAYS visible via CSS
-     and only hidden when JS confirms the page is ready.
-     This means on first paint after rotation = black. Always. ── */
-  #rot-shield {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    z-index: 2147483647; /* max z-index */
-    display: block;
-  }
-  #rot-shield.ready {
-    display: none;
-  }
 </style>
 </head>
 
 
 <body style="background:#000;">
-<div id="rot-shield"></div>
 
 <canvas id="hexCanvas"></canvas>
 <div id="hexVignette"></div>
@@ -731,25 +701,9 @@ function bgAnimate(){
   rafId = requestAnimationFrame(bgAnimate);
 }
 
-// ── ROTATION HANDLER — CSS shield approach ──
-// #rot-shield covers EVERYTHING at max z-index from the moment the page loads.
-// JS removes .ready class to show it, adds .ready to hide it.
-// On reload after rotation: shield is visible until JS confirms page is painted.
-
-const rotShield = document.getElementById('rot-shield');
-let rotationFired = false;
-let resizePaused = false;
+// ── ROTATION HANDLER — no reload, lock+reflow ──
+let rotating = false;
 let lastOrientation = window.innerWidth > window.innerHeight ? 'L' : 'P';
-
-// Hide shield once page is fully painted on load/reload
-function pageReady(){
-  // Wait for 2 rAFs — ensures canvas has drawn first frame
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      rotShield.classList.add('ready');
-    });
-  });
-}
 
 function getOrientation(){
   if(window.innerWidth !== window.innerHeight)
@@ -761,65 +715,78 @@ function getOrientation(){
   return 'P';
 }
 
-function triggerRotationReload(){
-  if(rotationFired) return;
-  rotationFired = true;
-  resizePaused = true;
-  sessionStorage.setItem('hexa_reloading','1');
+// Black cover reflow — cover goes on, reflow happens, cover comes off
+function blackCoverReflow(callback){
+  const cover = document.createElement('div');
+  cover.style.cssText = 'position:fixed;inset:0;background:#000;z-index:2147483647;pointer-events:all;';
+  document.body.appendChild(cover);
+  // getBoundingClientRect forces a synchronous layout+paint flush
+  // so cover is guaranteed painted before we continue
+  cover.getBoundingClientRect();
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      // Reflow under cover
+      BW = bgCanvas.width  = window.innerWidth;
+      BH = bgCanvas.height = window.innerHeight;
+      buildBg();
+      fitLandscapeForm();
+      if(!rafId) rafId = requestAnimationFrame(bgAnimate);
+      if(typeof logoRafId!=='undefined'&&!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
+      if(callback) callback();
+      // Wait for canvas to draw new frame before removing cover
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          cover.remove();
+          lastOrientation = getOrientation();
+          rotating = false;
+        });
+      });
+    });
+  });
+}
 
-  // Shield is already covering everything (display:block by default)
-  // Just make sure it's showing
-  rotShield.classList.remove('ready');
-
-  // Stop all animations
+function doRotation(){
+  if(rotating) return;
+  rotating = true;
+  // Stop animations immediately
   if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
   if(typeof logoRafId!=='undefined'&&logoRafId){ cancelAnimationFrame(logoRafId); logoRafId=null; }
   if(bgCtx&&typeof BW!=='undefined'){ bgCtx.fillStyle='#000'; bgCtx.fillRect(0,0,BW,BH); }
   if(typeof lctx!=='undefined'&&lctx) lctx.clearRect(0,0,100,100);
 
-  // Reload — shield stays black the whole time
-  requestAnimationFrame(function(){
-    location.reload();
-  });
-}
-
-function onOrientationFlip(){
-  if(rotationFired||resizePaused) return;
-  const current = getOrientation();
-  if(current !== lastOrientation){
-    resizePaused = true;
-    lastOrientation = current;
-    triggerRotationReload();
+  // Try orientation lock (Redmi Chrome supports this)
+  if(window.screen && window.screen.orientation && window.screen.orientation.lock){
+    const currentLock = getOrientation()==='L' ? 'landscape' : 'portrait';
+    window.screen.orientation.lock(currentLock)
+      .then(function(){
+        blackCoverReflow(function(){
+          if(window.screen.orientation.unlock) window.screen.orientation.unlock();
+        });
+      })
+      .catch(function(){ blackCoverReflow(); });
+  } else {
+    blackCoverReflow();
   }
 }
 
-window.addEventListener('orientationchange', function(){
-  resizePaused = true;
-  triggerRotationReload();
-});
-
-if(window.screen && window.screen.orientation){
-  window.screen.orientation.addEventListener('change', function(){
-    resizePaused = true;
-    triggerRotationReload();
-  });
+function checkFlip(){
+  if(rotating) return;
+  if(getOrientation() !== lastOrientation) doRotation();
 }
 
+window.addEventListener('orientationchange', function(){ doRotation(); });
+if(window.screen && window.screen.orientation)
+  window.screen.orientation.addEventListener('change', function(){ doRotation(); });
 window.addEventListener('resize', function(){
-  if(rotationFired||resizePaused) return;
-  onOrientationFlip();
-  requestAnimationFrame(function(){
-    if(rotationFired||resizePaused) return;
-    onOrientationFlip();
-  });
+  if(rotating) return;
+  checkFlip();
+  requestAnimationFrame(function(){ if(!rotating) checkFlip(); });
 });
 
-window.addEventListener('load', function(){window.addEventListener('load', function(){
+window.addEventListener('load', function(){window.addEventListener('load', function(){window.addEventListener('load', function(){
   bgResize();
   rafId = requestAnimationFrame(bgAnimate);
   setTimeout(function(){ fitLandscapeForm(); }, 100);
-  // Remove shield after canvas draws first frame
-  pageReady();
 });
 
 // ── LOGO CANVAS ──
