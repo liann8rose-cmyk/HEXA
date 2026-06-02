@@ -907,6 +907,20 @@ let maxScale = 1.0;
 function fitLandscapeForm(){
   const col = document.querySelector('.center-col');
   if(!col) return;
+
+  // Restore viewport scale for mobile landscape — same as RESTORE3 IIFE
+  const vp = document.getElementById('vpmeta');
+  if(vp){
+    const isLand = window.innerWidth > window.innerHeight;
+    const isMobileLand = isLand && Math.min(window.innerWidth, window.innerHeight) <= 500;
+    if(isMobileLand){
+      const scale = (window.innerHeight / 600).toFixed(2);
+      vp.content = 'width=device-width,initial-scale='+scale+',minimum-scale=0.3,maximum-scale=3.0,user-scalable=yes,viewport-fit=cover';
+    } else {
+      vp.content = 'width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover';
+    }
+  }
+
   col.style.transform = 'scale(1)';
   const naturalH = col.scrollHeight;
   const naturalW = col.scrollWidth;
