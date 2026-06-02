@@ -7,13 +7,15 @@
   if(sessionStorage.getItem('hexa_back_from_dashboard')){
     sessionStorage.removeItem('hexa_back_from_dashboard');
   }
-  // After rotation reload — show immediately, fully opaque, no flash
   if(sessionStorage.getItem('hexa_reloading')){
     sessionStorage.removeItem('hexa_reloading');
   }
-  // Always start visible — background is black so no unstyled flash
   document.documentElement.style.opacity = '1';
   document.documentElement.style.background = '#000';
+  // Apply spin-in immediately — before first paint
+  if(sessionStorage.getItem('hexa_spin_in')){
+    document.documentElement.style.cssText += ';transform:rotate(-90deg) scale(0.6);opacity:0;transform-origin:center center;';
+  }
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" id="vpmeta">
@@ -752,19 +754,20 @@ function triggerRotationReload(){
   resizePaused = true;
   sessionStorage.setItem('hexa_reloading', '1');
 
-  // Spin everything out, then reload
-  document.body.classList.add('spin-out');
+  // Stop animations immediately
+  stopAllAnimations();
+  if(typeof bgCtx !== 'undefined' && bgCtx && typeof BW !== 'undefined'){
+    bgCtx.fillStyle = '#000'; bgCtx.fillRect(0, 0, BW, BH);
+  }
+  if(typeof lctx !== 'undefined' && lctx){ lctx.clearRect(0, 0, 100, 100); }
 
-  setTimeout(function(){
-    stopAllAnimations();
-    if(typeof bgCtx !== 'undefined' && bgCtx && typeof BW !== 'undefined'){
-      bgCtx.fillStyle = '#000';
-      bgCtx.fillRect(0, 0, BW, BH);
-    }
-    if(typeof lctx !== 'undefined' && lctx){ lctx.clearRect(0, 0, 100, 100); }
-    sessionStorage.setItem('hexa_spin_in','1');
-    location.reload();
-  }, 350);
+  // Spin everything out — whole page rotates then reload
+  document.body.style.transition = 'none';
+  document.body.style.transformOrigin = 'center center';
+  document.body.classList.add('spin-out');
+  sessionStorage.setItem('hexa_spin_in','1');
+
+  setTimeout(function(){ location.reload(); }, 360);
 }
 
 // ── ORIENTATION DETECTION — works on Redmi, Samsung, tablets ──
@@ -839,8 +842,19 @@ window.addEventListener('load', function(){
   }
   if(sessionStorage.getItem('hexa_spin_in')){
     sessionStorage.removeItem('hexa_spin_in');
-    document.body.classList.add('spin-in');
-    setTimeout(function(){ document.body.classList.remove('spin-in'); }, 380);
+    // Already at rotate(-90deg) scale(0.6) from top script
+    // Now transition to normal
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        document.documentElement.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+        document.documentElement.style.transform = 'rotate(0deg) scale(1)';
+        document.documentElement.style.opacity = '1';
+        setTimeout(function(){
+          document.documentElement.style.transition = '';
+          document.documentElement.style.transform = '';
+        }, 380);
+      });
+    });
   }
 });
 
