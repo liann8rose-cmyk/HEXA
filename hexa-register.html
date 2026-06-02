@@ -12,9 +12,9 @@
   }
   document.documentElement.style.opacity = '1';
   document.documentElement.style.background = '#000';
-  // Apply spin-in immediately — before first paint
-  if(sessionStorage.getItem('hexa_spin_in')){
-    document.documentElement.style.cssText += ';transform:rotate(-90deg) scale(0.6);opacity:0;transform-origin:center center;';
+  // Start scaled down + invisible — ready for zoom-in
+  if(sessionStorage.getItem('hexa_zoom_in')){
+    document.documentElement.style.cssText += ';transform:scale(0.3);opacity:0;transform-origin:center center;';
   }
 })();
 </script>
@@ -406,22 +406,15 @@
     .modal-box { max-width: 480px; }
   }
 
-  /* ── ROTATION SPIN ── */
-  @keyframes spinOut {
-    from { transform: rotate(0deg) scale(1);   opacity: 1; }
-    to   { transform: rotate(90deg) scale(0.6); opacity: 0; }
-  }
-  @keyframes spinIn {
-    from { transform: rotate(-90deg) scale(0.6); opacity: 0; }
-    to   { transform: rotate(0deg) scale(1);    opacity: 1; }
-  }
-  body.spin-out {
-    animation: spinOut 0.2s ease forwards;
+  /* ── ROTATION TRANSITION ── */
+  /* Fade out — browser keeps last frame, centered, no zoom, just fades black */
+  body.fade-out {
+    animation: fadeToBlack 0.18s ease forwards;
     transform-origin: center center;
   }
-  body.spin-in {
-    animation: spinIn 0.2s ease forwards;
-    transform-origin: center center;
+  @keyframes fadeToBlack {
+    from { opacity: 1; }
+    to   { opacity: 0; }
   }
 </style>
 </head>
@@ -754,20 +747,19 @@ function triggerRotationReload(){
   resizePaused = true;
   sessionStorage.setItem('hexa_reloading', '1');
 
-  // Stop animations immediately
-  stopAllAnimations();
-  if(typeof bgCtx !== 'undefined' && bgCtx && typeof BW !== 'undefined'){
-    bgCtx.fillStyle = '#000'; bgCtx.fillRect(0, 0, BW, BH);
-  }
-  if(typeof lctx !== 'undefined' && lctx){ lctx.clearRect(0, 0, 100, 100); }
+  // Fade to black — browser keeps last frame centered, opacity drops
+  document.body.classList.add('fade-out');
+  sessionStorage.setItem('hexa_zoom_in','1');
 
-  // Spin everything out — whole page rotates then reload
-  document.body.style.transition = 'none';
-  document.body.style.transformOrigin = 'center center';
-  document.body.classList.add('spin-out');
-  sessionStorage.setItem('hexa_spin_in','1');
-
-  setTimeout(function(){ location.reload(); }, 210);
+  setTimeout(function(){
+    // Stop animations under the black
+    stopAllAnimations();
+    if(typeof bgCtx !== 'undefined' && bgCtx && typeof BW !== 'undefined'){
+      bgCtx.fillStyle = '#000'; bgCtx.fillRect(0, 0, BW, BH);
+    }
+    if(typeof lctx !== 'undefined' && lctx){ lctx.clearRect(0, 0, 100, 100); }
+    location.reload();
+  }, 190);
 }
 
 // ── ORIENTATION DETECTION — works on Redmi, Samsung, tablets ──
@@ -840,19 +832,18 @@ window.addEventListener('load', function(){
   } else {
     // already cleared by top script — but set by us means post-rotation
   }
-  if(sessionStorage.getItem('hexa_spin_in')){
-    sessionStorage.removeItem('hexa_spin_in');
-    // Already at rotate(-90deg) scale(0.6) from top script
-    // Now transition to normal
+  if(sessionStorage.getItem('hexa_zoom_in')){
+    sessionStorage.removeItem('hexa_zoom_in');
+    // Page starts at scale(0.3) opacity:0 — zoom in to full size
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
-        document.documentElement.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-        document.documentElement.style.transform = 'rotate(0deg) scale(1)';
+        document.documentElement.style.transition = 'transform 0.35s cubic-bezier(0.2,0,0.2,1), opacity 0.25s ease';
+        document.documentElement.style.transform = 'scale(1)';
         document.documentElement.style.opacity = '1';
         setTimeout(function(){
           document.documentElement.style.transition = '';
           document.documentElement.style.transform = '';
-        }, 220);
+        }, 380);
       });
     });
   }
