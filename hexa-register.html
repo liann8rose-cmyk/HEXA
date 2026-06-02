@@ -863,9 +863,10 @@ window.addEventListener('resize', function(){
   requestAnimationFrame(function(){ if(!rotating) checkFlip(); });
 });
 
-window.addEventListener('load', function(){window.addEventListener('load', function(){window.addEventListener('load', function(){
+window.addEventListener('load', function(){
   bgResize();
   rafId = requestAnimationFrame(bgAnimate);
+  if(!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
   setTimeout(function(){ fitLandscapeForm(); }, 100);
 });
 
