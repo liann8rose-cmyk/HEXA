@@ -733,14 +733,19 @@ function blackCoverReflow(callback){
       if(!rafId) rafId = requestAnimationFrame(bgAnimate);
       if(typeof logoRafId!=='undefined'&&!logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
       if(callback) callback();
-      // Wait for canvas to draw new frame before removing cover
-      requestAnimationFrame(function(){
-        requestAnimationFrame(function(){
+      // Wait for canvas to fully paint before removing cover
+      // Each rAF = one frame @ 60fps. We wait 6 frames (~100ms) to be safe.
+      let frames = 0;
+      function waitFrames(){
+        frames++;
+        if(frames < 6) requestAnimationFrame(waitFrames);
+        else {
           cover.remove();
           lastOrientation = getOrientation();
           rotating = false;
-        });
-      });
+        }
+      }
+      requestAnimationFrame(waitFrames);
     });
   });
 }
