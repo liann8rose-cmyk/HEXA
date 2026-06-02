@@ -773,6 +773,8 @@ window.addEventListener('resize', function(){
   BH = bgCanvas.height = window.innerHeight;
   buildBg();
   fitLandscapeForm();
+  if(!rafId) rafId = requestAnimationFrame(bgAnimate);
+  if(typeof logoRafId !== 'undefined' && !logoRafId) logoRafId = requestAnimationFrame(logoAnimate);
 });
 
 window.addEventListener('load', function(){
