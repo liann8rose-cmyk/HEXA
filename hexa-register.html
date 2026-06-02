@@ -796,16 +796,20 @@ function drawSmallHex(ctx,x,y,r,color,alpha){
 
 let logoRafId = null;
 
-// ── RESIZE: keep canvas sized, restart animations ──
+// ── RESIZE: debounced — keep canvas sized, restart animations ──
+var _resizeTimer = null;
 window.addEventListener('resize', function(){
-  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
-  if(logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; }
-  BW = bgCanvas.width = window.innerWidth;
-  BH = bgCanvas.height = window.innerHeight;
-  buildBg();
-  fitLandscapeForm();
-  rafId = requestAnimationFrame(bgAnimate);
-  logoRafId = requestAnimationFrame(logoAnimate);
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(function(){
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    if(logoRafId){ cancelAnimationFrame(logoRafId); logoRafId = null; }
+    BW = bgCanvas.width = window.innerWidth;
+    BH = bgCanvas.height = window.innerHeight;
+    buildBg();
+    fitLandscapeForm();
+    rafId = requestAnimationFrame(bgAnimate);
+    logoRafId = requestAnimationFrame(logoAnimate);
+  }, 150);
 });
 function logoAnimate(){
 
