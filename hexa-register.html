@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="background:#000!important;opacity:0;">
+<html lang="en" style="background:#000;opacity:0;">
 <head>
 <meta charset="UTF-8">
 <script>
@@ -7,16 +7,13 @@
   if(sessionStorage.getItem('hexa_back_from_dashboard')){
     sessionStorage.removeItem('hexa_back_from_dashboard');
   }
-  // After rotation reload — show immediately, fully opaque, no flash
   if(sessionStorage.getItem('hexa_reloading')){
     sessionStorage.removeItem('hexa_reloading');
   }
-  // Always start visible — background is black so no unstyled flash
-  document.documentElement.style.opacity = '1';
+  // Keep hidden — load event will reveal it
   document.documentElement.style.background = '#000';
 })();
 </script>
-<script>document.documentElement.style.opacity='0';</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" id="vpmeta">
 <meta name="theme-color" content="#000000">
 <meta name="color-scheme" content="dark">
