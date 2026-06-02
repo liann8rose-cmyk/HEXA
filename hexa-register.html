@@ -390,7 +390,7 @@
 
   /* ── ALL DEVICES: universal center-col setup for JS scaling ── */
   .center-col {
-    transform-origin: center top;
+    transform-origin: center center;
   }
 
   /* ── MOBILE LANDSCAPE: Sign In button fix ── */
@@ -1100,7 +1100,7 @@ function fitLandscapeForm(){
   maxScale = Math.max(maxScale, minScale);
   currentScale = fitScale;
   col.style.transform = 'scale(' + fitScale + ')';
-  col.style.transformOrigin = 'center top';
+  col.style.transformOrigin = 'center center';
   const page = document.querySelector('.page');
   if(page) page.scrollTop = 0;
 }
@@ -1117,7 +1117,7 @@ function fitLandscapeForm(){
     const col = getCol();
     if(col){
       col.style.transform = 'scale(' + newS + ')';
-      col.style.transformOrigin = 'center top';
+      col.style.transformOrigin = 'center center';
     }
     // If back to minimum, reset scroll so form is locked in place
     if(newS <= fitScale + 0.01){
