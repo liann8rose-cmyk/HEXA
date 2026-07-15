@@ -35,16 +35,9 @@ const ctx = canvas.getContext('2d');
 const blackoutOverlay = document.getElementById('blackout-overlay');
 let W, H;
 function resize() {
-  // visualViewport reflects the actually-visible area (excludes system
-  // nav bar / browser chrome on many devices) more accurately than
-  // window.innerWidth/innerHeight.
   const vv = window.visualViewport;
   W = canvas.width = vv ? Math.round(vv.width) : window.innerWidth;
   H = canvas.height = vv ? Math.round(vv.height) : window.innerHeight;
-  // CRITICAL: force the CSS display box to match the bitmap resolution
-  // exactly, in real pixels — not 100vw/100vh. If those two ever
-  // disagree, the browser stretches the canvas image to fill the gap,
-  // distorting every shape on it.
   canvas.style.width = W + 'px';
   canvas.style.height = H + 'px';
   if(typeof positionButtons === 'function') positionButtons();
@@ -52,12 +45,10 @@ function resize() {
 resize();
 
 let frame = 0;
-let lastTs = null; // for frame-rate-independent animation speed
-// Single-scene flow now: welcome hex, then CONTINUE → hexa-rules.html.
+let lastTs = null; 
 let rafId = null;
 
 // ── If returning user → skip to dashboard ──
-// Skip redirect during local/preview testing (blob: or file: protocol)
 const isHosted = window.location.protocol === 'https:' || window.location.protocol === 'http:';
 if(isHosted && localStorage.getItem('hexa_new_user') !== 'true'){
   window.location.replace('dashboard.html');
@@ -68,34 +59,19 @@ function easeOut(t){return 1-Math.pow(1-t,3);}
 function frac(f,s,e){return Math.max(0,Math.min(1,(f-s)/(e-s)));}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
-// Shared hex sizing rule — same fitting logic on every page/phase.
-// Portrait/square: unchanged from the original design (minDim*0.42).
-// True landscape (w>h): allowed to grow toward using more width, but
-// geometrically bounded so the outer frame can never get closer than
-// a safe margin to any edge — computed from actual hexagon geometry,
-// not guessed.
 function getHexRadius(w,h){
-  if(w <= h) return Math.min(w,h)*0.42; // portrait/square — untouched
+  if(w <= h) return Math.min(w,h)*0.42; 
 
-  const frameMult = 1.048;      // outer frame ring is slightly bigger than hexR
-  const marginV = 0.62;         // extra buffer — real device chrome eats more than innerHeight reports
+  const frameMult = 1.048;      
+  const marginV = 0.62;         
   const marginH = 0.70;
-  const byHeight = (h*marginV) / (2*frameMult);        // vertical extent = 2*R
-  const byWidth  = (w*marginH) / (1.7320508*frameMult); // horizontal extent = R*sqrt(3)
+  const byHeight = (h*marginV) / (2*frameMult);        
+  const byWidth  = (w*marginH) / (1.7320508*frameMult); 
   return Math.min(byHeight, byWidth, w*0.30);
 }
 
-// The SAFE horizontal half-width at a vertical offset `dy` from the
-// hex's center — based on the hexagon's INSCRIBED circle (radius =
-// hexR * cos(30°)), not its outer vertices. The loggedin hex rotates
-// continuously (see drawColorHexTunnel's `rot`), so its actual corners
-// sweep through every angle over time — sizing against the true edge
-// position only holds at one instant. The inscribed circle is the
-// largest region that's guaranteed to stay inside the hexagon at
-// EVERY rotation angle, so anything sized to it can never overflow,
-// no matter how long the hex keeps spinning.
 function hexHalfWidthAt(hexR, dy){
-  const incircleR = hexR * 0.8660254; // hexR * sqrt(3)/2 — apothem
+  const incircleR = hexR * 0.8660254; 
   const d2 = incircleR*incircleR - dy*dy;
   return d2 > 0 ? Math.sqrt(d2) : 0;
 }
@@ -119,7 +95,7 @@ function drawParticles(a){
   ctx.globalAlpha=1;
 }
 
-// ── HEX TUNNEL (welcome screen) ──────────────────────────
+// ── HEX TUNNEL ───────────────────────────────────────────
 function drawHexTunnel(cx,cy,maxR,rot,alpha,rings){
   for(let i=rings;i>=0;i--){
     const t=i/rings;
@@ -170,10 +146,6 @@ function drawOuterFrame(cx,cy,r,alpha){
 
 function drawWelcome(alpha,cx,cy,hexR){
   if(alpha<=0)return;
-  // Same rule as "YOU ARE LOGGED IN": measured against the hex's real
-  // width at this exact line position, and positioned at the same
-  // relative offset from center — so both pages' headline sit in the
-  // same spot, sized the same way, in any orientation.
   const dy = -hexR*0.32;
   const y = cy + dy;
   const availW = hexHalfWidthAt(hexR, dy) * 2 * 0.90;
@@ -202,9 +174,6 @@ function drawWelcome(alpha,cx,cy,hexR){
   ctx.shadowBlur=0;ctx.globalAlpha=1;
 }
 
-// ── "YOU ARE LOGGED IN" / "Enjoy" — crossfades in at the SAME spot
-// WELCOME occupied (identical dy from center), and "Enjoy" sits below
-// it, capped to the same font size so both lines read as one unit.
 function drawLoggedInText(alpha,cx,cy,hexR){
   if(alpha<=0)return;
   function fitFontToWidth(text,targetWidth,weight){
@@ -213,14 +182,14 @@ function drawLoggedInText(alpha,cx,cy,hexR){
     const refW=ctx.measureText(text).width||1;
     return targetWidth/refW*ref;
   }
-  const headingDy=-hexR*0.32; // exact same offset drawWelcome uses for WELCOME
+  const headingDy=-hexR*0.32; 
   const headingAvailW=hexHalfWidthAt(hexR,headingDy)*2*0.90;
   const fsHeading=Math.min(fitFontToWidth('YOU ARE LOGGED IN',headingAvailW,700),hexR*0.85);
   const headingY=cy+headingDy;
 
   const enjoyDy=hexR*0.28;
   const enjoyAvailW=hexHalfWidthAt(hexR,enjoyDy)*2*0.90;
-  const fsEnjoy=Math.min(fitFontToWidth('Enjoy',enjoyAvailW,700),fsHeading); // capped to heading's size — "all same size"
+  const fsEnjoy=Math.min(fitFontToWidth('Enjoy',enjoyAvailW,700),fsHeading); 
   const enjoyY=cy+enjoyDy;
 
   function glowText(text,x,y,fs){
@@ -238,10 +207,6 @@ function drawLoggedInText(alpha,cx,cy,hexR){
 // ── MAIN LOOP ─────────────────────────────────────────────
 let continueBtnShown = false;
 
-// Text timeline, all in `frame` units: WELCOME fades in, holds, fades
-// out; then "YOU ARE LOGGED IN" / "Enjoy" fade in at the same spot and
-// hold. The CONTINUE button appears only after that hold completes —
-// it's the only way to move on.
 const WELCOME_IN_START=100, WELCOME_IN_END=200;
 const WELCOME_HOLD_END=260;
 const WELCOME_OUT_END=320;
@@ -264,9 +229,6 @@ function getTextAlphas(frame){
   return {welcomeA,loggedA};
 }
 
-// Draws the welcome-tunnel scene for the CURRENT value of `frame` —
-// used by both the live loop and the post-rotation redraw, so the
-// two never fall out of sync.
 function drawWelcomeScene(cx,cy){
   ctx.clearRect(0,0,W,H);
 
@@ -289,14 +251,6 @@ function drawWelcomeScene(cx,cy){
   drawLoggedInText(loggedA,cx,cy,hexR);
 }
 
-// Redraws whatever the current animation state is (same frame/phase/
-// loggedInAlpha — nothing advances) at the current W/H. Called right
-// after a rotation resize so the image that reappears is the same
-// moment, just correctly sized, not a fresh or skipped frame.
-// ── DEBUG CENTERING OVERLAY — add ?debug=1 to the URL to see this.
-// Draws the true canvas center line plus the measured distance from
-// canvas top and canvas bottom, in real pixels, directly on screen —
-// no external measuring, no screenshot compression noise.
 const DEBUG_CENTER = new URLSearchParams(window.location.search).get('debug') === '1';
 function drawDebugCenterOverlay(){
   if(!DEBUG_CENTER) return;
@@ -323,10 +277,6 @@ function drawDebugCenterOverlay(){
   ctx.fillText('bottom gap: ' + bottomGap + 'px', 10, 34);
   ctx.fillText('difference: ' + (topGap-bottomGap) + 'px', 10, 58);
 
-  // Draw the hex's SAFE inscribed-circle boundary (yellow) and the
-  // button's actual bounding box (red), so it's directly visible
-  // whether the button's corners are inside or outside the safe zone
-  // — no screenshot analysis needed, read it straight off the screen.
   {
     const incircleR = hexR*0.8660254;
     ctx.strokeStyle = 'rgba(255,230,0,0.9)';
@@ -337,14 +287,12 @@ function drawDebugCenterOverlay(){
 
     const btn = document.getElementById('continue-btn');
     if(btn){
-      const OUTLINE_BUFFER = 14; // matches positionButtons() — 3px outline + 4px offset + glow
+      const OUTLINE_BUFFER = 14; 
       const r = btn.getBoundingClientRect();
       ctx.strokeStyle = 'rgba(255,0,0,0.95)';
       ctx.lineWidth = 2;
       ctx.strokeRect(r.left-OUTLINE_BUFFER, r.top-OUTLINE_BUFFER, r.width+OUTLINE_BUFFER*2, r.height+OUTLINE_BUFFER*2);
 
-      // distance from hex center to each button corner (INCLUDING the
-      // visible focus-outline buffer) vs incircle radius
       const corners = [[r.left-OUTLINE_BUFFER,r.top-OUTLINE_BUFFER],[r.right+OUTLINE_BUFFER,r.top-OUTLINE_BUFFER],
                         [r.left-OUTLINE_BUFFER,r.bottom+OUTLINE_BUFFER],[r.right+OUTLINE_BUFFER,r.bottom+OUTLINE_BUFFER]];
       let maxDist = 0;
@@ -352,7 +300,7 @@ function drawDebugCenterOverlay(){
         const d = Math.hypot(x-W/2, y-cy);
         if(d>maxDist) maxDist=d;
       });
-      const margin = Math.round(incircleR - maxDist); // positive = safely inside, negative = OUTSIDE
+      const margin = Math.round(incircleR - maxDist); 
       ctx.fillStyle = margin >= 0 ? '#0f0' : '#f00';
       ctx.fillText('button corner margin: ' + margin + 'px ' + (margin>=0?'(SAFE)':'(OVERFLOW!)'), 10, 82);
     }
@@ -367,15 +315,10 @@ function renderCurrentState(){
 
 function loop(ts){
   rafId = requestAnimationFrame(loop);
-  if(resizePaused){ lastTs = null; return; } // frozen during rotation — state holds until redrawn at new size
+  if(resizePaused){ lastTs = null; return; } 
 
-  // Advance by real elapsed time, normalized to "60fps units", so the
-  // animation speed is the same on a 60Hz, 90Hz, or 120Hz screen —
-  // requestAnimationFrame fires at the display's refresh rate, not a
-  // fixed speed, so counting "1 per callback" runs faster on high-Hz
-  // screens otherwise.
   if(lastTs === null) lastTs = ts;
-  const deltaMs = Math.min(100, ts - lastTs); // cap to avoid huge jumps after a tab was backgrounded
+  const deltaMs = Math.min(100, ts - lastTs); 
   lastTs = ts;
   const frameUnits = deltaMs / (1000/60);
 
@@ -385,9 +328,6 @@ function loop(ts){
   drawWelcomeScene(cx,cy);
   drawDebugCenterOverlay();
 
-  // WELCOME fades out, "YOU ARE LOGGED IN" / "Enjoy" fade in and hold,
-  // then the CONTINUE button appears under the hex — the only way to
-  // move on to the rules page.
   if(frame>=LOGGEDIN_HOLD_END && !continueBtnShown){
     continueBtnShown = true;
     const btn=document.getElementById('continue-btn');
@@ -396,7 +336,7 @@ function loop(ts){
   }
 }
 
-// ── OPTIMIZED ROTATION HANDLER ──
+// ── BULLETPROOF ROTATION HANDLER ──
 let resizePaused = false;
 let lastOrientation = window.innerWidth > window.innerHeight ? 'L' : 'P';
 let lastW = window.innerWidth, lastH = window.innerHeight;
@@ -454,6 +394,13 @@ function deactivateBlackout(){
     lastW = window.innerWidth;
     lastH = window.innerHeight;
     resizePaused = false;
+
+    // Delayed double-check resize to lock browser rendering glitches
+    setTimeout(() => {
+      resize();
+      renderCurrentState();
+    }, 250);
+
   }, 350); 
 }
 
@@ -542,17 +489,13 @@ requestAnimationFrame(loop);
   <a href="hexa-rules.html" class="hexa-btn" tabindex="0" onclick="localStorage.removeItem('hexa_new_user');window.location.replace('hexa-rules.html');return false;">CONTINUE →</a>
 </div>
 <script>
-// Position the CONTINUE button BELOW the hex's outer frame, clear of
-// every edge — not inside it. The outer frame's outermost ring sits
-// at hexR*1.04 (see drawOuterFrame), so anything past that is
-// guaranteed clear of the hex at every orientation.
 function positionButtons(){
   if(typeof W==='undefined' || typeof getHexRadius!=='function') return;
   const hexR = getHexRadius(W,H);
   const cx = W/2, cy = H/2;
-  const hexBottomY = cy + hexR*1.04; // outer frame's outermost tip
-  const gapBelowHex = hexR*0.16;      // real clearance between hex and button
-  const bottomMargin = Math.max(16, H*0.04); // floor only — not the default position
+  const hexBottomY = cy + hexR*1.04; 
+  const gapBelowHex = hexR*0.16;      
+  const bottomMargin = Math.max(16, H*0.04); 
 
   const baseFontSize = 15, basePadV = 13, basePadH = 34;
 
@@ -569,17 +512,11 @@ function positionButtons(){
   }
 
   ['continue-btn'].forEach(id=>{
-    // was hidden (display:none) sizes measure as 0 — force visible to
-    // measure, then restore original display state after.
     const el = document.getElementById(id);
     if(!el) return;
     const prevDisplay = el.style.display;
     el.style.display = 'block';
 
-    // One formula for every orientation — hexR itself is already
-    // smaller in landscape (getHexRadius), so this naturally comes out
-    // smaller there too, instead of using a second, separately-tuned
-    // set of numbers that can disagree with the portrait version.
     const targetWidth = Math.max(150, Math.min(hexR*0.85, W*0.7));
 
     let scale = 1;
@@ -589,9 +526,6 @@ function positionButtons(){
     applyScale(id, scale, bottomMargin);
     box = el.getBoundingClientRect();
 
-    // If the gap plus the button's own height doesn't fit before the
-    // bottom margin, SHRINK the button so its top edge still clears
-    // the gap — never slide it, always shrink.
     const available = Math.max(28, H - bottomMargin - (hexBottomY + gapBelowHex));
     if(box.height > available){
       scale *= available / box.height;
@@ -599,9 +533,6 @@ function positionButtons(){
       box = el.getBoundingClientRect();
     }
 
-    // Center it in the LEFTOVER space between the hex+gap and the
-    // bottom margin — "the middle" of that gap, not snug against
-    // either edge.
     const spaceTop = hexBottomY + gapBelowHex;
     const spaceBottom = H - bottomMargin;
     const leftover = Math.max(0, (spaceBottom - spaceTop) - box.height);
