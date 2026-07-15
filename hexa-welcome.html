@@ -364,8 +364,8 @@ function activateBlackout(){
   blackoutOverlay.style.pointerEvents = 'auto';
   blackoutOverlay.classList.add('active');
 
-  canvas.style.transition = 'transform 200ms cubic-bezier(.55,0,1,.45), opacity 200ms ease-in';
-  canvas.style.transform = 'scale(0.15) rotate(180deg)';
+  canvas.style.transition = 'transform 50ms cubic-bezier(.55,0,1,.45), opacity 50ms ease-in';
+  canvas.style.transform = 'scale(0.15) rotate(90deg)';
   canvas.style.opacity = '0';
   
   setTimeout(() => {
