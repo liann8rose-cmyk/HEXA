@@ -396,9 +396,7 @@ function loop(ts){
   }
 }
 
-// ── ROTATION HANDLER — instant blackout, freeze current animation state,
-// resize canvas, redraw that SAME state at the new size, fade back in.
-// Same mechanism as hexa-register.html. ──
+// ── OPTIMIZED ROTATION HANDLER ──
 let resizePaused = false;
 let lastOrientation = window.innerWidth > window.innerHeight ? 'L' : 'P';
 let lastW = window.innerWidth, lastH = window.innerHeight;
@@ -409,18 +407,9 @@ function getOrientation(){
     return window.innerWidth > window.innerHeight ? 'L' : 'P';
   if(window.screen && window.screen.orientation && window.screen.orientation.type)
     return window.screen.orientation.type.includes('landscape') ? 'L' : 'P';
-  if(typeof window.orientation === 'number')
-    return (window.orientation===90||window.orientation===-90) ? 'L' : 'P';
   return 'P';
 }
 
-// True as soon as EITHER dimension has moved meaningfully from its last
-// known-stable value — not just once the W>H label has fully flipped.
-// A real rotation always starts with the browser's chrome (address bar/
-// nav bar) animating first, which changes height well before width ever
-// overtakes it; gating only on the flipped label misses that whole
-// opening window, during which the old frame would sit uncovered and
-// get clipped by the shrinking viewport.
 function dimensionsShifted(){
   const dw = Math.abs(window.innerWidth - lastW) / Math.max(1,lastW);
   const dh = Math.abs(window.innerHeight - lastH) / Math.max(1,lastH);
@@ -428,47 +417,46 @@ function dimensionsShifted(){
 }
 
 function activateBlackout(){
-  if(resizePaused) return;
+  if (resizePaused) return;
   resizePaused = true;
-  blackoutOverlay.style.transition = 'none'; // instant on, no fade
+  
+  blackoutOverlay.style.transition = 'none'; 
   blackoutOverlay.style.opacity = '1';
   blackoutOverlay.style.pointerEvents = 'auto';
   blackoutOverlay.classList.add('active');
 
-  // Spiral the CURRENT frame (whatever's already drawn) down into
-  // nothing, fast, starting the instant rotation is detected. This is
-  // what the OS's own rotation-transition snapshot will catch instead
-  // of a static, wrong-shaped crop — a spin-and-shrink reads as
-  // intentional even mid-frame, where a frozen crop reads as broken.
-  canvas.style.transition = 'transform 260ms cubic-bezier(.55,0,1,.45), opacity 260ms ease-in';
-  canvas.style.transform = 'scale(0.15) rotate(540deg)';
+  canvas.style.transition = 'transform 200ms cubic-bezier(.55,0,1,.45), opacity 200ms ease-in';
+  canvas.style.transform = 'scale(0.15) rotate(180deg)';
   canvas.style.opacity = '0';
+  
+  setTimeout(() => {
+    resize();
+    renderCurrentState();
+  }, 50);
 }
 
 function deactivateBlackout(){
   clearTimeout(overlayTimer);
   overlayTimer = setTimeout(function(){
-    canvas.style.transition = 'none'; // instant reset, still hidden under the overlay
+    canvas.style.transition = 'none'; 
     canvas.style.transform = 'scale(1) rotate(0deg)';
     canvas.style.opacity = '1';
-    resize();               // pick up new W/H
-    renderCurrentState();   // redraw the SAME frame/phase, now at the right size
-    blackoutOverlay.style.transition = 'opacity 0.5s ease'; // slower, deliberate fade off
+    
+    resize();               
+    renderCurrentState();   
+    
+    blackoutOverlay.style.transition = 'opacity 0.3s ease'; 
     blackoutOverlay.style.opacity = '0';
     blackoutOverlay.style.pointerEvents = 'none';
     blackoutOverlay.classList.remove('active');
+    
     lastOrientation = getOrientation();
     lastW = window.innerWidth;
     lastH = window.innerHeight;
     resizePaused = false;
-  }, 2200); // slightly longer settle before redraw+fade
+  }, 350); 
 }
 
-// matchMedia ties into style recalculation directly, rather than the
-// debounced resize-event queue browsers use for window 'resize' — in
-// practice it tends to fire earlier, closing more of the gap where a
-// stale-sized box could be visible before JS finds out anything
-// changed.
 window.matchMedia('(orientation: landscape)').addEventListener('change', function(){
   activateBlackout();
   deactivateBlackout();
@@ -478,22 +466,23 @@ window.addEventListener('orientationchange', function(){
   activateBlackout();
   deactivateBlackout();
 });
+
 if(window.screen && window.screen.orientation){
   window.screen.orientation.addEventListener('change', function(){
     activateBlackout();
     deactivateBlackout();
   });
 }
+
+let resizeTimeout;
 window.addEventListener('resize', function(){
-  // Blackout goes up on the FIRST tick, no threshold — waiting for an
-  // 8% shift let the old-sized canvas sit exposed while the viewport
-  // was already reshaping under it. The threshold still matters for
-  // when to redraw/settle, which deactivateBlackout's timer handles.
   activateBlackout();
-  requestAnimationFrame(function(){
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
     if(resizePaused) deactivateBlackout();
-  });
+  }, 100);
 });
+
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize', function(){
     activateBlackout();
@@ -501,13 +490,6 @@ if(window.visualViewport){
   });
 }
 
-// The device can rotate WHILE this tab is backgrounded (switched to
-// another app, then rotated, then returned) — no resize/orientation
-// event ever fires on a backgrounded tab, so none of the listeners
-// above run. Coming back to the tab with stale canvas dimensions is
-// exactly the "half image" symptom: old bitmap size sitting inside
-// the new, differently-shaped viewport. Catch it the moment the page
-// becomes visible again.
 function checkForMissedRotation(){
   if(dimensionsShifted()){
     activateBlackout();
@@ -556,7 +538,6 @@ requestAnimationFrame(loop);
 }
 </style>
 
-<!-- LOGGED IN screen button → goes to Rules. Only button in the flow. -->
 <div id="continue-btn" class="hexa-btn-wrap">
   <a href="hexa-rules.html" class="hexa-btn" tabindex="0" onclick="localStorage.removeItem('hexa_new_user');window.location.replace('hexa-rules.html');return false;">CONTINUE →</a>
 </div>
