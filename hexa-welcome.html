@@ -34,15 +34,7 @@ const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 const blackoutOverlay = document.getElementById('blackout-overlay');
 let W, H;
-function resize() {
-  const vv = window.visualViewport;
-  W = canvas.width = vv ? Math.round(vv.width) : window.innerWidth;
-  H = canvas.height = vv ? Math.round(vv.height) : window.innerHeight;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  if(typeof positionButtons === 'function') positionButtons();
-}
-resize();
+
 
 let frame = 0;
 let lastTs = null; 
@@ -53,7 +45,14 @@ const isHosted = window.location.protocol === 'https:' || window.location.protoc
 if(isHosted && localStorage.getItem('hexa_new_user') !== 'true'){
   window.location.replace('dashboard.html');
 }
-
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  if(typeof positionButtons === 'function') positionButtons();
+}
+  
 // ── HELPERS ───────────────────────────────────────────────
 function easeOut(t){return 1-Math.pow(1-t,3);}
 function frac(f,s,e){return Math.max(0,Math.min(1,(f-s)/(e-s)));}
