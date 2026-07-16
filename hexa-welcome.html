@@ -756,7 +756,7 @@ function activateBlackout(){
   // what the OS's own rotation-transition snapshot will catch instead
   // of a static, wrong-shaped crop — a spin-and-shrink reads as
   // intentional even mid-frame, where a frozen crop reads as broken.
-  canvas.style.transition = 'transform 260ms cubic-bezier(.55,0,1,.45), opacity 260ms ease-in';
+  canvas.style.transition = 'transform 0ms cubic-bezier(.55,0,1,.45), opacity 0ms ease-in';
   canvas.style.transform = 'scale(0.15) rotate(540deg)';
   canvas.style.opacity = '0';
 }
