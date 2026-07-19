@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HEXA · Welcome</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@200;300;700&family=Share+Tech+Mono&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#00030a; overflow:hidden; width:100vw; height:100vh; }
+  canvas { display:block; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:1; transform-origin:center center; }
+
+  /* ── BLACKOUT OVERLAY — instant ON at orientation change, fade OFF once redraw is ready ── */
+  #blackout-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: #00030a;
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #blackout-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="blackout-overlay"></div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const blackoutOverlay = document.getElementById('blackout-overlay');
+let W, H;
+
+// Direct window-dimension resize to bypass visualViewport calculation lag
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  if(typeof positionButtons === 'function') positionButtons();
+}
+resize();
+
+// Extra safety re-check shortly after load — fonts (loaded via @import) or
+// other late layout shifts can settle a moment after this script first runs,
+// so a rotation right at page-open is more exposed to catching stale
+// dimensions. This re-confirms everything is correct before the user is
+// likely to have interacted with the page at all.
+setTimeout(resize, 150);
+
+let frame = 0;
+let lastTs = null; 
+let rafId = null;
+
+// ── If returning user → skip to dashboard ──
+const isHosted = window.location.protocol === 'https:' || window.location.protocol === 'http:';
+if(isHosted && localStorage.getItem('hexa_new_user') !== 'true'){
+  window.location.replace('dashboard.html');
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function easeOut(t){return 1-Math.pow(1-t,3);}
+function frac(f,s,e){return Math.max(0,Math.min(1,(f-s)/(e-s)));}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+function getHexRadius(w,h){
+  if(w <= h) return Math.min(w,h)*0.42; 
+
+  const frameMult = 1.048;      
+  const marginV = 0.62;         
+  const marginH = 0.70;
+  const byHeight = (h*marginV) / (2*frameMult);        
+  const byWidth  = (w*marginH) / (1.7320508*frameMult); 
+  return Math.min(byHeight, byWidth, w*0.30);
+}
+
+function hexHalfWidthAt(hexR, dy){
+  const incircleR = hexR * 0.8660254; 
+  const d2 = incircleR*incircleR - dy*dy;
+  return d2 > 0 ? Math.sqrt(d2) : 0;
+}
+
+// ── PARTICLES ────────────────────────────────────────────
+const particles = Array.from({length:100},()=>({
+  x:Math.random(), y:Math.random(),
+  r:0.5+Math.random()*1.8,
+  alpha:Math.random(),
+  tw:Math.random()*Math.PI*2,
+  twSpd:0.02+Math.random()*0.04,
+  col:Math.random()>0.5?'#00e6dc':'#aa66ff',
+}));
+function drawParticles(a){
+  particles.forEach(p=>{
+    p.tw+=p.twSpd;
+    const pa=a*p.alpha*(0.3+0.7*Math.abs(Math.sin(p.tw)));
+    ctx.beginPath();ctx.arc(p.x*W,p.y*H,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.col;ctx.globalAlpha=pa;ctx.fill();
+  });
+  ctx.globalAlpha=1;
+}
+
+// ── HEX TUNNEL ───────────────────────────────────────────
+function drawHexTunnel(cx,cy,maxR,rot,alpha,rings){
+  for(let i=rings;i>=0;i--){
+    const t=i/rings;
+    const r=maxR*(0.08+t*0.92);
+    const gi=Math.round(t*40+(1-t)*200);
+    const bi=Math.round(t*80+(1-t)*255);
+    const strokeA=alpha*(1-t*0.5)*(0.5+0.5*Math.sin(frame*0.03+t*3));
+    if(i<rings&&i>0){
+      const prevR=maxR*(0.08+((i+1)/rings)*0.92);
+      for(let v=0;v<6;v++){
+        const a1=(Math.PI/3)*v+rot;
+        ctx.beginPath();ctx.moveTo(cx+r*Math.cos(a1),cy+r*Math.sin(a1));
+        ctx.lineTo(cx+prevR*Math.cos(a1),cy+prevR*Math.sin(a1));
+        ctx.strokeStyle=`rgba(0,${gi},${bi},${strokeA*0.3})`;
+        ctx.globalAlpha=alpha;ctx.lineWidth=0.5;ctx.stroke();
+      }
+    }
+    ctx.beginPath();
+    for(let v=0;v<6;v++){const a=(Math.PI/3)*v+rot;v===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}
+    ctx.closePath();
+    ctx.shadowColor=i<rings*0.3?'#00ffee':`rgb(0,${gi},${bi})`;
+    ctx.shadowBlur=(1-t)*25;
+    ctx.strokeStyle=i<rings*0.25?`rgba(0,255,230,${alpha*(1-t)*1.5})`:`rgba(0,${gi},${bi},${strokeA})`;
+    ctx.globalAlpha=alpha;ctx.lineWidth=i<rings*0.3?1.5:0.8;ctx.stroke();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+}
+
+function drawOuterFrame(cx,cy,r,alpha){
+  [r*1.04,r*1.0,r*0.96].forEach((rr,i)=>{
+    ctx.beginPath();
+    for(let v=0;v<6;v++){const a=(Math.PI/3)*v+Math.PI/6;v===0?ctx.moveTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a)):ctx.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a));}
+    ctx.closePath();
+    ctx.shadowColor='#00e6dc';ctx.shadowBlur=30-i*8;
+    ctx.strokeStyle=['rgba(0,230,220,0.9)','rgba(140,80,255,0.7)','rgba(0,200,255,0.5)'][i];
+    ctx.globalAlpha=alpha;ctx.lineWidth=3-i;ctx.stroke();
+  });
+  for(let v=0;v<6;v++){
+    const a=(Math.PI/3)*v+Math.PI/6;
+    const gx=cx+r*Math.cos(a),gy=cy+r*Math.sin(a);
+    const gl=0.4+0.6*Math.abs(Math.sin(frame*0.05+v));
+    ctx.shadowColor='#fff';ctx.shadowBlur=15;
+    ctx.fillStyle='#fff';ctx.globalAlpha=alpha*gl*0.9;
+    ctx.beginPath();ctx.arc(gx,gy,2.5,0,Math.PI*2);ctx.fill();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+}
+
+function drawWelcome(alpha,cx,cy,hexR){
+  if(alpha<=0)return;
+  const dy = -hexR*0.32;
+  const y = cy + dy;
+  const availW = hexHalfWidthAt(hexR, dy) * 2 * 0.90;
+  const ref = 100;
+  ctx.font = `600 ${ref}px Bebas Neue, sans-serif`;
+  const refW = ctx.measureText('WELCOME').width || 1;
+  const fs = Math.min(availW/refW*ref, hexR*0.85);
+
+  ctx.font=`600 ${fs}px Bebas Neue, sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  const bloomGrad=ctx.createRadialGradient(cx,y+fs*0.5,0,cx,y+fs*0.5,fs*2.5);
+  bloomGrad.addColorStop(0,`rgba(0,200,255,${alpha*0.55})`);
+  bloomGrad.addColorStop(0.4,`rgba(0,80,180,${alpha*0.15})`);
+  bloomGrad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=bloomGrad;ctx.globalAlpha=alpha;
+  ctx.fillRect(cx-fs*3,y-fs*0.2,fs*6,fs*2);
+  ctx.shadowColor='rgba(140,0,255,1)';ctx.shadowBlur=60;
+  ctx.fillStyle=`rgba(200,120,255,${alpha*0.7})`;ctx.globalAlpha=alpha*0.8;
+  ctx.fillText('WELCOME',cx,y);
+  ctx.shadowColor='#00e6dc';ctx.shadowBlur=40;
+  ctx.fillStyle=`rgba(0,230,220,${alpha})`;ctx.globalAlpha=alpha*0.85;
+  ctx.fillText('WELCOME',cx,y);
+  ctx.shadowColor='#fff';ctx.shadowBlur=18;
+  ctx.fillStyle='#fff';ctx.globalAlpha=alpha;
+  ctx.fillText('WELCOME',cx,y);
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+}
+
+function drawLoggedInText(alpha,cx,cy,hexR){
+  if(alpha<=0)return;
+  function fitFontToWidth(text,targetWidth,weight){
+    const ref=100;
+    ctx.font=`${weight} ${ref}px Bebas Neue, sans-serif`;
+    const refW=ctx.measureText(text).width||1;
+    return targetWidth/refW*ref;
+  }
+  const headingDy=-hexR*0.32; 
+  const headingAvailW=hexHalfWidthAt(hexR,headingDy)*2*0.90;
+  const fsHeading=Math.min(fitFontToWidth('YOU ARE LOGGED IN',headingAvailW,700),hexR*0.85);
+  const headingY=cy+headingDy;
+
+  const enjoyDy=hexR*0.28;
+  const enjoyAvailW=hexHalfWidthAt(hexR,enjoyDy)*2*0.90;
+  const fsEnjoy=Math.min(fitFontToWidth('Enjoy',enjoyAvailW,700),fsHeading); 
+  const enjoyY=cy+enjoyDy;
+
+  function glowText(text,x,y,fs){
+    ctx.font=`700 ${fs}px Bebas Neue, sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(255,255,255,0.8)';ctx.shadowBlur=10;
+    ctx.fillStyle='#ffffff';ctx.globalAlpha=alpha;
+    ctx.fillText(text,x,y);
+    ctx.shadowBlur=0;ctx.globalAlpha=1;
+  }
+  glowText('YOU ARE LOGGED IN',cx,headingY,fsHeading);
+  glowText('Enjoy',cx,enjoyY,fsEnjoy);
+}
+
+// ── MAIN LOOP ─────────────────────────────────────────────
+let continueBtnShown = false;
+
+const WELCOME_IN_START=100, WELCOME_IN_END=200;
+const WELCOME_HOLD_END=260;
+const WELCOME_OUT_END=320;
+const LOGGEDIN_IN_END=380;
+const LOGGEDIN_HOLD_END=460;
+
+function getTextAlphas(frame){
+  let welcomeA;
+  if(frame<WELCOME_IN_START) welcomeA=0;
+  else if(frame<WELCOME_IN_END) welcomeA=easeOut(frac(frame,WELCOME_IN_START,WELCOME_IN_END));
+  else if(frame<WELCOME_HOLD_END) welcomeA=1;
+  else if(frame<WELCOME_OUT_END) welcomeA=1-easeOut(frac(frame,WELCOME_HOLD_END,WELCOME_OUT_END));
+  else welcomeA=0;
+
+  let loggedA;
+  if(frame<WELCOME_OUT_END) loggedA=0;
+  else if(frame<LOGGEDIN_IN_END) loggedA=easeOut(frac(frame,WELCOME_OUT_END,LOGGEDIN_IN_END));
+  else loggedA=1;
+
+  return {welcomeA,loggedA};
+}
+
+function drawWelcomeScene(cx,cy){
+  ctx.clearRect(0,0,W,H);
+
+  const bgGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*0.75);
+  bgGrad.addColorStop(0,'rgba(0,8,25,1)');
+  bgGrad.addColorStop(0.6,'rgba(0,3,12,1)');
+  bgGrad.addColorStop(1,'rgba(0,0,0,1)');
+  ctx.fillStyle=bgGrad;ctx.globalAlpha=1;ctx.fillRect(0,0,W,H);
+
+  drawParticles(Math.min(1,frame/120)*0.5);
+
+  const hexR = getHexRadius(W,H);
+  const tunnelA=easeOut(frac(frame,20,100));
+  const tunnelRot=Math.PI/6+frame*0.004;
+  drawHexTunnel(cx,cy,hexR,tunnelRot,tunnelA,18);
+  drawOuterFrame(cx,cy,hexR*1.048,easeOut(frac(frame,30,110)));
+
+  const {welcomeA,loggedA} = getTextAlphas(frame);
+  drawWelcome(welcomeA,cx,cy,hexR);
+  drawLoggedInText(loggedA,cx,cy,hexR);
+}
+
+const DEBUG_CENTER = new URLSearchParams(window.location.search).get('debug') === '1';
+function drawDebugCenterOverlay(){
+  if(!DEBUG_CENTER) return;
+  const hexR = getHexRadius(W,H);
+  const cy = H/2;
+  const hexTopY = cy - hexR;
+  const hexBottomY = cy + hexR;
+  const topGap = Math.round(hexTopY);
+  const bottomGap = Math.round(H - hexBottomY);
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,0,120,0.9)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8,6]);
+  [0, hexTopY, hexBottomY, H].forEach(y=>{
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 18px monospace';
+  ctx.textBaseline = 'top';
+  ctx.fillText('top gap: ' + topGap + 'px', 10, 10);
+  ctx.fillText('bottom gap: ' + bottomGap + 'px', 10, 34);
+  ctx.fillText('difference: ' + (topGap-bottomGap) + 'px', 10, 58);
+
+  {
+    const incircleR = hexR*0.8660254;
+    ctx.strokeStyle = 'rgba(255,230,0,0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(W/2, cy, incircleR, 0, Math.PI*2);
+    ctx.stroke();
+
+    const btn = document.getElementById('continue-btn');
+    if(btn){
+      const OUTLINE_BUFFER = 14; 
+      const r = btn.getBoundingClientRect();
+      ctx.strokeStyle = 'rgba(255,0,0,0.95)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(r.left-OUTLINE_BUFFER, r.top-OUTLINE_BUFFER, r.width+OUTLINE_BUFFER*2, r.height+OUTLINE_BUFFER*2);
+
+      const corners = [[r.left-OUTLINE_BUFFER,r.top-OUTLINE_BUFFER],[r.right+OUTLINE_BUFFER,r.top-OUTLINE_BUFFER],
+                        [r.left-OUTLINE_BUFFER,r.bottom+OUTLINE_BUFFER],[r.right+OUTLINE_BUFFER,r.bottom+OUTLINE_BUFFER]];
+      let maxDist = 0;
+      corners.forEach(([x,y])=>{
+        const d = Math.hypot(x-W/2, y-cy);
+        if(d>maxDist) maxDist=d;
+      });
+      const margin = Math.round(incircleR - maxDist); 
+      ctx.fillStyle = margin >= 0 ? '#0f0' : '#f00';
+      ctx.fillText('button corner margin: ' + margin + 'px ' + (margin>=0?'(SAFE)':'(OVERFLOW!)'), 10, 82);
+    }
+  }
+  ctx.restore();
+}
+
+function renderCurrentState(){
+  drawWelcomeScene(W/2,H/2);
+  drawDebugCenterOverlay();
+}
+
+function loop(ts){
+  rafId = requestAnimationFrame(loop);
+
+  if(resizePaused){ lastTs = null; return; } 
+
+  if(lastTs === null) lastTs = ts;
+  const deltaMs = Math.min(100, ts - lastTs); 
+  lastTs = ts;
+  const frameUnits = deltaMs / (1000/60);
+
+  frame += frameUnits;
+
+  const cx=W/2,cy=H/2;
+  drawWelcomeScene(cx,cy);
+  drawDebugCenterOverlay();
+
+  if(frame>=LOGGEDIN_HOLD_END && !continueBtnShown){
+    continueBtnShown = true;
+    const btn=document.getElementById('continue-btn');
+    btn.style.display='block';
+    btn.querySelector('a').focus();
+  }
+}
+
+// ── ROTATION HANDLER — exact structure ported from hexa-register.html, as a test ──
+let resizePaused = false;
+let lastOrientation = window.innerWidth > window.innerHeight ? 'L' : 'P';
+let overlayTimer = null;
+
+function getOrientation(){
+  if(window.innerWidth !== window.innerHeight)
+    return window.innerWidth > window.innerHeight ? 'L' : 'P';
+  if(window.screen && window.screen.orientation && window.screen.orientation.type)
+    return window.screen.orientation.type.includes('landscape') ? 'L' : 'P';
+  if(typeof window.orientation === 'number')
+    return (window.orientation===90||window.orientation===-90) ? 'L' : 'P';
+  return 'P';
+}
+
+function activateBlackout(){
+  if(resizePaused) return;
+  resizePaused = true;
+  // Force inline style first — overrides any transition Samsung might apply
+  blackoutOverlay.style.transition = 'none';
+  blackoutOverlay.style.opacity = '1';
+  blackoutOverlay.style.pointerEvents = 'auto';
+  blackoutOverlay.classList.add('active');
+  // Stop all canvas animation immediately
+  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+}
+
+function deactivateBlackout(){
+  clearTimeout(overlayTimer);
+  // Wait 2s for browser to fully confirm new orientation, then snap new layout in
+  overlayTimer = setTimeout(function(){
+    resize();
+    renderCurrentState();
+    // Restart animation
+    if(!rafId) rafId = requestAnimationFrame(loop);
+    // Snap in instantly — no fade, no transition
+    blackoutOverlay.style.transition = 'none';
+    blackoutOverlay.style.opacity = '0';
+    blackoutOverlay.style.pointerEvents = 'none';
+    blackoutOverlay.classList.remove('active');
+    lastOrientation = getOrientation();
+    resizePaused = false;
+  }, 2000);
+}
+
+// orientationchange — fires on Redmi, iOS
+window.addEventListener('orientationchange', function(){
+  activateBlackout();
+});
+
+// screen.orientation.change — Samsung Internet
+if(window.screen && window.screen.orientation){
+  window.screen.orientation.addEventListener('change', function(){
+    activateBlackout();
+  });
+}
+
+// resize — Samsung A14, tablets; immediate flip check + next-frame check
+window.addEventListener('resize', function(){
+  const current = getOrientation();
+  if(current !== lastOrientation){
+    activateBlackout();
+  }
+  // Samsung A14: dimensions update one frame late — check again
+  requestAnimationFrame(function(){
+    const current2 = getOrientation();
+    if(current2 !== lastOrientation && !resizePaused){
+      activateBlackout();
+    }
+    if(resizePaused) deactivateBlackout();
+  });
+});
+
+
+requestAnimationFrame(loop);
+</script>
+
+<style>
+.hexa-btn {
+  font-family:'Bebas Neue',sans-serif;
+  letter-spacing:.2em;
+  font-size:11px;
+  padding:9px 26px;
+  background:linear-gradient(90deg,#00ffee,#cc44ff);
+  color:#000;
+  border-radius:3px;
+  text-decoration:none;
+  display:block;
+  white-space:nowrap;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.hexa-btn:focus {
+  outline: 3px solid #00ffee;
+  outline-offset: 4px;
+  box-shadow: 0 0 28px rgba(0,255,238,0.7);
+  transform: scale(1.05);
+}
+.hexa-btn:hover {
+  box-shadow: 0 0 22px rgba(0,255,238,0.5);
+  transform: scale(1.04);
+}
+.hexa-btn-wrap {
+  display:none;
+  position:fixed;
+  left:50%;
+  z-index:999;
+  transform:translateX(-50%);
+}
+</style>
+
+<div id="continue-btn" class="hexa-btn-wrap">
+  <a href="hexa-rules.html" class="hexa-btn" tabindex="0" onclick="localStorage.removeItem('hexa_new_user');window.location.replace('hexa-rules.html');return false;">CONTINUE →</a>
+</div>
+<script>
+function positionButtons(){
+  if(typeof W==='undefined' || typeof getHexRadius!=='function') return;
+  const hexR = getHexRadius(W,H);
+  const cx = W/2, cy = H/2;
+  const hexBottomY = cy + hexR*1.04; 
+  const gapBelowHex = hexR*0.16;      
+  const bottomMargin = Math.max(16, H*0.04); 
+
+  const baseFontSize = 15, basePadV = 13, basePadH = 34;
+
+  function applyScale(id, scale, bottomPx){
+    const el = document.getElementById(id);
+    if(!el) return null;
+    el.style.left = cx+'px';
+    el.style.bottom = bottomPx+'px';
+    const a = el.querySelector('a');
+    if(!a) return null;
+    a.style.fontSize = (baseFontSize*scale).toFixed(2)+'px';
+    a.style.padding = (basePadV*scale).toFixed(2)+'px ' + (basePadH*scale).toFixed(2)+'px';
+    return el;
+  }
+
+  ['continue-btn'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const prevDisplay = el.style.display;
+    el.style.display = 'block';
+
+    const targetWidth = Math.max(150, Math.min(hexR*0.85, W*0.7));
+
+    let scale = 1;
+    applyScale(id, scale, bottomMargin);
+    let box = el.getBoundingClientRect();
+    scale = targetWidth / (box.width || 1);
+    applyScale(id, scale, bottomMargin);
+    box = el.getBoundingClientRect();
+
+    const available = Math.max(28, H - bottomMargin - (hexBottomY + gapBelowHex));
+    if(box.height > available){
+      scale *= available / box.height;
+      applyScale(id, scale, bottomMargin);
+      box = el.getBoundingClientRect();
+    }
+
+    const spaceTop = hexBottomY + gapBelowHex;
+    const spaceBottom = H - bottomMargin;
+    const leftover = Math.max(0, (spaceBottom - spaceTop) - box.height);
+    const finalBottom = bottomMargin + leftover/2;
+    applyScale(id, scale, finalBottom);
+
+    el.style.display = prevDisplay;
+  });
+}
+positionButtons();
+</script>
+</body>
+</html>
